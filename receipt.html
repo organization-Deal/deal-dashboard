@@ -11,7 +11,7 @@
   /* ═══════════════════════════════════════════════════
      สองโลก:
        chrome (โต๊ะทำงาน) = IBM Plex Sans Thai บนพื้นกราไฟต์
-       เอกสาร (กระดาษ)   = Sarabun ขาว-ดำ ตามแบบราชการเป๊ะ
+       เอกสาร (กระดาษ)   = Sarabun ขาว-ดำ ตามแบบราชการ
      ═══════════════════════════════════════════════════ */
 
   :root{
@@ -54,6 +54,7 @@
     background:var(--brand);color:#fff;border:0;
   }
   .btn:hover{filter:brightness(1.1)}
+  .btn:focus-visible,.btn-ghost:focus-visible{outline:2px solid #fff;outline-offset:2px}
   .btn-ghost{
     padding:9px 14px;font-size:13px;font-weight:500;
     background:transparent;color:var(--desk-text);
@@ -129,11 +130,18 @@
 
   .cert{margin:20px 0 26px;line-height:1.85;font-weight:600}
 
-  .signs{display:flex;gap:40px;margin-top:34px}
+  /* ───────── ช่องลงชื่อ (แบบฟอร์มราชการ) ───────── */
+  .signs{display:flex;gap:48px;margin-top:46px}
   .sign{flex:1;text-align:center}
-  .sign-img{height:46px;margin-bottom:2px;display:flex;align-items:flex-end;justify-content:center}
-  .sign-img img{max-height:46px;max-width:160px;object-fit:contain}
-  .sign-line{border-top:1px dotted #444;padding-top:5px;font-weight:600;font-size:13px}
+  .sign-img{height:44px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:1px}
+  .sign-img img{max-height:44px;max-width:150px;object-fit:contain}
+  .sign-rule{
+    display:flex;align-items:flex-end;justify-content:center;
+    gap:6px;font-size:13px;font-weight:600;
+  }
+  .sign-rule .dots{flex:0 1 190px;border-bottom:1px dotted #333;height:1px;margin-bottom:5px}
+  .sign-name{margin-top:7px;font-size:13px;font-weight:600}
+  .sign-role{font-size:13px;color:#222}
 
   .empty-note{
     padding:22px;text-align:center;color:#999;font-size:13px;
@@ -166,42 +174,42 @@
 <div class="wrap">
   <aside class="panel">
     <h2>ข้อมูลบริษัท</h2>
-    <label>ชื่อบริษัท</label>
+    <label for="f_company">ชื่อบริษัท</label>
     <input id="f_company" oninput="render()">
-    <label>ที่อยู่ (บรรทัดละ 1 บรรทัด)</label>
+    <label for="f_address">ที่อยู่ (บรรทัดละ 1 บรรทัด)</label>
     <textarea id="f_address" oninput="render()"></textarea>
-    <label>เลขประจำตัวผู้เสียภาษี</label>
+    <label for="f_taxid">เลขประจำตัวผู้เสียภาษี</label>
     <input id="f_taxid" oninput="render()">
 
     <h2>โลโก้ &amp; ลายเซ็น</h2>
-    <label>URL โลโก้</label>
+    <label for="f_logo">URL โลโก้</label>
     <input id="f_logo" oninput="render()" placeholder="https://...">
-    <label>URL ลายเซ็นผู้อนุมัติ (PNG พื้นโปร่ง)</label>
+    <label for="f_sigApprover">URL ลายเซ็นผู้อนุมัติ (PNG พื้นโปร่ง)</label>
     <input id="f_sigApprover" oninput="render()" placeholder="https://...">
-    <label>ชื่อผู้อนุมัติ</label>
+    <label for="f_approver">ชื่อผู้อนุมัติ</label>
     <input id="f_approver" oninput="render()">
     <p class="hint">อัปโหลดรูปเข้า Drive แล้วตั้งเป็น "ทุกคนที่มีลิงก์" จากนั้นใช้<br><code>https://lh3.googleusercontent.com/d/&lt;FILE_ID&gt;</code></p>
 
     <h2>ผู้เบิกจ่าย</h2>
-    <label>ชื่อ-นามสกุล</label>
+    <label for="f_payer">ชื่อ-นามสกุล</label>
     <input id="f_payer" oninput="render()">
-    <label>ตำแหน่ง</label>
+    <label for="f_position">ตำแหน่ง</label>
     <input id="f_position" oninput="render()">
-    <label>URL ลายเซ็นผู้เบิกจ่าย (ถ้ามี)</label>
+    <label for="f_sigPayer">URL ลายเซ็นผู้เบิกจ่าย (ถ้ามี)</label>
     <input id="f_sigPayer" oninput="render()" placeholder="https://...">
 
     <h2>เอกสาร</h2>
-    <label>เลขที่เอกสาร</label>
+    <label for="f_docNo">เลขที่เอกสาร</label>
     <input id="f_docNo" oninput="render()">
-    <label>เลขคำขอ</label>
+    <label for="f_reqNo">เลขคำขอ</label>
     <input id="f_reqNo" oninput="render()">
-    <label>วันที่สร้างเอกสาร (YYYY-MM-DD)</label>
+    <label for="f_docDate">วันที่สร้างเอกสาร</label>
     <input id="f_docDate" type="date" oninput="render()">
 
     <h2>รายการ</h2>
-    <label>หนึ่งบรรทัด = หนึ่งรายการ<br>รูปแบบ: วันที่ | รายละเอียด | จำนวนเงิน | หมายเหตุ</label>
+    <label for="f_items">หนึ่งบรรทัด = หนึ่งรายการ<br>รูปแบบ: วันที่ | รายละเอียด | จำนวนเงิน | หมายเหตุ</label>
     <textarea id="f_items" rows="7" oninput="render()"
-      placeholder="2026-03-22 | ค่าน้ำมัน | 500 | "></textarea>
+      placeholder="2569-03-22 | ค่าน้ำมัน | 500 | "></textarea>
     <p class="hint">ใส่ปี พ.ศ. ก็ได้ (2569) ระบบแปลงให้เอง</p>
   </aside>
 
@@ -214,7 +222,7 @@
 /* ══════════════════════════════════════════════════════════
    จุดเชื่อมข้อมูลจริง
    ──────────────────────────────────────────────────────────
-   ตอนต่อเข้าแดชบอร์ดจริง ไม่ต้องใช้ panel ซ้าย — ให้เรียก:
+   ตอนต่อเข้าแดชบอร์ดจริง ไม่ต้องใช้ panel ซ้าย — เรียก:
 
      applyData({
        company, address:[...], taxId, logoUrl,
@@ -224,10 +232,10 @@
        items:[{date, detail, amount, note}, ...]
      });
 
-   โดยดึง 3 ก้อนนี้มารวมกัน:
-     • ข้อมูลบริษัท / โลโก้ / ลายเซ็น  → แท็บ `_settings` ในชีทลูกค้า
-     • ผู้เบิกจ่าย                      → ชื่อ LINE ของคนที่ส่งบิล
-     • items                            → แถวที่ติ๊ก "ออกใบแทน" ในชีท
+   ข้อมูล 3 ก้อน:
+     • บริษัท / โลโก้ / ลายเซ็นผู้อนุมัติ → แท็บ `_settings` ในชีทลูกค้า
+     • ผู้เบิกจ่าย                        → ชื่อ LINE ของคนที่ส่งบิล
+     • items                              → แถวที่ติ๊ก "ออกใบแทน" ในชีท
    ══════════════════════════════════════════════════════════ */
 
 var DATA = {
@@ -238,7 +246,7 @@ var DATA = {
   items:[]
 };
 
-/* ── วันที่: รับ พ.ศ./ค.ศ. ทุกรูปแบบ แล้วคืนเป็น dd/mm/yyyy (พ.ศ.) ── */
+/* ── วันที่: รับ พ.ศ./ค.ศ. ทุกรูปแบบ → dd/mm/yyyy (พ.ศ.) ── */
 function parseDate(input){
   if(!input) return null;
   var nums = String(input).match(/\d+/g);
@@ -267,6 +275,16 @@ function esc(s){
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+/* ── ช่องลงชื่อ: ลงชื่อ ...... / (ชื่อ) / ตำแหน่ง ── */
+function signBlock(name, role, url){
+  return '<div class="sign">'+
+    '<div class="sign-img">'+(url ? '<img src="'+esc(url)+'" alt="">' : '')+'</div>'+
+    '<div class="sign-rule"><span>ลงชื่อ</span><span class="dots"></span></div>'+
+    '<div class="sign-name">('+esc(name||'—')+')</div>'+
+    '<div class="sign-role">'+esc(role)+'</div>'+
+  '</div>';
+}
+
 /* ── สร้างเอกสาร ── */
 function buildSheet(d){
   var total = d.items.reduce(function(s,it){ return s + (Number(it.amount)||0); }, 0);
@@ -277,16 +295,14 @@ function buildSheet(d){
 
   var addr = (d.address||[]).map(function(l){ return esc(l); }).join('<br>');
 
-  var rows = d.items.length
-    ? d.items.map(function(it){
-        return '<tr>'+
-          '<td class="date">'+esc(fmtDate(it.date))+'</td>'+
-          '<td>'+esc(it.detail)+'</td>'+
-          '<td class="amt">'+money(it.amount)+'</td>'+
-          '<td class="note">'+esc(it.note||'')+'</td>'+
-        '</tr>';
-      }).join('')
-    : '';
+  var rows = d.items.map(function(it){
+    return '<tr>'+
+      '<td class="date">'+esc(fmtDate(it.date))+'</td>'+
+      '<td>'+esc(it.detail)+'</td>'+
+      '<td class="amt">'+money(it.amount)+'</td>'+
+      '<td class="note">'+esc(it.note||'')+'</td>'+
+    '</tr>';
+  }).join('');
 
   var table = d.items.length ? (
     '<table>'+
@@ -302,10 +318,6 @@ function buildSheet(d){
       '</tbody>'+
     '</table>'
   ) : '<div class="empty-note">ยังไม่มีรายการ — เพิ่มในช่อง "รายการ" ด้านซ้าย</div>';
-
-  var sig = function(url){
-    return '<div class="sign-img">'+(url ? '<img src="'+esc(url)+'" alt="">' : '')+'</div>';
-  };
 
   var certDate = fmtDate(d.docDate) || fmtDate(new Date().toISOString().slice(0,10));
 
@@ -334,16 +346,12 @@ function buildSheet(d){
   '</div>'+
 
   '<div class="signs">'+
-    '<div class="sign">'+sig(d.payerSignUrl)+
-      '<div class="sign-line">ลงชื่อ '+esc(d.payerName||'—')+' (ผู้เบิกจ่าย)</div>'+
-    '</div>'+
-    '<div class="sign">'+sig(d.approverSignUrl)+
-      '<div class="sign-line">ลงชื่อ '+esc(d.approverName||'-')+' (ผู้อนุมัติ)</div>'+
-    '</div>'+
+    signBlock(d.payerName, 'ผู้เบิกจ่าย', d.payerSignUrl)+
+    signBlock(d.approverName, 'ผู้อนุมัติ', d.approverSignUrl)+
   '</div>';
 }
 
-/* ── อ่านค่าจาก panel → DATA → วาด ── */
+/* ── panel → DATA → วาด ── */
 function collect(){
   var g = function(id){ var el=document.getElementById(id); return el ? el.value.trim() : ''; };
 
@@ -367,17 +375,17 @@ function collect(){
     });
 }
 
-function render(){
-  collect();
+function paint(){
   document.getElementById('sheet').innerHTML = buildSheet(DATA);
   document.getElementById('docLabel').textContent = DATA.docNo ? '· '+DATA.docNo : '';
 }
 
-/* ── ใช้ตอนต่อข้อมูลจริง: ข้าม panel ไปเลย ── */
+function render(){ collect(); paint(); }
+
+/* ── ใช้ตอนต่อข้อมูลจริง: ข้าม panel ── */
 function applyData(obj){
   Object.keys(obj).forEach(function(k){ DATA[k] = obj[k]; });
-  document.getElementById('sheet').innerHTML = buildSheet(DATA);
-  document.getElementById('docLabel').textContent = DATA.docNo ? '· '+DATA.docNo : '';
+  paint();
 }
 
 function loadDemo(){
