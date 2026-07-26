@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ใบรับรองแทนใบเสร็จรับเงิน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════════════
+     สองโลก:
+       chrome (โต๊ะทำงาน) = IBM Plex Sans Thai บนพื้นกราไฟต์
+       เอกสาร (กระดาษ)   = Sarabun ขาว-ดำ ตามแบบราชการเป๊ะ
+     ═══════════════════════════════════════════════════ */
+
+  :root{
+    --desk:#23262B;
+    --desk-2:#2C3037;
+    --desk-line:#3A3F47;
+    --desk-text:#E7E9EC;
+    --desk-dim:#9AA1AA;
+    --brand:#D0021B;
+    --paper:#FFFFFF;
+    --ink:#000000;
+    --rule:#000000;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--desk);
+    color:var(--desk-text);
+    font-family:"IBM Plex Sans Thai",system-ui,sans-serif;
+    min-height:100vh;
+  }
+
+  /* ───────── toolbar ───────── */
+  .bar{
+    position:sticky;top:0;z-index:20;
+    display:flex;align-items:center;gap:16px;
+    padding:14px 20px;
+    background:rgba(35,38,43,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--desk-line);
+  }
+  .bar h1{margin:0;font-size:15px;font-weight:600;letter-spacing:.01em}
+  .bar .sub{color:var(--desk-dim);font-size:12px}
+  .bar .spacer{flex:1}
+
+  button{font-family:inherit;cursor:pointer;border-radius:8px;transition:.15s}
+  .btn{
+    padding:9px 18px;font-size:13px;font-weight:600;
+    background:var(--brand);color:#fff;border:0;
+  }
+  .btn:hover{filter:brightness(1.1)}
+  .btn-ghost{
+    padding:9px 14px;font-size:13px;font-weight:500;
+    background:transparent;color:var(--desk-text);
+    border:1px solid var(--desk-line);
+  }
+  .btn-ghost:hover{background:var(--desk-2)}
+
+  /* ───────── layout ───────── */
+  .wrap{display:grid;grid-template-columns:320px 1fr;align-items:start}
+  @media (max-width:900px){ .wrap{grid-template-columns:1fr} }
+
+  .panel{
+    position:sticky;top:57px;
+    max-height:calc(100vh - 57px);overflow-y:auto;
+    padding:20px;border-right:1px solid var(--desk-line);
+    background:var(--desk-2);
+  }
+  @media (max-width:900px){ .panel{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--desk-line)} }
+
+  .panel h2{
+    margin:0 0 12px;font-size:11px;font-weight:600;
+    text-transform:uppercase;letter-spacing:.12em;color:var(--desk-dim);
+  }
+  .panel h2:not(:first-child){margin-top:26px}
+
+  label{display:block;font-size:12px;color:var(--desk-dim);margin:10px 0 4px}
+  input,textarea{
+    width:100%;padding:8px 10px;font-family:inherit;font-size:13px;
+    background:#1B1E22;color:var(--desk-text);
+    border:1px solid var(--desk-line);border-radius:6px;
+  }
+  input:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:transparent}
+  textarea{resize:vertical;min-height:64px;line-height:1.5}
+  .hint{font-size:11px;color:#6E7580;margin-top:5px;line-height:1.5}
+
+  .stage{padding:28px 20px 60px;display:flex;justify-content:center}
+
+  /* ───────── กระดาษ A4 ───────── */
+  .sheet{
+    width:210mm;min-height:297mm;
+    padding:18mm 16mm;
+    background:var(--paper);color:var(--ink);
+    font-family:"Sarabun",serif;font-size:13px;line-height:1.6;
+    box-shadow:0 18px 50px rgba(0,0,0,.45);
+  }
+  @media (max-width:900px){ .sheet{width:100%;min-height:auto;padding:14mm 10mm} }
+
+  .head{display:flex;align-items:flex-start;gap:16px;margin-bottom:22px}
+  .logo{width:78px;height:78px;object-fit:contain;flex:0 0 auto}
+  .logo-empty{
+    width:78px;height:78px;flex:0 0 auto;
+    border:1px dashed #BBB;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px;color:#AAA;text-align:center;line-height:1.3;
+  }
+  .org{flex:1;text-align:center;font-size:13px}
+  .org strong{display:block;font-weight:700}
+
+  .refs{font-size:13px;margin-bottom:14px}
+  .refs div{margin-bottom:1px}
+
+  .title{text-align:center;font-size:19px;font-weight:700;margin:6px 0 2px}
+  .subtitle{text-align:center;font-size:14px;font-weight:700;margin-bottom:16px}
+
+  table{width:100%;border-collapse:collapse;margin-bottom:16px}
+  th,td{border:1px solid var(--rule);padding:7px 9px;vertical-align:top}
+  th{font-weight:700;text-align:center;font-size:13px}
+  td.date{width:22%;text-align:center;font-weight:600;white-space:nowrap}
+  td.amt{width:20%;text-align:right;font-weight:600;white-space:nowrap}
+  td.note{width:20%}
+  tr.total td{font-weight:700}
+  tr.total td:first-child{border-right-color:transparent}
+
+  .cert{margin:20px 0 26px;line-height:1.85;font-weight:600}
+
+  .signs{display:flex;gap:40px;margin-top:34px}
+  .sign{flex:1;text-align:center}
+  .sign-img{height:46px;margin-bottom:2px;display:flex;align-items:flex-end;justify-content:center}
+  .sign-img img{max-height:46px;max-width:160px;object-fit:contain}
+  .sign-line{border-top:1px dotted #444;padding-top:5px;font-weight:600;font-size:13px}
+
+  .empty-note{
+    padding:22px;text-align:center;color:#999;font-size:13px;
+    border:1px dashed #CCC;border-radius:6px;margin-bottom:16px;
+  }
+
+  /* ───────── print ───────── */
+  @page{size:A4;margin:0}
+  @media print{
+    body{background:#fff}
+    .bar,.panel{display:none !important}
+    .wrap{display:block}
+    .stage{padding:0}
+    .sheet{width:210mm;min-height:297mm;box-shadow:none;padding:16mm 15mm}
+    .logo-empty,.empty-note{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1>ใบรับรองแทนใบเสร็จรับเงิน</h1>
+  <span class="sub" id="docLabel"></span>
+  <span class="spacer"></span>
+  <button class="btn-ghost" onclick="loadDemo()">ใส่ข้อมูลตัวอย่าง</button>
+  <button class="btn" onclick="window.print()">พิมพ์ / บันทึก PDF</button>
+</div>
+
+<div class="wrap">
+  <aside class="panel">
+    <h2>ข้อมูลบริษัท</h2>
+    <label>ชื่อบริษัท</label>
+    <input id="f_company" oninput="render()">
+    <label>ที่อยู่ (บรรทัดละ 1 บรรทัด)</label>
+    <textarea id="f_address" oninput="render()"></textarea>
+    <label>เลขประจำตัวผู้เสียภาษี</label>
+    <input id="f_taxid" oninput="render()">
+
+    <h2>โลโก้ &amp; ลายเซ็น</h2>
+    <label>URL โลโก้</label>
+    <input id="f_logo" oninput="render()" placeholder="https://...">
+    <label>URL ลายเซ็นผู้อนุมัติ (PNG พื้นโปร่ง)</label>
+    <input id="f_sigApprover" oninput="render()" placeholder="https://...">
+    <label>ชื่อผู้อนุมัติ</label>
+    <input id="f_approver" oninput="render()">
+    <p class="hint">อัปโหลดรูปเข้า Drive แล้วตั้งเป็น "ทุกคนที่มีลิงก์" จากนั้นใช้<br><code>https://lh3.googleusercontent.com/d/&lt;FILE_ID&gt;</code></p>
+
+    <h2>ผู้เบิกจ่าย</h2>
+    <label>ชื่อ-นามสกุล</label>
+    <input id="f_payer" oninput="render()">
+    <label>ตำแหน่ง</label>
+    <input id="f_position" oninput="render()">
+    <label>URL ลายเซ็นผู้เบิกจ่าย (ถ้ามี)</label>
+    <input id="f_sigPayer" oninput="render()" placeholder="https://...">
+
+    <h2>เอกสาร</h2>
+    <label>เลขที่เอกสาร</label>
+    <input id="f_docNo" oninput="render()">
+    <label>เลขคำขอ</label>
+    <input id="f_reqNo" oninput="render()">
+    <label>วันที่สร้างเอกสาร (YYYY-MM-DD)</label>
+    <input id="f_docDate" type="date" oninput="render()">
+
+    <h2>รายการ</h2>
+    <label>หนึ่งบรรทัด = หนึ่งรายการ<br>รูปแบบ: วันที่ | รายละเอียด | จำนวนเงิน | หมายเหตุ</label>
+    <textarea id="f_items" rows="7" oninput="render()"
+      placeholder="2026-03-22 | ค่าน้ำมัน | 500 | "></textarea>
+    <p class="hint">ใส่ปี พ.ศ. ก็ได้ (2569) ระบบแปลงให้เอง</p>
+  </aside>
+
+  <main class="stage">
+    <div class="sheet" id="sheet"></div>
+  </main>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   จุดเชื่อมข้อมูลจริง
+   ──────────────────────────────────────────────────────────
+   ตอนต่อเข้าแดชบอร์ดจริง ไม่ต้องใช้ panel ซ้าย — ให้เรียก:
+
+     applyData({
+       company, address:[...], taxId, logoUrl,
+       approverName, approverSignUrl,
+       payerName, payerPosition, payerSignUrl,
+       docNo, reqNo, docDate,
+       items:[{date, detail, amount, note}, ...]
+     });
+
+   โดยดึง 3 ก้อนนี้มารวมกัน:
+     • ข้อมูลบริษัท / โลโก้ / ลายเซ็น  → แท็บ `_settings` ในชีทลูกค้า
+     • ผู้เบิกจ่าย                      → ชื่อ LINE ของคนที่ส่งบิล
+     • items                            → แถวที่ติ๊ก "ออกใบแทน" ในชีท
+   ══════════════════════════════════════════════════════════ */
+
+var DATA = {
+  company:'', address:[], taxId:'', logoUrl:'',
+  approverName:'', approverSignUrl:'',
+  payerName:'', payerPosition:'', payerSignUrl:'',
+  docNo:'', reqNo:'', docDate:'',
+  items:[]
+};
+
+/* ── วันที่: รับ พ.ศ./ค.ศ. ทุกรูปแบบ แล้วคืนเป็น dd/mm/yyyy (พ.ศ.) ── */
+function parseDate(input){
+  if(!input) return null;
+  var nums = String(input).match(/\d+/g);
+  if(!nums || nums.length < 3) return null;
+  var y,m,d;
+  if(nums[0].length === 4){ y=+nums[0]; m=+nums[1]; d=+nums[2]; }
+  else { d=+nums[0]; m=+nums[1]; y=+nums[2]; }
+  if(y > 2400) y -= 543;          // พ.ศ. → ค.ศ.
+  if(y < 100) y += 2000;
+  var dt = new Date(Date.UTC(y, (m||1)-1, d||1));
+  return isNaN(dt) ? null : dt;
+}
+function fmtDate(input){
+  var dt = parseDate(input);
+  if(!dt) return input ? String(input) : '';
+  var p = function(n){ return String(n).padStart(2,'0'); };
+  return p(dt.getUTCDate())+'/'+p(dt.getUTCMonth()+1)+'/'+(dt.getUTCFullYear()+543);
+}
+function money(n){
+  var v = Number(n);
+  if(!isFinite(v)) v = 0;
+  return v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function esc(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── สร้างเอกสาร ── */
+function buildSheet(d){
+  var total = d.items.reduce(function(s,it){ return s + (Number(it.amount)||0); }, 0);
+
+  var logo = d.logoUrl
+    ? '<img class="logo" src="'+esc(d.logoUrl)+'" alt="">'
+    : '<div class="logo-empty">โลโก้<br>บริษัท</div>';
+
+  var addr = (d.address||[]).map(function(l){ return esc(l); }).join('<br>');
+
+  var rows = d.items.length
+    ? d.items.map(function(it){
+        return '<tr>'+
+          '<td class="date">'+esc(fmtDate(it.date))+'</td>'+
+          '<td>'+esc(it.detail)+'</td>'+
+          '<td class="amt">'+money(it.amount)+'</td>'+
+          '<td class="note">'+esc(it.note||'')+'</td>'+
+        '</tr>';
+      }).join('')
+    : '';
+
+  var table = d.items.length ? (
+    '<table>'+
+      '<thead><tr>'+
+        '<th>วัน เดือน ปี</th><th>รายละเอียดรายจ่าย</th>'+
+        '<th>จำนวนเงิน</th><th>หมายเหตุ</th>'+
+      '</tr></thead>'+
+      '<tbody>'+rows+
+        '<tr class="total">'+
+          '<td></td><td>รวมทั้งสิ้น :</td>'+
+          '<td class="amt">'+money(total)+' บาท</td><td></td>'+
+        '</tr>'+
+      '</tbody>'+
+    '</table>'
+  ) : '<div class="empty-note">ยังไม่มีรายการ — เพิ่มในช่อง "รายการ" ด้านซ้าย</div>';
+
+  var sig = function(url){
+    return '<div class="sign-img">'+(url ? '<img src="'+esc(url)+'" alt="">' : '')+'</div>';
+  };
+
+  var certDate = fmtDate(d.docDate) || fmtDate(new Date().toISOString().slice(0,10));
+
+  return ''+
+  '<div class="head">'+logo+
+    '<div class="org"><strong>'+esc(d.company||'—')+'</strong>'+addr+
+      (d.taxId ? '<br>เลขที่ประจำตัวผู้เสียภาษี : '+esc(d.taxId) : '')+
+    '</div>'+
+  '</div>'+
+
+  '<div class="refs">'+
+    '<div>เลขที่เอกสาร: '+esc(d.docNo||'-')+'</div>'+
+    '<div>เลขคำขอ: '+esc(d.reqNo||'-')+'</div>'+
+    '<div>วันที่สร้างเอกสาร : '+certDate+'</div>'+
+  '</div>'+
+
+  '<div class="title">ใบรับรองแทนใบเสร็จรับเงิน</div>'+
+  '<div class="subtitle">บจ. / หจก. '+esc(d.company||'—')+' (ผู้ซื้อ/ผู้รับบริการ)</div>'+
+
+  table+
+
+  '<div class="cert">'+
+    'ข้าพเจ้า '+esc(d.payerName||'—')+' (ผู้เบิกจ่าย) ตำแหน่ง '+esc(d.payerPosition||'—')+'<br>'+
+    'ขอรับรองว่า รายจ่ายข้างต้นนี้ไม่อาจเรียกเก็บใบเสร็จรับเงินจากผู้รับได้ และข้าพเจ้าได้จ่ายไปในงาน'+
+    'ของทาง บริษัท/ห้างหุ้นส่วนจำกัด โดยแท้ ตั้งแต่ ในวันที่ '+certDate+
+  '</div>'+
+
+  '<div class="signs">'+
+    '<div class="sign">'+sig(d.payerSignUrl)+
+      '<div class="sign-line">ลงชื่อ '+esc(d.payerName||'—')+' (ผู้เบิกจ่าย)</div>'+
+    '</div>'+
+    '<div class="sign">'+sig(d.approverSignUrl)+
+      '<div class="sign-line">ลงชื่อ '+esc(d.approverName||'-')+' (ผู้อนุมัติ)</div>'+
+    '</div>'+
+  '</div>';
+}
+
+/* ── อ่านค่าจาก panel → DATA → วาด ── */
+function collect(){
+  var g = function(id){ var el=document.getElementById(id); return el ? el.value.trim() : ''; };
+
+  DATA.company = g('f_company');
+  DATA.address = g('f_address').split('\n').map(function(s){return s.trim();}).filter(Boolean);
+  DATA.taxId = g('f_taxid');
+  DATA.logoUrl = g('f_logo');
+  DATA.approverName = g('f_approver');
+  DATA.approverSignUrl = g('f_sigApprover');
+  DATA.payerName = g('f_payer');
+  DATA.payerPosition = g('f_position');
+  DATA.payerSignUrl = g('f_sigPayer');
+  DATA.docNo = g('f_docNo');
+  DATA.reqNo = g('f_reqNo');
+  DATA.docDate = g('f_docDate');
+
+  DATA.items = g('f_items').split('\n').filter(function(l){ return l.trim(); })
+    .map(function(line){
+      var p = line.split('|').map(function(s){ return s.trim(); });
+      return { date:p[0]||'', detail:p[1]||'', amount:p[2]||0, note:p[3]||'' };
+    });
+}
+
+function render(){
+  collect();
+  document.getElementById('sheet').innerHTML = buildSheet(DATA);
+  document.getElementById('docLabel').textContent = DATA.docNo ? '· '+DATA.docNo : '';
+}
+
+/* ── ใช้ตอนต่อข้อมูลจริง: ข้าม panel ไปเลย ── */
+function applyData(obj){
+  Object.keys(obj).forEach(function(k){ DATA[k] = obj[k]; });
+  document.getElementById('sheet').innerHTML = buildSheet(DATA);
+  document.getElementById('docLabel').textContent = DATA.docNo ? '· '+DATA.docNo : '';
+}
+
+function loadDemo(){
+  var set = function(id,v){ document.getElementById(id).value = v; };
+  set('f_company','บริษัท ดีลอินเวส จำกัด');
+  set('f_address','เลขที่ 555/23 หมู่บ้าน JW URBAN HOME OFFICE\nแขวงดอนเมือง เขตดอนเมือง กรุงเทพฯ 10210');
+  set('f_taxid','0505564012548');
+  set('f_approver','นางสาวภัทร์ปรียา อภิรติวงศ์โชติ');
+  set('f_payer','นายธีรชนาภัทร รุ่งโรจน์สุทธิธนา');
+  set('f_position','staff');
+  set('f_docNo','2026-W30-B01-R1');
+  set('f_reqNo','EXP-0241');
+  set('f_docDate', new Date().toISOString().slice(0,10));
+  set('f_items','2569-03-22 | ค่าน้ำมัน | 500 | \n2569-03-24 | ค่าทำความสะอาดบ้านน็อคดาวน์ | 500 | ไม่มีใบเสร็จ');
+  render();
+}
+
+loadDemo();
+</script>
+</body>
+</html>
