@@ -3,116 +3,149 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ใบรับรองแทนใบเสร็จรับเงิน</title>
+<title>ใบรับรองแทนใบเสร็จ · DEAL</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --desk:#23262B; --desk-2:#2C3037; --desk-line:#3A3F47;
-    --desk-text:#E7E9EC; --desk-dim:#9AA1AA; --brand:#D0021B;
-    --ok:#34C759; --warn:#FF9500;
-    --paper:#FFFFFF; --ink:#000000;
+    --bg:#1C1F24; --panel:#23262B; --card:#2A2E34; --line:#383D45;
+    --text:#E9EBEE; --dim:#98A0AA; --faint:#6B7280;
+    --brand:#D0021B; --blue:#3B82F6; --ok:#34C759; --warn:#FF9500;
+    --paper:#FFFFFF; --ink:#000000; --r:10px;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{background:var(--desk);color:var(--desk-text);
-       font-family:"IBM Plex Sans Thai",system-ui,sans-serif;min-height:100vh}
+  body{background:var(--bg);color:var(--text);
+       font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:14px;min-height:100vh}
+  button{font-family:inherit;cursor:pointer;border:0;border-radius:8px;transition:.13s}
+  button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  button[disabled]{opacity:.45;cursor:not-allowed}
+  a{color:var(--blue)}
 
-  .bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;
-       padding:14px 20px;background:rgba(35,38,43,.92);backdrop-filter:blur(8px);
-       border-bottom:1px solid var(--desk-line);flex-wrap:wrap}
+  /* ── toolbar ── */
+  .bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;
+       padding:12px 18px;background:rgba(28,31,36,.94);backdrop-filter:blur(10px);
+       border-bottom:1px solid var(--line);flex-wrap:wrap}
   .bar h1{margin:0;font-size:15px;font-weight:600}
   .bar .spacer{flex:1}
-  .pill{font-size:11px;padding:4px 10px;border-radius:20px;
-        background:#1B1E22;border:1px solid var(--desk-line);color:var(--desk-dim)}
-  .pill.ok{color:var(--ok);border-color:#2A4A33}
-  .pill.warn{color:var(--warn);border-color:#4A3A1E}
-
-  button{font-family:inherit;cursor:pointer;border-radius:8px;transition:.15s}
-  .btn{padding:9px 18px;font-size:13px;font-weight:600;background:var(--brand);color:#fff;border:0}
+  .chip{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--card);
+        border:1px solid var(--line);color:var(--dim);white-space:nowrap}
+  .chip.ok{color:var(--ok);border-color:#2C4A35}
+  .chip.warn{color:var(--warn);border-color:#4A3A1E}
+  .ghost{padding:8px 13px;font-size:13px;background:transparent;color:var(--text);border:1px solid var(--line)}
+  .ghost:hover{background:var(--card)}
+  .btn{padding:9px 18px;font-size:13px;font-weight:600;background:var(--brand);color:#fff}
   .btn:hover{filter:brightness(1.1)}
-  .btn-ghost{padding:9px 14px;font-size:13px;font-weight:500;background:transparent;
-             color:var(--desk-text);border:1px solid var(--desk-line)}
-  .btn-ghost:hover{background:var(--desk-2)}
-  .btn:focus-visible,.btn-ghost:focus-visible{outline:2px solid #fff;outline-offset:2px}
-  button[disabled]{opacity:.5;cursor:not-allowed}
 
-  .wrap{display:grid;grid-template-columns:330px 1fr;align-items:start}
-  @media (max-width:900px){ .wrap{grid-template-columns:1fr} }
+  /* ── settings warning ── */
+  .warn-banner{margin:14px 18px 0;padding:12px 16px;border-radius:var(--r);
+       background:#3A2A18;border:1px solid #6B4A1E;color:#FFD9A8;
+       display:flex;align-items:center;gap:12px;font-size:13px;line-height:1.5}
+  .warn-banner b{color:#FFB454}
+  .warn-banner button{margin-left:auto;padding:7px 14px;font-size:12px;font-weight:600;
+       background:var(--warn);color:#1A1200;white-space:nowrap}
+  .warn-banner.hidden{display:none}
 
-  .panel{position:sticky;top:57px;max-height:calc(100vh - 57px);overflow-y:auto;
-         padding:20px;border-right:1px solid var(--desk-line);background:var(--desk-2)}
-  @media (max-width:900px){ .panel{position:static;max-height:none;border-right:0;
-         border-bottom:1px solid var(--desk-line)} }
+  /* ── layout ── */
+  .wrap{padding:18px}
+  h2{margin:0 0 4px;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .sub{margin:0 0 14px;font-size:12px;color:var(--faint);line-height:1.6}
 
-  .panel h2{margin:0 0 12px;font-size:11px;font-weight:600;text-transform:uppercase;
-            letter-spacing:.12em;color:var(--desk-dim)}
-  .panel h2:not(:first-child){margin-top:26px}
+  /* ── selection summary bar ── */
+  .selbar{position:sticky;top:53px;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+          padding:12px 16px;margin-bottom:14px;background:var(--panel);
+          border:1px solid var(--line);border-radius:var(--r)}
+  .selbar .count{font-size:15px;font-weight:700}
+  .selbar .count b{color:var(--ok)}
+  .selbar .money{font-size:13px;color:var(--dim)}
+  .selbar .spacer{flex:1}
+  .selbar select{padding:7px 10px;font-family:inherit;font-size:12px;background:#16181C;
+                 color:var(--text);border:1px solid var(--line);border-radius:7px}
+  .print{padding:9px 18px;font-size:13px;font-weight:700;background:var(--ok);color:#04210C}
+  .print:hover{filter:brightness(1.08)}
+  .mini{padding:6px 11px;font-size:12px;background:transparent;color:var(--dim);border:1px solid var(--line)}
+  .mini:hover{background:var(--card);color:var(--text)}
 
-  label{display:block;font-size:12px;color:var(--desk-dim);margin:10px 0 4px}
+  /* ── table ── */
+  .tbl{width:100%;border-collapse:separate;border-spacing:0 7px}
+  .tbl th{text-align:left;font-size:11px;font-weight:600;color:var(--faint);
+          padding:0 12px 4px;text-transform:uppercase;letter-spacing:.06em}
+  .tbl td{background:var(--card);padding:12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:middle}
+  .tbl td:first-child{border-left:1px solid var(--line);border-radius:var(--r) 0 0 var(--r)}
+  .tbl td:last-child{border-right:1px solid var(--line);border-radius:0 var(--r) var(--r) 0}
+  .tbl tr.on td{background:#242C25;border-color:#3A5230}
+
+  .ck{width:20px;height:20px;cursor:pointer;accent-color:var(--ok)}
+  .amt{font-size:15px;font-weight:700;white-space:nowrap}
+  .ven{font-size:13px;font-weight:500}
+  .dt{font-size:11px;color:var(--dim)}
+
+  .docs{display:flex;gap:5px;flex-wrap:wrap}
+  .doc{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 8px;border-radius:20px;
+       border:1px solid var(--line);color:var(--faint);background:var(--panel);opacity:.4}
+  .doc.has{opacity:1;color:var(--ok);border-color:#2C4A35;background:#1C2A20}
+  .need{font-size:10px;color:var(--warn);margin-top:4px}
+
+  .empty{padding:44px 20px;text-align:center;color:var(--faint);font-size:13px;
+         border:1px dashed var(--line);border-radius:var(--r);line-height:1.8}
+
+  /* ── settings drawer ── */
+  .drawer{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:none}
+  .drawer.on{display:block}
+  .drawer-inner{position:absolute;top:0;right:0;bottom:0;width:min(420px,92vw);overflow-y:auto;
+                background:var(--panel);border-left:1px solid var(--line);padding:22px}
+  .drawer h3{margin:0 0 4px;font-size:16px}
+  .drawer .close{position:absolute;top:16px;right:18px;font-size:22px;color:var(--dim);background:transparent}
+  label{display:block;font-size:12px;color:var(--dim);margin:12px 0 4px}
   input,textarea{width:100%;padding:8px 10px;font-family:inherit;font-size:13px;
-                 background:#1B1E22;color:var(--desk-text);
-                 border:1px solid var(--desk-line);border-radius:6px}
+                 background:#16181C;color:var(--text);border:1px solid var(--line);border-radius:6px}
   input:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:transparent}
-  textarea{resize:vertical;min-height:64px;line-height:1.5}
-  .hint{font-size:11px;color:#6E7580;margin-top:5px;line-height:1.5}
-  .row-btn{display:flex;gap:8px;margin-top:14px}
-  .row-btn button{flex:1}
+  textarea{resize:vertical;min-height:60px;line-height:1.5}
+  .hint{font-size:11px;color:var(--faint);margin-top:5px;line-height:1.5}
+  .save-row{margin-top:20px}
+  .save-row button{width:100%;padding:11px;font-size:14px;font-weight:600;background:var(--brand);color:#fff}
 
-  .stage{padding:28px 20px 60px;display:flex;justify-content:center}
+  /* ── toast ── */
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);
+         background:var(--card);border:1px solid var(--line);border-radius:22px;
+         padding:10px 20px;font-size:13px;opacity:0;transition:.22s;z-index:60;pointer-events:none}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.bad{border-color:var(--brand);color:#FF8A93}
 
+  /* ══ กระดาษ A4 (โผล่เฉพาะตอนพิมพ์) ══ */
+  .print-area{display:none}
   .sheet{width:210mm;min-height:297mm;padding:18mm 16mm;background:var(--paper);color:var(--ink);
-         font-family:"Sarabun",serif;font-size:13px;line-height:1.6;
-         box-shadow:0 18px 50px rgba(0,0,0,.45)}
-  @media (max-width:900px){ .sheet{width:100%;min-height:auto;padding:14mm 10mm} }
-
-  .head{display:flex;align-items:flex-start;gap:16px;margin-bottom:22px}
-  .logo{width:78px;height:78px;object-fit:contain;flex:0 0 auto}
-  .logo-empty{width:78px;height:78px;flex:0 0 auto;border:1px dashed #BBB;border-radius:50%;
-              display:flex;align-items:center;justify-content:center;
-              font-size:10px;color:#AAA;text-align:center;line-height:1.3}
+         font-family:"Sarabun",serif;font-size:13px;line-height:1.6}
+  .sheet + .sheet{page-break-before:always}
+  .head{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}
+  .logo{width:74px;height:74px;object-fit:contain;flex:0 0 auto}
   .org{flex:1;text-align:center;font-size:13px}
   .org strong{display:block;font-weight:700}
-
-  .refs{font-size:13px;margin-bottom:14px}
-  .refs div{margin-bottom:1px}
-
-  .title{text-align:center;font-size:19px;font-weight:700;margin:6px 0 2px}
-  .subtitle{text-align:center;font-size:14px;font-weight:700;margin-bottom:16px}
-
-  table{width:100%;border-collapse:collapse;margin-bottom:16px}
-  th,td{border:1px solid #000;padding:7px 9px;vertical-align:top}
-  th{font-weight:700;text-align:center;font-size:13px}
-  td.date{width:22%;text-align:center;font-weight:600;white-space:nowrap}
-  td.amt{width:20%;text-align:right;font-weight:600;white-space:nowrap}
-  td.note{width:20%}
+  .refs{font-size:13px;margin-bottom:12px}
+  .rtitle{text-align:center;font-size:19px;font-weight:700;margin:6px 0 2px}
+  .rsub{text-align:center;font-size:14px;font-weight:700;margin-bottom:16px}
+  table.doc-tbl{width:100%;border-collapse:collapse;margin-bottom:16px}
+  .doc-tbl th,.doc-tbl td{border:1px solid #000;padding:7px 9px;vertical-align:top}
+  .doc-tbl th{font-weight:700;text-align:center}
+  .doc-tbl td.d{width:22%;text-align:center;font-weight:600;white-space:nowrap}
+  .doc-tbl td.a{width:20%;text-align:right;font-weight:600;white-space:nowrap}
   tr.total td{font-weight:700}
-  tr.total td:first-child{border-right-color:transparent}
-
-  .cert{margin:20px 0 26px;line-height:1.85;font-weight:600}
-
-  .signs{display:flex;gap:48px;margin-top:46px}
+  .cert{margin:18px 0 26px;line-height:1.85;font-weight:600}
+  .signs{display:flex;gap:48px;margin-top:44px}
   .sign{flex:1;text-align:center}
-  .sign-img{height:44px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:1px}
-  .sign-img img{max-height:44px;max-width:150px;object-fit:contain}
-  .sign-rule{display:flex;align-items:flex-end;justify-content:center;gap:6px;
-             font-size:13px;font-weight:600}
-  .sign-rule .dots{flex:0 1 190px;border-bottom:1px dotted #333;height:1px;margin-bottom:5px}
+  .sign-img{height:42px;display:flex;align-items:flex-end;justify-content:center}
+  .sign-img img{max-height:42px;max-width:150px;object-fit:contain}
+  .sign-rule{display:flex;align-items:flex-end;justify-content:center;gap:6px;font-size:13px;font-weight:600}
+  .sign-rule .dots{flex:0 1 180px;border-bottom:1px dotted #333;height:1px;margin-bottom:5px}
   .sign-name{margin-top:7px;font-size:13px;font-weight:600}
-  .sign-role{font-size:13px;color:#222}
-
-  .empty-note{padding:22px;text-align:center;color:#999;font-size:13px;
-              border:1px dashed #CCC;border-radius:6px;margin-bottom:16px}
 
   @page{size:A4;margin:0}
   @media print{
     body{background:#fff}
-    .bar,.panel{display:none !important}
-    .wrap{display:block}
-    .stage{padding:0}
-    .sheet{width:210mm;min-height:297mm;box-shadow:none;padding:16mm 15mm}
-    .logo-empty,.empty-note{display:none}
+    .bar,.warn-banner,.wrap,.selbar,.drawer,.toast{display:none !important}
+    .print-area{display:block !important}
+    .sheet{box-shadow:none}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none !important}}
 </style>
@@ -120,72 +153,82 @@
 <body>
 
 <div class="bar">
-  <h1>ใบรับรองแทนใบเสร็จรับเงิน</h1>
-  <span class="pill" id="status">กำลังโหลด…</span>
+  <h1>ใบรับรองแทนใบเสร็จ</h1>
+  <span class="chip" id="stat">กำลังโหลด…</span>
   <span class="spacer"></span>
-  <button class="btn-ghost" id="btnReload" onclick="loadAll()">โหลดใหม่</button>
-  <button class="btn-ghost" id="btnSave" onclick="saveSettings()">บันทึกตั้งค่า</button>
-  <button class="btn" onclick="window.print()">พิมพ์ / บันทึก PDF</button>
+  <button class="ghost" onclick="openSettings()">⚙︎ ตั้งค่าบริษัท</button>
+  <button class="ghost" onclick="loadAll()">โหลดใหม่</button>
+</div>
+
+<div class="warn-banner hidden" id="warn">
+  <span>⚠️</span>
+  <span><b>ยังไม่ได้ตั้งค่าข้อมูลบริษัท</b> — เอกสารที่พิมพ์ออกมาจะไม่มีชื่อบริษัท/โลโก้/ลายเซ็น ดูไม่สมบูรณ์</span>
+  <button onclick="openSettings()">ตั้งค่าเลย</button>
 </div>
 
 <div class="wrap">
-  <aside class="panel">
-    <h2>ข้อมูลบริษัท</h2>
-    <label for="f_company">ชื่อบริษัท</label>
-    <input id="f_company" oninput="render()">
-    <label for="f_address">ที่อยู่ (บรรทัดละ 1 บรรทัด)</label>
-    <textarea id="f_address" oninput="render()"></textarea>
-    <label for="f_taxid">เลขประจำตัวผู้เสียภาษี</label>
-    <input id="f_taxid" oninput="render()">
-
-    <h2>โลโก้ &amp; ลายเซ็น</h2>
-    <label for="f_logo">URL โลโก้</label>
-    <input id="f_logo" oninput="render()" placeholder="https://...">
-    <label for="f_sigApprover">URL ลายเซ็นผู้อนุมัติ (PNG พื้นโปร่ง)</label>
-    <input id="f_sigApprover" oninput="render()" placeholder="https://...">
-    <label for="f_approver">ชื่อผู้อนุมัติ</label>
-    <input id="f_approver" oninput="render()">
-    <p class="hint">อัปรูปเข้า Drive ตั้งเป็น "ทุกคนที่มีลิงก์" แล้วใช้<br>
-      <code>https://lh3.googleusercontent.com/d/&lt;FILE_ID&gt;</code></p>
-
-    <h2>ผู้เบิกจ่าย</h2>
-    <label for="f_payer">ชื่อ-นามสกุลจริง</label>
-    <input id="f_payer" oninput="render()">
-    <p class="hint">ดึงชื่อ LINE มาให้ก่อน — ต้องแก้เป็นชื่อจริงเอง ชื่อเล่นใช้ในเอกสารบัญชีไม่ได้</p>
-    <label for="f_position">ตำแหน่ง</label>
-    <input id="f_position" oninput="render()">
-    <label for="f_sigPayer">URL ลายเซ็นผู้เบิกจ่าย (ถ้ามี)</label>
-    <input id="f_sigPayer" oninput="render()" placeholder="https://...">
-
-    <h2>เอกสาร</h2>
-    <label for="f_docNo">เลขที่เอกสาร</label>
-    <input id="f_docNo" oninput="render()">
-    <label for="f_reqNo">เลขคำขอ</label>
-    <input id="f_reqNo" oninput="render()">
-    <label for="f_docDate">วันที่สร้างเอกสาร</label>
-    <input id="f_docDate" type="date" oninput="render()">
-
-    <h2>รายการ</h2>
-    <label for="f_items">หนึ่งบรรทัด = หนึ่งรายการ<br>รูปแบบ: วันที่ | รายละเอียด | จำนวนเงิน | หมายเหตุ</label>
-    <textarea id="f_items" rows="8" oninput="render()"
-      placeholder="2569-03-22 | ค่าน้ำมัน | 500 | "></textarea>
-    <p class="hint">ดึงอัตโนมัติจากรายการที่ติ๊ก "ออกใบแทน" ในการ์ด LINE — แก้ตรงนี้ได้ ไม่กระทบชีท</p>
-
-    <div class="row-btn">
-      <button class="btn-ghost" onclick="loadDemo()">ข้อมูลตัวอย่าง</button>
+  <div class="selbar">
+    <div>
+      <div class="count">เลือกออกใบแทน <b id="selCount">0</b> รายการ</div>
+      <div class="money" id="selMoney">รวม ฿0.00</div>
     </div>
-  </aside>
+    <div class="spacer"></div>
+    <button class="mini" onclick="autoPick()">เลือกเฉพาะที่ไม่มีใบเสร็จ</button>
+    <button class="mini" onclick="pickAll(false)">ล้างทั้งหมด</button>
+    <select id="printMode">
+      <option value="combined">พิมพ์รวมใบเดียว</option>
+      <option value="separate">พิมพ์แยกใบต่อรายการ</option>
+    </select>
+    <button class="print" onclick="doPrint()">🖨 พิมพ์ใบแทน</button>
+  </div>
 
-  <main class="stage">
-    <div class="sheet" id="sheet"></div>
-  </main>
+  <h2>ทุกรายการ</h2>
+  <p class="sub">ติ๊กช่องซ้ายเพื่อเลือกออกใบแทน · รายการที่ไม่มีทั้งใบเสร็จและใบกำกับภาษี ระบบติ๊กให้อัตโนมัติ (พวกนี้แหละที่ต้องใช้ใบแทน) · การติ๊กจะบันทึกเข้าชีทให้เลย</p>
+
+  <table class="tbl" id="tbl">
+    <thead><tr>
+      <th style="width:44px">ใบแทน</th>
+      <th style="width:120px">ยอด</th>
+      <th>ร้าน / ผู้รับ</th>
+      <th style="width:280px">เอกสารที่มี</th>
+    </tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
 </div>
+
+<!-- settings drawer -->
+<div class="drawer" id="drawer" onclick="if(event.target===this)closeSettings()">
+  <div class="drawer-inner">
+    <button class="close" onclick="closeSettings()">✕</button>
+    <h3>ตั้งค่าข้อมูลบริษัท</h3>
+    <p class="hint">กรอกครั้งเดียว ใช้กับใบแทนทุกใบ · เก็บในชีทของคุณเอง (แท็บ _settings)</p>
+
+    <label>ชื่อบริษัท</label>
+    <input id="f_company">
+    <label>ที่อยู่ (บรรทัดละ 1 บรรทัด)</label>
+    <textarea id="f_address"></textarea>
+    <label>เลขประจำตัวผู้เสียภาษี</label>
+    <input id="f_taxid">
+    <label>URL โลโก้</label>
+    <input id="f_logo" placeholder="https://lh3.googleusercontent.com/d/<FILE_ID>">
+    <label>ชื่อผู้อนุมัติ</label>
+    <input id="f_approver">
+    <label>URL ลายเซ็นผู้อนุมัติ (PNG พื้นโปร่ง)</label>
+    <input id="f_sig" placeholder="https://lh3.googleusercontent.com/d/<FILE_ID>">
+    <p class="hint">รูปโลโก้/ลายเซ็น: อัปเข้า Drive → แชร์ "ทุกคนที่มีลิงก์" → เอา FILE_ID มาต่อท้าย <code>https://lh3.googleusercontent.com/d/</code></p>
+
+    <div class="save-row">
+      <button onclick="saveSettings()">บันทึกตั้งค่า</button>
+    </div>
+  </div>
+</div>
+
+<div class="print-area" id="printArea"></div>
+<div class="toast" id="toast"></div>
 
 <script>
 /* ══════════════════════════════════════════════════════════
-   เปิดหน้านี้แบบ  /receipt?tenant=<key>&k=<token>
-   ลิงก์ที่ถูกต้องได้จากการพิมพ์ "ใบแทน" ในกลุ่ม LINE
-   ไม่มี tenant/k → โหมดออฟไลน์ กรอกเองล้วน (ยังพิมพ์ได้ปกติ)
+   /receipt?tenant=<key>&k=<token>
    ══════════════════════════════════════════════════════════ */
 
 const WORKER = 'https://accoutingsuppor02.organization-23c.workers.dev';
@@ -193,260 +236,259 @@ const Q      = new URLSearchParams(location.search);
 const TENANT = Q.get('tenant') || '';
 const KEY    = Q.get('k') || '';
 
-function api(path, extra = ''){
+function api(path, extra=''){
   return `${WORKER}${path}?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(KEY)}${extra}`;
 }
 
-var DATA = {
-  company:'', address:[], taxId:'', logoUrl:'',
-  approverName:'', approverSignUrl:'',
-  payerName:'', payerPosition:'', payerSignUrl:'',
-  docNo:'', reqNo:'', docDate:'',
-  items:[]
-};
+const DOC_LABELS = [
+  { key:'attReceipt', emoji:'🧾', label:'ใบเสร็จ' },
+  { key:'attTax',     emoji:'📋', label:'ใบกำกับ' },
+  { key:'attSlip',    emoji:'💸', label:'สลิป' },
+  { key:'attOther',   emoji:'📎', label:'หลักฐาน' },
+];
 
-/* ───────────────── utils ───────────────── */
+let RECORDS = [];
+let SETTINGS = {};
+const picked = new Set();   // id ที่ติ๊กเอาใบแทน
 
-function setStatus(text, kind){
-  const el = document.getElementById('status');
-  el.textContent = text;
-  el.className = 'pill' + (kind ? ' ' + kind : '');
-}
+const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const money = n => (Number(n)||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function setStat(t,k){ const e=$('stat'); e.textContent=t; e.className='chip'+(k?' '+k:''); }
+let tt; function toast(m,bad){ const e=$('toast'); e.textContent=m; e.className='toast on'+(bad?' bad':''); clearTimeout(tt); tt=setTimeout(()=>e.className='toast',2500); }
+
+function splitUrls(v){ return String(v||'').split(',').map(x=>x.trim()).filter(Boolean); }
+function hasDoc(r,key){ return splitUrls(r[key]).length>0; }
+// รายการที่ "ต้องใช้ใบแทน" = ไม่มีทั้งใบเสร็จและใบกำกับภาษี
+function needsSlip(r){ return !hasDoc(r,'attReceipt') && !hasDoc(r,'attTax'); }
 
 function parseDate(input){
   if(!input) return null;
-  const nums = String(input).match(/\d+/g);
-  if(!nums || nums.length < 3) return null;
-  let y,m,d;
-  if(nums[0].length === 4){ y=+nums[0]; m=+nums[1]; d=+nums[2]; }
-  else { d=+nums[0]; m=+nums[1]; y=+nums[2]; }
-  if(y > 2400) y -= 543;          // พ.ศ. → ค.ศ.
-  if(y < 100) y += 2000;
-  const dt = new Date(Date.UTC(y, (m||1)-1, d||1));
-  return isNaN(dt) ? null : dt;
+  const n=String(input).match(/\d+/g); if(!n||n.length<3) return null;
+  let y,m,d; if(n[0].length===4){y=+n[0];m=+n[1];d=+n[2];}else{d=+n[0];m=+n[1];y=+n[2];}
+  if(y>2400)y-=543; if(y<100)y+=2000;
+  const dt=new Date(Date.UTC(y,(m||1)-1,d||1)); return isNaN(dt)?null:dt;
 }
 function fmtDate(input){
-  const dt = parseDate(input);
-  if(!dt) return input ? String(input) : '';
-  const p = n => String(n).padStart(2,'0');
+  const dt=parseDate(input); if(!dt) return input?String(input):'';
+  const p=x=>String(x).padStart(2,'0');
   return p(dt.getUTCDate())+'/'+p(dt.getUTCMonth()+1)+'/'+(dt.getUTCFullYear()+543);
 }
-function money(n){
-  const v = Number(n);
-  return (isFinite(v) ? v : 0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-function esc(s){
-  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ── โหลด ── */
+
+async function loadAll(){
+  if(!TENANT||!KEY){
+    setStat('ลิงก์ไม่ครบ','warn');
+    $('rows').innerHTML='<tr><td colspan="4"><div class="empty">พิมพ์ <b>ใบแทน</b> ในกลุ่ม LINE เพื่อรับลิงก์</div></td></tr>';
+    return;
+  }
+  setStat('กำลังโหลด…');
+  try{
+    const [recs,settings]=await Promise.all([
+      fetch(api('/api/expenses')).then(r=>r.json()),
+      fetch(api('/api/settings')).then(r=>r.json()),
+    ]);
+    if(recs.error==='unauthorized'||settings.error==='unauthorized'){
+      setStat('ลิงก์ถูกยกเลิกแล้ว','warn');
+      $('rows').innerHTML='<tr><td colspan="4"><div class="empty">ลิงก์นี้ถูกยกเลิกแล้ว — พิมพ์ <b>ใบแทน</b> ในกลุ่ม LINE เพื่อรับลิงก์ใหม่</div></td></tr>';
+      return;
+    }
+    if(recs.error) throw new Error(recs.error);
+
+    RECORDS = (Array.isArray(recs)?recs:[]).filter(r=>r.type!=='รายรับ');
+    SETTINGS = settings.error ? {} : settings;
+
+    // เตรียมการติ๊ก: ของที่ needSlip ในชีทอยู่แล้ว = ติ๊กไว้
+    picked.clear();
+    RECORDS.forEach(r=>{ if(r.needSlip) picked.add(r.id); });
+
+    checkSettings();
+    render();
+    setStat(`${RECORDS.length} รายการ`, 'ok');
+  }catch(e){
+    console.error(e); setStat('โหลดไม่สำเร็จ: '+e.message,'warn');
+  }
 }
 
-/* ───────────────── เอกสาร ───────────────── */
+function checkSettings(){
+  const ok = SETTINGS.company_name && SETTINGS.tax_id;
+  $('warn').classList.toggle('hidden', !!ok);
+}
+
+/* ── ตาราง ── */
+
+function render(){
+  if(!RECORDS.length){
+    $('rows').innerHTML='<tr><td colspan="4"><div class="empty">ยังไม่มีรายการ</div></td></tr>';
+    updateSel(); return;
+  }
+
+  $('rows').innerHTML = RECORDS.map(r=>{
+    const on = picked.has(r.id);
+    const chips = DOC_LABELS.map(d=>{
+      const has = hasDoc(r,d.key);
+      return `<span class="doc${has?' has':''}">${d.emoji} ${d.label}</span>`;
+    }).join('');
+    const need = needsSlip(r) ? '<div class="need">ไม่มีใบเสร็จ/ใบกำกับ — ควรออกใบแทน</div>' : '';
+
+    return `<tr class="${on?'on':''}">
+      <td><input type="checkbox" class="ck" ${on?'checked':''} onchange="toggle('${esc(r.id)}',this.checked)"></td>
+      <td><span class="amt">฿${money(r.amount)}</span></td>
+      <td>
+        <div class="ven">${esc(r.vendor||r.category||'—')}</div>
+        <div class="dt">${esc(r.dateText||'')} · ${esc(r.category||'')}</div>
+      </td>
+      <td><div class="docs">${chips}</div>${need}</td>
+    </tr>`;
+  }).join('');
+
+  updateSel();
+}
+
+function updateSel(){
+  let total=0;
+  RECORDS.forEach(r=>{ if(picked.has(r.id)) total+=Number(r.amount)||0; });
+  $('selCount').textContent = picked.size;
+  $('selMoney').textContent = 'รวม ฿'+money(total);
+}
+
+/* ── ติ๊ก (เขียนกลับเข้าชีท คอลัมน์ L) ── */
+
+async function toggle(id, on){
+  if(on) picked.add(id); else picked.delete(id);
+  const rec = RECORDS.find(r=>r.id===id); if(rec) rec.needSlip=on;
+  const tr = [...$('rows').querySelectorAll('tr')].find(t=>t.querySelector(`[onchange*="${id}"]`));
+  if(tr) tr.classList.toggle('on', on);
+  updateSel();
+
+  try{
+    const res = await fetch(api('/api/slip-toggle'),{
+      method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ id, value: on })
+    });
+    const out = await res.json();
+    if(!out.ok) throw new Error(out.hint||out.error||'fail');
+  }catch(e){
+    console.error(e); toast('บันทึกไม่สำเร็จ: '+e.message, true);
+  }
+}
+
+function autoPick(){
+  RECORDS.forEach(r=>{
+    const should = needsSlip(r);
+    if(should && !picked.has(r.id)) toggle(r.id, true);
+    if(!should && picked.has(r.id)) toggle(r.id, false);
+  });
+  render();
+  toast('เลือกเฉพาะรายการที่ไม่มีใบเสร็จให้แล้ว');
+}
+
+function pickAll(on){
+  RECORDS.forEach(r=>{ if(picked.has(r.id)!==on) toggle(r.id,on); });
+  render();
+}
+
+/* ── ตั้งค่า ── */
+
+function openSettings(){
+  $('f_company').value  = SETTINGS.company_name||'';
+  $('f_address').value  = (SETTINGS.company_address||'').replace(/\\n/g,'\n');
+  $('f_taxid').value    = SETTINGS.tax_id||'';
+  $('f_logo').value     = SETTINGS.logo_url||'';
+  $('f_approver').value = SETTINGS.approver_name||'';
+  $('f_sig').value      = SETTINGS.approver_sign_url||'';
+  $('drawer').classList.add('on');
+}
+function closeSettings(){ $('drawer').classList.remove('on'); }
+
+async function saveSettings(){
+  const body = {
+    company_name:      $('f_company').value.trim(),
+    company_address:   $('f_address').value.trim().replace(/\n/g,'\\n'),
+    tax_id:            $('f_taxid').value.trim(),
+    logo_url:          $('f_logo').value.trim(),
+    approver_name:     $('f_approver').value.trim(),
+    approver_sign_url: $('f_sig').value.trim(),
+    doc_prefix:        SETTINGS.doc_prefix || 'R',
+  };
+  try{
+    const res = await fetch(api('/api/settings'),{
+      method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body)
+    });
+    const out = await res.json();
+    if(out.error) throw new Error(out.hint||out.error);
+    SETTINGS = out;
+    checkSettings();
+    closeSettings();
+    toast('บันทึกตั้งค่าแล้ว ✓');
+  }catch(e){
+    console.error(e); toast('บันทึกไม่สำเร็จ: '+e.message, true);
+  }
+}
+
+/* ── พิมพ์ ── */
 
 function signBlock(name, role, url){
   return '<div class="sign">'+
-    '<div class="sign-img">'+(url ? '<img src="'+esc(url)+'" alt="">' : '')+'</div>'+
+    '<div class="sign-img">'+(url?'<img src="'+esc(url)+'" alt="">':'')+'</div>'+
     '<div class="sign-rule"><span>ลงชื่อ</span><span class="dots"></span></div>'+
     '<div class="sign-name">('+esc(name||'—')+')</div>'+
-    '<div class="sign-role">'+esc(role)+'</div>'+
+    '<div>'+esc(role)+'</div></div>';
+}
+
+function buildOneSheet(items, docNo){
+  const s = SETTINGS;
+  const total = items.reduce((a,it)=>a+(Number(it.amount)||0),0);
+  const logo = s.logo_url ? '<img class="logo" src="'+esc(s.logo_url)+'">' : '<div class="logo"></div>';
+  const addr = (s.company_address||'').split('\\n').map(esc).join('<br>');
+  const today = fmtDate(new Date().toISOString().slice(0,10));
+  const payer = items[0]?.payerName || items[0]?.sender || '—';
+
+  const rows = items.map(it=>
+    '<tr><td class="d">'+esc(fmtDate(it.dateText||it.date))+'</td>'+
+    '<td>'+esc(it.note||it.vendor||'')+'</td>'+
+    '<td class="a">'+money(it.amount)+'</td>'+
+    '<td>'+esc(it.vendor||'')+'</td></tr>'
+  ).join('');
+
+  return '<div class="sheet">'+
+    '<div class="head">'+logo+
+      '<div class="org"><strong>'+esc(s.company_name||'—')+'</strong>'+addr+
+      (s.tax_id?'<br>เลขประจำตัวผู้เสียภาษี : '+esc(s.tax_id):'')+'</div></div>'+
+    '<div class="refs">เลขที่เอกสาร: '+esc(docNo)+'<br>วันที่ : '+today+'</div>'+
+    '<div class="rtitle">ใบรับรองแทนใบเสร็จรับเงิน</div>'+
+    '<div class="rsub">'+esc(s.company_name||'—')+' (ผู้จ่ายเงิน)</div>'+
+    '<table class="doc-tbl"><thead><tr><th>วัน เดือน ปี</th><th>รายละเอียดรายจ่าย</th><th>จำนวนเงิน</th><th>หมายเหตุ</th></tr></thead>'+
+    '<tbody>'+rows+
+    '<tr class="total"><td></td><td>รวมทั้งสิ้น :</td><td class="a">'+money(total)+' บาท</td><td></td></tr>'+
+    '</tbody></table>'+
+    '<div class="cert">ข้าพเจ้า '+esc(payer)+' (ผู้เบิกจ่าย) ขอรับรองว่า รายจ่ายข้างต้นนี้ไม่อาจเรียกเก็บใบเสร็จรับเงินจากผู้รับได้ และข้าพเจ้าได้จ่ายไปในงานของบริษัทโดยแท้ ตั้งแต่วันที่ '+today+'</div>'+
+    '<div class="signs">'+signBlock(payer,'ผู้เบิกจ่าย','')+signBlock(s.approver_name,'ผู้อนุมัติ',s.approver_sign_url)+'</div>'+
   '</div>';
 }
 
-function buildSheet(d){
-  const total = d.items.reduce((s,it)=> s + (Number(it.amount)||0), 0);
-
-  const logo = d.logoUrl
-    ? '<img class="logo" src="'+esc(d.logoUrl)+'" alt="">'
-    : '<div class="logo-empty">โลโก้<br>บริษัท</div>';
-
-  const addr = (d.address||[]).map(esc).join('<br>');
-
-  const rows = d.items.map(it =>
-    '<tr>'+
-      '<td class="date">'+esc(fmtDate(it.date))+'</td>'+
-      '<td>'+esc(it.detail)+'</td>'+
-      '<td class="amt">'+money(it.amount)+'</td>'+
-      '<td class="note">'+esc(it.note||'')+'</td>'+
-    '</tr>').join('');
-
-  const table = d.items.length ? (
-    '<table><thead><tr>'+
-      '<th>วัน เดือน ปี</th><th>รายละเอียดรายจ่าย</th><th>จำนวนเงิน</th><th>หมายเหตุ</th>'+
-    '</tr></thead><tbody>'+rows+
-      '<tr class="total"><td></td><td>รวมทั้งสิ้น :</td>'+
-      '<td class="amt">'+money(total)+' บาท</td><td></td></tr>'+
-    '</tbody></table>'
-  ) : '<div class="empty-note">ยังไม่มีรายการที่ติ๊ก "ออกใบแทน" — ไปติ๊กในการ์ด LINE หรือพิมพ์เองด้านซ้าย</div>';
-
-  const certDate = fmtDate(d.docDate) || fmtDate(new Date().toISOString().slice(0,10));
-
-  return ''+
-  '<div class="head">'+logo+
-    '<div class="org"><strong>'+esc(d.company||'—')+'</strong>'+addr+
-      (d.taxId ? '<br>เลขที่ประจำตัวผู้เสียภาษี : '+esc(d.taxId) : '')+
-    '</div></div>'+
-
-  '<div class="refs">'+
-    '<div>เลขที่เอกสาร: '+esc(d.docNo||'-')+'</div>'+
-    '<div>เลขคำขอ: '+esc(d.reqNo||'-')+'</div>'+
-    '<div>วันที่สร้างเอกสาร : '+certDate+'</div>'+
-  '</div>'+
-
-  '<div class="title">ใบรับรองแทนใบเสร็จรับเงิน</div>'+
-  '<div class="subtitle">บจ. / หจก. '+esc(d.company||'—')+' (ผู้ซื้อ/ผู้รับบริการ)</div>'+
-
-  table+
-
-  '<div class="cert">'+
-    'ข้าพเจ้า '+esc(d.payerName||'—')+' (ผู้เบิกจ่าย) ตำแหน่ง '+esc(d.payerPosition||'—')+'<br>'+
-    'ขอรับรองว่า รายจ่ายข้างต้นนี้ไม่อาจเรียกเก็บใบเสร็จรับเงินจากผู้รับได้ และข้าพเจ้าได้จ่ายไปในงาน'+
-    'ของทาง บริษัท/ห้างหุ้นส่วนจำกัด โดยแท้ ตั้งแต่ ในวันที่ '+certDate+
-  '</div>'+
-
-  '<div class="signs">'+
-    signBlock(d.payerName, 'ผู้เบิกจ่าย', d.payerSignUrl)+
-    signBlock(d.approverName, 'ผู้อนุมัติ', d.approverSignUrl)+
-  '</div>';
-}
-
-/* ───────────────── panel ⇄ DATA ───────────────── */
-
-const g = id => (document.getElementById(id)?.value || '').trim();
-const s = (id,v) => { const el=document.getElementById(id); if(el) el.value = v ?? ''; };
-
-function collect(){
-  DATA.company         = g('f_company');
-  DATA.address         = g('f_address').split('\n').map(x=>x.trim()).filter(Boolean);
-  DATA.taxId           = g('f_taxid');
-  DATA.logoUrl         = g('f_logo');
-  DATA.approverName    = g('f_approver');
-  DATA.approverSignUrl = g('f_sigApprover');
-  DATA.payerName       = g('f_payer');
-  DATA.payerPosition   = g('f_position');
-  DATA.payerSignUrl    = g('f_sigPayer');
-  DATA.docNo           = g('f_docNo');
-  DATA.reqNo           = g('f_reqNo');
-  DATA.docDate         = g('f_docDate');
-
-  DATA.items = g('f_items').split('\n').filter(l=>l.trim()).map(line=>{
-    const p = line.split('|').map(x=>x.trim());
-    return { date:p[0]||'', detail:p[1]||'', amount:p[2]||0, note:p[3]||'' };
-  });
-}
-
-function render(){
-  collect();
-  document.getElementById('sheet').innerHTML = buildSheet(DATA);
-}
-
-/* ───────────────── โหลดจาก worker ───────────────── */
-
-async function loadAll(){
-  if(!TENANT || !KEY){
-    setStatus('โหมดออฟไลน์ — ไม่มีลิงก์เชื่อมข้อมูล', 'warn');
-    loadDemo();
-    return;
+function doPrint(){
+  const items = RECORDS.filter(r=>picked.has(r.id));
+  if(!items.length){ toast('ยังไม่ได้เลือกรายการ', true); return; }
+  if(!SETTINGS.company_name){
+    if(!confirm('ยังไม่ได้ตั้งค่าข้อมูลบริษัท เอกสารจะไม่สมบูรณ์\nพิมพ์ต่อไหม?')) return;
   }
 
-  setStatus('กำลังโหลด…');
-  document.getElementById('btnReload').disabled = true;
+  const prefix = SETTINGS.doc_prefix||'R';
+  const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const mode = $('printMode').value;
 
-  try{
-    const [settings, items] = await Promise.all([
-      fetch(api('/api/settings')).then(r=>r.json()),
-      fetch(api('/api/slip-items')).then(r=>r.json()),
-    ]);
-
-    if(settings.error === 'unauthorized' || items.error === 'unauthorized'){
-      setStatus('ลิงก์ถูกยกเลิกแล้ว — พิมพ์ "ใบแทน" ในกลุ่ม LINE เพื่อรับลิงก์ใหม่', 'warn');
-      render();
-      return;
-    }
-    if(settings.error) throw new Error(settings.error);
-    if(items.error)    throw new Error(items.error);
-
-    s('f_company',     settings.company_name);
-    s('f_address',     (settings.company_address||'').replace(/\\n/g,'\n'));
-    s('f_taxid',       settings.tax_id);
-    s('f_logo',        settings.logo_url);
-    s('f_approver',    settings.approver_name);
-    s('f_sigApprover', settings.approver_sign_url);
-
-    const list = Array.isArray(items) ? items : [];
-    s('f_items', list.map(r =>
-      [r.dateText || r.date, r.note || r.vendor, r.amount, r.vendor || ''].join(' | ')
-    ).join('\n'));
-
-    if(list.length && !g('f_payer')) s('f_payer', list[0].payerName || list[0].sender || '');
-
-    const today = new Date().toISOString().slice(0,10);
-    if(!g('f_docDate')) s('f_docDate', today);
-    if(!g('f_docNo')){
-      const prefix = settings.doc_prefix || 'R';
-      s('f_docNo', `${prefix}-${today.replace(/-/g,'')}-01`);
-    }
-
-    render();
-    setStatus(`โหลดแล้ว · ${list.length} รายการ`, 'ok');
-  }catch(e){
-    console.error(e);
-    setStatus('โหลดไม่สำเร็จ: ' + e.message, 'warn');
-    render();
-  }finally{
-    document.getElementById('btnReload').disabled = false;
-  }
-}
-
-/* ───────────────── บันทึกตั้งค่ากลับเข้าชีท ───────────────── */
-
-async function saveSettings(){
-  if(!TENANT || !KEY){
-    setStatus('บันทึกไม่ได้ — เปิดผ่านลิงก์จาก LINE ก่อน', 'warn');
-    return;
+  let html;
+  if(mode==='separate'){
+    html = items.map((it,i)=> buildOneSheet([it], `${prefix}-${stamp}-${String(i+1).padStart(2,'0')}`)).join('');
+  }else{
+    html = buildOneSheet(items, `${prefix}-${stamp}-01`);
   }
 
-  collect();
-  const btn = document.getElementById('btnSave');
-  btn.disabled = true;
-  setStatus('กำลังบันทึก…');
-
-  try{
-    const res = await fetch(api('/api/settings'), {
-      method:'POST',
-      headers:{'content-type':'application/json'},
-      body: JSON.stringify({
-        company_name:      DATA.company,
-        company_address:   DATA.address.join('\\n'),
-        tax_id:            DATA.taxId,
-        logo_url:          DATA.logoUrl,
-        approver_name:     DATA.approverName,
-        approver_sign_url: DATA.approverSignUrl,
-        doc_prefix:        (DATA.docNo.split('-')[0] || 'R'),
-      })
-    });
-    const out = await res.json();
-    if(out.error) throw new Error(out.hint || out.error);
-    setStatus('บันทึกตั้งค่าแล้ว', 'ok');
-  }catch(e){
-    console.error(e);
-    setStatus('บันทึกไม่สำเร็จ: ' + e.message, 'warn');
-  }finally{
-    btn.disabled = false;
-  }
-}
-
-/* ───────────────── ตัวอย่าง (ไว้เทสต์หน้าตา) ───────────────── */
-
-function loadDemo(){
-  s('f_company','บริษัท ดีลอินเวส จำกัด');
-  s('f_address','เลขที่ 555/23 หมู่บ้าน JW URBAN HOME OFFICE\nแขวงดอนเมือง เขตดอนเมือง กรุงเทพฯ 10210');
-  s('f_taxid','0505564012548');
-  s('f_approver','นางสาวภัทร์ปรียา อภิรติวงศ์โชติ');
-  s('f_payer','นายธีรชนาภัทร รุ่งโรจน์สุทธิธนา');
-  s('f_position','staff');
-  s('f_docNo','R-20260727-01');
-  s('f_reqNo','EXP-0241');
-  s('f_docDate', new Date().toISOString().slice(0,10));
-  s('f_items','2569-03-22 | ค่าน้ำมัน | 500 | \n2569-04-24 | โอนเงินพร้อมเพย์ | 396 | ไม่มีใบเสร็จ');
-  render();
+  $('printArea').innerHTML = html;
+  setTimeout(()=>window.print(), 60);
 }
 
 loadAll();
