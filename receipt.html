@@ -89,20 +89,38 @@
   .empty{padding:44px 20px;text-align:center;color:var(--faint);font-size:13px;
          border:1px dashed var(--line);border-radius:var(--r);line-height:1.8}
 
+  /* ── drawer ── */
   .drawer{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:none}
   .drawer.on{display:block}
-  .drawer-inner{position:absolute;top:0;right:0;bottom:0;width:min(420px,92vw);overflow-y:auto;
+  .drawer-inner{position:absolute;top:0;right:0;bottom:0;width:min(430px,94vw);overflow-y:auto;
                 background:var(--panel);border-left:1px solid var(--line);padding:22px}
   .drawer h3{margin:0 0 4px;font-size:16px}
   .drawer .close{position:absolute;top:16px;right:18px;font-size:22px;color:var(--dim);background:transparent}
-  label{display:block;font-size:12px;color:var(--dim);margin:12px 0 4px}
-  input,textarea{width:100%;padding:8px 10px;font-family:inherit;font-size:13px;
+  label{display:block;font-size:12px;color:var(--dim);margin:14px 0 5px}
+  input[type=text],textarea{width:100%;padding:8px 10px;font-family:inherit;font-size:13px;
                  background:#16181C;color:var(--text);border:1px solid var(--line);border-radius:6px}
   input:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:transparent}
   textarea{resize:vertical;min-height:60px;line-height:1.5}
   .hint{font-size:11px;color:var(--faint);margin-top:5px;line-height:1.5}
-  .save-row{margin-top:20px}
+  .save-row{margin-top:22px}
   .save-row button{width:100%;padding:11px;font-size:14px;font-weight:600;background:var(--brand);color:#fff}
+
+  /* ── image picker ── */
+  .pick{display:flex;gap:12px;align-items:flex-start;margin-top:5px}
+  .thumb{flex:0 0 76px;height:76px;border-radius:8px;border:1px dashed var(--line);
+         background:#16181C;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .thumb img{max-width:100%;max-height:100%;object-fit:contain}
+  .thumb span{font-size:10px;color:var(--faint);text-align:center;line-height:1.4;padding:4px}
+  .pick-side{flex:1;min-width:0}
+  .pick-side .row{display:flex;gap:7px;flex-wrap:wrap}
+  .up{padding:7px 13px;font-size:12px;font-weight:600;background:var(--blue);color:#fff}
+  .up:hover{filter:brightness(1.1)}
+  .clr{padding:7px 11px;font-size:12px;background:transparent;color:var(--dim);border:1px solid var(--line)}
+  .clr:hover{color:var(--text)}
+  .pick-side input[type=text]{margin-top:7px;font-size:11px}
+  .upstat{font-size:11px;margin-top:6px;color:var(--dim);min-height:15px}
+  .upstat.ok{color:var(--ok)}
+  .upstat.bad{color:#FF8A93}
 
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);
          background:var(--card);border:1px solid var(--line);border-radius:22px;
@@ -181,7 +199,7 @@
   </div>
 
   <h2>ทุกรายการที่เบิก</h2>
-  <p class="sub">ระบบตั้งให้ออกใบแทน <b>ทุกรายการ</b> ไว้ก่อน — รายการไหนมีใบเสร็จหรือใบกำกับภาษีตัวจริงแล้ว ก็เอาติ๊กออกได้ ไม่ต้องใช้ใบแทน · การติ๊กบันทึกเข้าชีทให้อัตโนมัติ</p>
+  <p class="sub">ระบบตั้งให้ออกใบแทน <b>ทุกรายการ</b> ไว้ก่อน — รายการไหนมีใบเสร็จหรือใบกำกับภาษีตัวจริงแล้ว ก็เอาติ๊กออกได้ · การติ๊กบันทึกเข้าชีทให้อัตโนมัติ</p>
 
   <table class="tbl">
     <thead><tr>
@@ -194,6 +212,7 @@
   </table>
 </div>
 
+<!-- ══════════ drawer ตั้งค่า ══════════ -->
 <div class="drawer" id="drawer" onclick="if(event.target===this)closeSettings()">
   <div class="drawer-inner">
     <button class="close" onclick="closeSettings()">✕</button>
@@ -201,18 +220,46 @@
     <p class="hint">กรอกครั้งเดียว ใช้กับใบแทนทุกใบ · เก็บในชีทของคุณเอง (แท็บ _settings)</p>
 
     <label>ชื่อบริษัท</label>
-    <input id="f_company">
+    <input type="text" id="f_company">
+
     <label>ที่อยู่ (บรรทัดละ 1 บรรทัด)</label>
     <textarea id="f_address"></textarea>
+
     <label>เลขประจำตัวผู้เสียภาษี</label>
-    <input id="f_taxid">
-    <label>URL โลโก้</label>
-    <input id="f_logo" placeholder="https://lh3.googleusercontent.com/d/<FILE_ID>">
+    <input type="text" id="f_taxid">
+
+    <label>โลโก้บริษัท</label>
+    <div class="pick">
+      <div class="thumb" id="th_logo"><span>ยังไม่มี<br>โลโก้</span></div>
+      <div class="pick-side">
+        <div class="row">
+          <button class="up" onclick="document.getElementById('file_logo').click()">เลือกไฟล์รูป</button>
+          <button class="clr" onclick="clearImg('logo')">ล้าง</button>
+        </div>
+        <input type="file" id="file_logo" accept="image/*" hidden onchange="onPick(this,'logo')">
+        <input type="text" id="f_logo" placeholder="หรือวาง URL รูปเอง" oninput="syncThumb('logo')">
+        <div class="upstat" id="st_logo"></div>
+      </div>
+    </div>
+    <p class="hint">PNG หรือ JPG · ระบบย่อขนาดให้อัตโนมัติ แล้วเก็บใน Drive ของคุณ</p>
+
     <label>ชื่อผู้อนุมัติ</label>
-    <input id="f_approver">
-    <label>URL ลายเซ็นผู้อนุมัติ (PNG พื้นโปร่ง)</label>
-    <input id="f_sig" placeholder="https://lh3.googleusercontent.com/d/<FILE_ID>">
-    <p class="hint">รูปโลโก้/ลายเซ็น: อัปเข้า Drive → แชร์ "ทุกคนที่มีลิงก์" → เอา FILE_ID มาต่อท้าย <code>https://lh3.googleusercontent.com/d/</code></p>
+    <input type="text" id="f_approver">
+
+    <label>ลายเซ็นผู้อนุมัติ</label>
+    <div class="pick">
+      <div class="thumb" id="th_sig"><span>ยังไม่มี<br>ลายเซ็น</span></div>
+      <div class="pick-side">
+        <div class="row">
+          <button class="up" onclick="document.getElementById('file_sig').click()">เลือกไฟล์รูป</button>
+          <button class="clr" onclick="clearImg('sig')">ล้าง</button>
+        </div>
+        <input type="file" id="file_sig" accept="image/*" hidden onchange="onPick(this,'sig')">
+        <input type="text" id="f_sig" placeholder="หรือวาง URL รูปเอง" oninput="syncThumb('sig')">
+        <div class="upstat" id="st_sig"></div>
+      </div>
+    </div>
+    <p class="hint">ใช้ PNG พื้นโปร่งจะสวยที่สุด — เซ็นบนกระดาษขาว ถ่ายรูป แล้วลบพื้นหลังก่อนอัปก็ได้</p>
 
     <div class="save-row"><button onclick="saveSettings()">บันทึกตั้งค่า</button></div>
   </div>
@@ -237,6 +284,9 @@ const DOC_LABELS = [
   { key:'attOther',   emoji:'📎', label:'หลักฐาน' },
 ];
 
+// ขนาดสูงสุดหลังย่อ — พอสำหรับพิมพ์ A4 แต่ไม่กินที่ Drive ลูกค้า
+const MAX_W = { logo: 400, sig: 500 };
+
 let RECORDS = [];
 let SETTINGS = {};
 const picked = new Set();
@@ -250,7 +300,6 @@ let tt; function toast(m,bad){ const e=$('toast'); e.textContent=m; e.className=
 
 function splitUrls(v){ return String(v||'').split(',').map(x=>x.trim()).filter(Boolean); }
 function hasDoc(r,key){ return splitUrls(r[key]).length>0; }
-// มีเอกสารตัวจริงแล้ว = ไม่ต้องใช้ใบแทน
 function hasRealDoc(r){ return hasDoc(r,'attReceipt') || hasDoc(r,'attTax'); }
 
 function parseDate(input){
@@ -266,7 +315,6 @@ function fmtDate(input){
   return p(dt.getUTCDate())+'/'+p(dt.getUTCMonth()+1)+'/'+(dt.getUTCFullYear()+543);
 }
 
-/* ── เมนูข้ามหน้า — ไม่ต้องพิมพ์คำสั่งใน LINE อีก ── */
 function buildNav(){
   $('nav').innerHTML =
     `<a href="/${QS}">ภาพรวม</a>` +
@@ -274,7 +322,99 @@ function buildNav(){
     `<a class="on" href="/receipt${QS}">ใบแทน</a>`;
 }
 
-/* ── โหลด ── */
+/* ══════════ อัปรูป: ย่อในเบราว์เซอร์ แล้วส่งขึ้น Drive ══════════ */
+
+/** ย่อรูปให้กว้างไม่เกิน maxW แล้วคืน base64 PNG (ไม่มี prefix) */
+function resizeToPngBase64(file, maxW){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('อ่านไฟล์ไม่ได้'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('ไฟล์นี้ไม่ใช่รูปภาพ'));
+      img.onload = () => {
+        const scale = Math.min(1, maxW / img.width);
+        const w = Math.max(1, Math.round(img.width * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        // ไม่เติมพื้นหลัง — PNG พื้นโปร่งจะยังโปร่งอยู่
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+
+        const dataUrl = cv.toDataURL('image/png');
+        resolve({ base64: dataUrl.split(',')[1], w, h });
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function onPick(input, kind){
+  const file = input.files && input.files[0];
+  input.value = '';                 // เลือกไฟล์เดิมซ้ำได้
+  if(!file) return;
+
+  const st = $('st_' + kind);
+  if(!TENANT || !KEY){
+    st.textContent = 'อัปไม่ได้ — เปิดหน้านี้จากลิงก์ใน LINE ก่อน';
+    st.className = 'upstat bad';
+    return;
+  }
+  if(file.size > 12 * 1024 * 1024){
+    st.textContent = 'ไฟล์ใหญ่เกิน 12 MB';
+    st.className = 'upstat bad';
+    return;
+  }
+
+  st.textContent = 'กำลังย่อรูป…';
+  st.className = 'upstat';
+
+  try{
+    const { base64, w, h } = await resizeToPngBase64(file, MAX_W[kind]);
+    st.textContent = `กำลังอัปขึ้น Drive… (${w}×${h})`;
+
+    const res = await fetch(api('/api/upload-image'), {
+      method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({
+        base64,
+        mediaType: 'image/png',
+        name: `${kind === 'logo' ? 'logo' : 'signature'}-${Date.now()}.png`,
+      })
+    });
+    const out = await res.json();
+    if(!out.ok || !out.url) throw new Error(out.hint || out.error || 'อัปไม่สำเร็จ');
+
+    $(kind === 'logo' ? 'f_logo' : 'f_sig').value = out.url;
+    syncThumb(kind);
+    st.textContent = `อัปเรียบร้อย (${w}×${h}) — อย่าลืมกดบันทึกตั้งค่า`;
+    st.className = 'upstat ok';
+  }catch(e){
+    console.error(e);
+    st.textContent = 'ไม่สำเร็จ: ' + e.message;
+    st.className = 'upstat bad';
+  }
+}
+
+function syncThumb(kind){
+  const url = $(kind === 'logo' ? 'f_logo' : 'f_sig').value.trim();
+  const box = $('th_' + kind);
+  if(!url){
+    box.innerHTML = kind === 'logo' ? '<span>ยังไม่มี<br>โลโก้</span>' : '<span>ยังไม่มี<br>ลายเซ็น</span>';
+    return;
+  }
+  box.innerHTML = `<img src="${esc(url)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'โหลดรูปไม่ได้'}))">`;
+}
+
+function clearImg(kind){
+  $(kind === 'logo' ? 'f_logo' : 'f_sig').value = '';
+  $('st_' + kind).textContent = '';
+  $('st_' + kind).className = 'upstat';
+  syncThumb(kind);
+}
+
+/* ══════════ โหลด ══════════ */
 
 async function loadAll(){
   buildNav();
@@ -300,12 +440,8 @@ async function loadAll(){
     SETTINGS = settings.error ? {} : settings;
 
     picked.clear();
-    // ค่าเริ่มต้น: ออกใบแทนทุกรายการ
-    // ถ้าชีทเคยมีการติ๊กไว้แล้ว (บัญชีเคยเลือกเอง) ให้เคารพค่านั้น
     const touched = RECORDS.some(r => r.needSlip);
     RECORDS.forEach(r => { if(touched ? r.needSlip : true) picked.add(r.id); });
-
-    // แถวเก่าที่ยังเป็น FALSE อยู่ ให้ sync ขึ้นชีทเงียบ ๆ
     if(!touched && RECORDS.length) syncAll(true);
 
     checkSettings();
@@ -328,7 +464,7 @@ function checkSettings(){
   $('warn').classList.remove('hidden');
 }
 
-/* ── ตาราง ── */
+/* ══════════ ตาราง ══════════ */
 
 function render(){
   if(!RECORDS.length){
@@ -367,8 +503,6 @@ function updateSel(){
   $('selMoney').textContent = 'รวม ฿'+money(total);
 }
 
-/* ── ติ๊ก → เขียนกลับชีทคอลัมน์ L ── */
-
 async function writeToggle(id, on){
   try{
     const res = await fetch(api('/api/slip-toggle'),{
@@ -390,21 +524,19 @@ async function toggle(id, on){
   if(!(await writeToggle(id,on))) toast('บันทึกไม่สำเร็จ ลองใหม่อีกที', true);
 }
 
-// เขียนค่าปัจจุบันขึ้นชีทให้ครบทุกแถว (ใช้ตอนตั้งค่าเริ่มต้น / เลือกทั้งหมด)
 async function syncAll(on){
   for(const r of RECORDS){ r.needSlip = on; await writeToggle(r.id, on); }
 }
 
 function pickAll(on){
   RECORDS.forEach(r=>{ if(on) picked.add(r.id); else picked.delete(r.id); });
-  render();
-  syncAll(on);
+  render(); syncAll(on);
   toast(on ? 'เลือกทุกรายการแล้ว' : 'ล้างทั้งหมดแล้ว');
 }
 
 async function autoPick(){
   for(const r of RECORDS){
-    const want = !hasRealDoc(r);           // มีเอกสารจริงแล้ว = ไม่ต้องใช้ใบแทน
+    const want = !hasRealDoc(r);
     if(picked.has(r.id) !== want){
       if(want) picked.add(r.id); else picked.delete(r.id);
       r.needSlip = want;
@@ -415,7 +547,7 @@ async function autoPick(){
   toast('เอาออกเฉพาะรายการที่มีใบเสร็จ/ใบกำกับแล้ว');
 }
 
-/* ── ตั้งค่า ── */
+/* ══════════ ตั้งค่า ══════════ */
 
 function openSettings(){
   $('f_company').value  = SETTINGS.company_name||'';
@@ -424,6 +556,8 @@ function openSettings(){
   $('f_logo').value     = SETTINGS.logo_url||'';
   $('f_approver').value = SETTINGS.approver_name||'';
   $('f_sig').value      = SETTINGS.approver_sign_url||'';
+  syncThumb('logo'); syncThumb('sig');
+  $('st_logo').textContent = ''; $('st_sig').textContent = '';
   $('drawer').classList.add('on');
 }
 function closeSettings(){ $('drawer').classList.remove('on'); }
@@ -451,7 +585,7 @@ async function saveSettings(){
   }
 }
 
-/* ── พิมพ์ ── */
+/* ══════════ พิมพ์ ══════════ */
 
 function signBlock(name, role, url){
   return '<div class="sign">'+
