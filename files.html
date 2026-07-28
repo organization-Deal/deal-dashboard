@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>จับคู่หลักฐาน · DEAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1C1F24; --panel:#23262B; --card:#2A2E34; --line:#383D45;
+    --text:#E9EBEE; --dim:#98A0AA; --faint:#6B7280;
+    --brand:#D0021B; --blue:#3B82F6; --ok:#34C759; --warn:#FF9500;
+    --r:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{background:var(--bg);color:var(--text);
+       font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:14px}
+  button{font-family:inherit;cursor:pointer;border:0;border-radius:8px;transition:.13s}
+  button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  button[disabled]{opacity:.45;cursor:not-allowed}
+
+  .bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;
+       padding:12px 18px;background:rgba(28,31,36,.94);backdrop-filter:blur(10px);
+       border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .bar h1{margin:0;font-size:15px;font-weight:600}
+  .bar .spacer{flex:1}
+  .chip{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--card);
+        border:1px solid var(--line);color:var(--dim);white-space:nowrap}
+  .chip.ok{color:var(--ok);border-color:#2C4A35}
+  .chip.warn{color:var(--warn);border-color:#4A3A1E}
+  .ghost{padding:8px 13px;font-size:13px;background:transparent;color:var(--text);
+         border:1px solid var(--line)}
+  .ghost:hover{background:var(--card)}
+  .ghost.on{background:var(--blue);border-color:var(--blue);color:#fff}
+
+  .wrap{display:grid;grid-template-columns:1fr 460px;gap:0;align-items:start}
+  @media (max-width:1000px){ .wrap{grid-template-columns:1fr} }
+
+  .col{padding:18px}
+  .col.right{position:sticky;top:53px;max-height:calc(100vh - 53px);overflow-y:auto;
+             border-left:1px solid var(--line);background:var(--panel)}
+  @media (max-width:1000px){ .col.right{position:static;max-height:none;border-left:0;
+             border-top:1px solid var(--line)} }
+
+  h2{margin:0 0 4px;font-size:12px;font-weight:600;letter-spacing:.1em;
+     text-transform:uppercase;color:var(--dim)}
+  .sub{margin:0 0 14px;font-size:12px;color:var(--faint);line-height:1.6}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .ph{position:relative;background:var(--card);border:2px solid transparent;
+      border-radius:var(--r);overflow:hidden;cursor:pointer;transition:.13s}
+  .ph:hover{border-color:var(--line);transform:translateY(-2px)}
+  .ph.sel{border-color:var(--blue);box-shadow:0 0 0 4px rgba(59,130,246,.18)}
+  .ph img{display:block;width:100%;height:170px;object-fit:cover;background:#15171A}
+  .ph .meta{padding:7px 9px;font-size:11px;color:var(--dim);
+            display:flex;justify-content:space-between;gap:6px}
+  .ph .zoom{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:6px;
+            background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:26px;text-align:center;
+            opacity:0;transition:.13s}
+  .ph:hover .zoom{opacity:1}
+  .ph.done{opacity:0;transform:scale(.9);pointer-events:none}
+
+  .empty{padding:44px 20px;text-align:center;color:var(--faint);font-size:13px;
+         border:1px dashed var(--line);border-radius:var(--r);line-height:1.8}
+  .empty b{color:var(--text)}
+
+  .picked{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+          padding:12px;margin-bottom:16px}
+  .picked .top{display:flex;gap:12px}
+  .picked img{width:88px;height:88px;object-fit:cover;border-radius:8px;background:#15171A;flex:0 0 auto}
+  .picked .info{flex:1;min-width:0}
+  .picked .info b{display:block;font-size:13px;margin-bottom:2px;
+                  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .picked .info span{font-size:11px;color:var(--dim)}
+  .seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .seg button{padding:6px 11px;font-size:12px;background:var(--panel);
+              color:var(--dim);border:1px solid var(--line)}
+  .seg button.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+  .hint{margin-top:10px;font-size:11px;color:var(--faint);line-height:1.6}
+
+  .search{width:100%;padding:9px 11px;font-family:inherit;font-size:13px;margin-bottom:12px;
+          background:#16181C;color:var(--text);border:1px solid var(--line);border-radius:8px}
+  .search:focus{outline:2px solid var(--blue);outline-offset:-1px;border-color:transparent}
+
+  .rec{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+       padding:11px 13px;margin-bottom:9px;transition:.13s}
+  .rec.near{border-color:#3A5230;background:#252C25}
+  .rec .r1{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+  .rec .amt{font-size:16px;font-weight:700;white-space:nowrap}
+  .rec .ven{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rec .r2{margin-top:3px;font-size:11px;color:var(--dim)}
+  .rec .badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;
+              background:#2C4A35;color:var(--ok);margin-left:6px}
+  .atts{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+  .att{display:flex;align-items:center;gap:5px;font-size:10px;padding:3px 7px;
+       border-radius:20px;background:var(--panel);border:1px solid var(--line);color:var(--dim)}
+  .att a{color:var(--dim);text-decoration:none}
+  .att a:hover{color:var(--text)}
+  .att .x{cursor:pointer;color:var(--faint);font-weight:700}
+  .att .x:hover{color:var(--brand)}
+  .attach{width:100%;margin-top:10px;padding:8px;font-size:13px;font-weight:600;
+          background:var(--blue);color:#fff}
+  .attach:hover{filter:brightness(1.1)}
+
+  .lb{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.9);
+      display:none;align-items:center;justify-content:center;padding:24px}
+  .lb.on{display:flex}
+  .lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+  .lb .close{position:absolute;top:18px;right:22px;font-size:26px;color:#fff;
+             background:transparent;padding:6px 12px}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);
+         background:var(--card);border:1px solid var(--line);border-radius:22px;
+         padding:10px 20px;font-size:13px;opacity:0;transition:.22s;z-index:60;pointer-events:none}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.bad{border-color:var(--brand);color:#FF8A93}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1>จับคู่หลักฐาน</h1>
+  <span class="chip" id="stat">กำลังโหลด…</span>
+  <span class="spacer"></span>
+  <button class="ghost" id="btnAll" onclick="toggleAll()">แสดงรูปทั้งหมด</button>
+  <button class="ghost" onclick="loadAll()">โหลดใหม่</button>
+</div>
+
+<div class="wrap">
+  <section class="col">
+    <h2>รูปที่ยังไม่ได้เข้ารายการ</h2>
+    <p class="sub">รูปพวกนี้อยู่ใน Drive แล้วแต่ยังไม่ผูกกับรายการไหน — คลิกเลือกรูป แล้วไปกด "แนบ" ที่รายการทางขวา</p>
+    <div id="grid" class="grid"></div>
+  </section>
+
+  <aside class="col right">
+    <div id="picked"></div>
+    <h2>รายการในชีท</h2>
+    <input class="search" id="q" placeholder="ค้นหา ร้าน / ยอด / โน้ต…" oninput="renderRecords()">
+    <div id="recs"></div>
+  </aside>
+</div>
+
+<div class="lb" id="lb" onclick="closeLb()">
+  <button class="close" onclick="closeLb()">✕</button>
+  <img id="lbImg" alt="">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   เปิดหน้านี้แบบ  /files?tenant=<key>&k=<token>
+   ลิงก์ที่ถูกต้องได้จากการพิมพ์ "หลักฐาน" ในกลุ่ม LINE
+   ══════════════════════════════════════════════════════════ */
+
+const WORKER = 'https://accoutingsuppor02.organization-23c.workers.dev';
+const Q      = new URLSearchParams(location.search);
+const TENANT = Q.get('tenant') || '';
+const KEY    = Q.get('k') || '';
+
+/** ต่อ query string ให้ทุก API call — tenant + token */
+function api(path, extra = ''){
+  return `${WORKER}${path}?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(KEY)}${extra}`;
+}
+
+let FILES = [];
+let RECORDS = [];
+let TYPES = [];
+let picked = null;
+let pickedType = 'attSlip';
+let showAll = false;
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const money = (n) => (Number(n)||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function setStat(text, kind){
+  const el = $('stat');
+  el.textContent = text;
+  el.className = 'chip' + (kind ? ' ' + kind : '');
+}
+
+let toastTimer;
+function toast(msg, bad){
+  const el = $('toast');
+  el.textContent = msg;
+  el.className = 'toast on' + (bad ? ' bad' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = 'toast'; }, 2600);
+}
+
+function shortTime(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  if(isNaN(d)) return '';
+  const p = n => String(n).padStart(2,'0');
+  return `${p(d.getDate())}/${p(d.getMonth()+1)} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+function minutesApart(a, b){
+  const t1 = new Date(a).getTime(), t2 = new Date(b).getTime();
+  if(!isFinite(t1) || !isFinite(t2)) return Infinity;
+  return Math.abs(t1 - t2) / 60000;
+}
+
+function showLinkError(msg){
+  setStat('ลิงก์ใช้ไม่ได้', 'warn');
+  $('grid').innerHTML = `<div class="empty">
+    <b>${esc(msg)}</b><br><br>
+    พิมพ์คำว่า <b>หลักฐาน</b> ในกลุ่ม LINE เพื่อรับลิงก์ใหม่
+  </div>`;
+  $('recs').innerHTML = '';
+  $('picked').innerHTML = '';
+}
+
+/* ───────────── โหลด ───────────── */
+
+async function loadAll(){
+  if(!TENANT || !KEY){
+    return showLinkError('ลิงก์ไม่ครบ — ต้องมีทั้ง tenant และรหัสเข้าถึง');
+  }
+
+  setStat('กำลังโหลด…');
+  try{
+    const [orph, recs] = await Promise.all([
+      fetch(api('/api/orphans', showAll ? '&all=1' : '')).then(r=>r.json()),
+      fetch(api('/api/expenses')).then(r=>r.json()),
+    ]);
+
+    if(orph.error === 'unauthorized' || recs.error === 'unauthorized'){
+      return showLinkError('ลิงก์นี้ถูกยกเลิกแล้ว หรือรหัสไม่ถูกต้อง');
+    }
+    if(orph.error) throw new Error(orph.error);
+    if(recs.error) throw new Error(recs.error);
+
+    FILES = orph.files || [];
+    TYPES = orph.types || [];
+    RECORDS = Array.isArray(recs) ? recs : [];
+
+    if(TYPES.length && !TYPES.some(x=>x.key===pickedType)) pickedType = TYPES[0].key;
+
+    renderGrid();
+    renderRecords();
+    renderPicked();
+
+    setStat(`${FILES.length} รูปรอจับคู่ · ${RECORDS.length} รายการ`, FILES.length ? 'warn' : 'ok');
+  }catch(e){
+    console.error(e);
+    setStat('โหลดไม่สำเร็จ: ' + e.message, 'warn');
+  }
+}
+
+function toggleAll(){
+  showAll = !showAll;
+  $('btnAll').classList.toggle('on', showAll);
+  $('btnAll').textContent = showAll ? 'เฉพาะที่ยังไม่จับคู่' : 'แสดงรูปทั้งหมด';
+  loadAll();
+}
+
+/* ───────────── รูป ───────────── */
+
+function renderGrid(){
+  const g = $('grid');
+  if(!FILES.length){
+    g.innerHTML = '<div class="empty">' +
+      (showAll ? 'ยังไม่มีรูปบิลใน Drive เลย' : 'เยี่ยม 🎉 รูปทุกใบเข้ารายการครบแล้ว') +
+      '</div>';
+    return;
+  }
+
+  g.innerHTML = FILES.map(f => `
+    <div class="ph${picked && picked.fileId === f.fileId ? ' sel' : ''}"
+         id="ph-${f.fileId}" onclick="pick('${f.fileId}')">
+      <img src="${esc(f.imgUrl)}" alt="${esc(f.name)}" loading="lazy"
+           onerror="this.style.opacity=.25">
+      <div class="zoom" onclick="event.stopPropagation();openLb('${esc(f.imgUrl)}')">⤢</div>
+      <div class="meta"><span>${esc(shortTime(f.createdTime))}</span></div>
+    </div>`).join('');
+}
+
+function pick(fileId){
+  picked = (picked && picked.fileId === fileId) ? null : FILES.find(f => f.fileId === fileId);
+  renderGrid();
+  renderPicked();
+  renderRecords();
+  if(picked && window.innerWidth <= 1000){
+    document.querySelector('.col.right').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+}
+
+function renderPicked(){
+  const el = $('picked');
+  if(!picked){ el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="picked">
+      <div class="top">
+        <img src="${esc(picked.imgUrl)}" alt="" onclick="openLb('${esc(picked.imgUrl)}')"
+             style="cursor:zoom-in" onerror="this.style.opacity=.25">
+        <div class="info">
+          <b>${esc(picked.name || 'รูปบิล')}</b>
+          <span>อัปเมื่อ ${esc(shortTime(picked.createdTime))}</span>
+        </div>
+      </div>
+      <div class="seg">
+        ${TYPES.map(t => `<button class="${t.key===pickedType?'on':''}"
+            onclick="setType('${t.key}')">${esc(t.label)}</button>`).join('')}
+      </div>
+      <p class="hint">เลือกประเภทแล้วกด "แนบ" ที่รายการด้านล่าง · กด Esc เพื่อยกเลิก</p>
+    </div>`;
+}
+
+function setType(k){ pickedType = k; renderPicked(); }
+
+/* ───────────── รายการ ───────────── */
+
+function renderRecords(){
+  const q = ($('q').value || '').trim().toLowerCase();
+  const list = RECORDS.filter(r => !q ||
+    [r.vendor, r.note, r.category, String(r.amount), r.dateText]
+      .join(' ').toLowerCase().includes(q));
+
+  if(!list.length){
+    $('recs').innerHTML = '<div class="empty">ไม่เจอรายการที่ค้นหา</div>';
+    return;
+  }
+
+  $('recs').innerHTML = list.map(r => {
+    const near = picked && minutesApart(picked.createdTime, r.createdAt) < 15;
+    const seen = new Set();
+    const atts = (r.attachments || []).filter(a => {
+      if(seen.has(a.url)) return false;
+      seen.add(a.url);
+      return true;
+    });
+
+    return `
+    <div class="rec${near ? ' near' : ''}">
+      <div class="r1">
+        <span class="ven">${esc(r.vendor || r.category || '—')}</span>
+        <span class="amt">฿${money(r.amount)}</span>
+      </div>
+      <div class="r2">
+        ${esc(r.dateText || '')} · ${esc(r.category || '')}
+        ${near ? '<span class="badge">น่าจะใช่</span>' : ''}
+      </div>
+      ${atts.length ? `<div class="atts">${atts.map(a => `
+        <span class="att">
+          <a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.label)}</a>
+          <span class="x" onclick="detach('${esc(r.id)}','${esc(a.url)}')" title="ถอนออก">✕</span>
+        </span>`).join('')}</div>` : ''}
+      ${picked ? `<button class="attach" onclick="attach('${esc(r.id)}')">
+        แนบเป็น ${esc((TYPES.find(t=>t.key===pickedType)||{}).label || '')}
+      </button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+/* ───────────── จับคู่ / ถอน ───────────── */
+
+async function attach(recId){
+  if(!picked) return;
+  const f = picked;
+
+  // ซ่อนรูปทันที ไม่ต้องรอ server — ถ้าพลาดค่อยเด้งกลับ
+  const node = $('ph-' + f.fileId);
+  if(node) node.classList.add('done');
+
+  try{
+    const res = await fetch(api('/api/attach'), {
+      method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ id: recId, type: pickedType, url: f.viewUrl })
+    });
+    const out = await res.json();
+    if(!out.ok) throw new Error(out.hint || out.reason || out.error || 'attach failed');
+
+    FILES = FILES.filter(x => x.fileId !== f.fileId);
+    const i = RECORDS.findIndex(r => r.id === recId);
+    if(i >= 0 && out.record) RECORDS[i] = out.record;
+
+    picked = null;
+    renderGrid(); renderPicked(); renderRecords();
+    setStat(`${FILES.length} รูปรอจับคู่ · ${RECORDS.length} รายการ`, FILES.length ? 'warn' : 'ok');
+    toast(out.skipped === 'duplicate' ? 'รูปนี้แนบอยู่แล้ว' : 'แนบเรียบร้อย ✓');
+  }catch(e){
+    console.error(e);
+    if(node) node.classList.remove('done');
+    toast('แนบไม่สำเร็จ: ' + e.message, true);
+  }
+}
+
+async function detach(recId, url){
+  try{
+    const res = await fetch(api('/api/detach'), {
+      method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({ id: recId, url })
+    });
+    const out = await res.json();
+    if(!out.ok) throw new Error(out.hint || out.reason || out.error || 'detach failed');
+
+    toast('ถอนรูปออกแล้ว');
+    loadAll();   // รูปกลับไปเป็นกำพร้า ต้องดึงใหม่
+  }catch(e){
+    console.error(e);
+    toast('ถอนไม่สำเร็จ: ' + e.message, true);
+  }
+}
+
+/* ───────────── lightbox ───────────── */
+
+function openLb(src){
+  $('lbImg').src = src;
+  $('lb').classList.add('on');
+}
+function closeLb(){
+  $('lb').classList.remove('on');
+  $('lbImg').src = '';
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key !== 'Escape') return;
+  if($('lb').classList.contains('on')) return closeLb();
+  if(picked){ picked = null; renderGrid(); renderPicked(); renderRecords(); }
+});
+
+loadAll();
+</script>
+</body>
+</html>
