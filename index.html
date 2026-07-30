@@ -33,6 +33,8 @@
   .sidefoot{padding:14px 14px 18px}
   .connbtn{display:flex;align-items:center;gap:8px;justify-content:center;background:var(--green);color:#fff;border:none;border-radius:11px;padding:11px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;width:100%;text-decoration:none}
   .connbtn.ok{background:rgba(47,174,131,.15);color:#8ee9c3;cursor:default}
+  .sidelink{display:flex;align-items:center;gap:8px;justify-content:center;background:rgba(255,255,255,.06);color:#cdd6d0;border-radius:11px;padding:10px;font-size:13px;font-weight:600;width:100%;text-decoration:none;margin-bottom:8px}
+  .sidelink:hover{background:rgba(255,255,255,.12);color:#fff}
   .who{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:12px;color:#8fa199}
   .who .av{width:30px;height:30px;border-radius:50%;background:#26382f;display:grid;place-items:center;color:#8ee9c3;font-weight:600}
 
@@ -119,8 +121,13 @@
   .modal img{max-width:100%;border-radius:10px}
   .modal .x{float:right;border:none;background:none;font-size:20px;cursor:pointer;color:var(--muted)}
 
+  /* fatal screen */
+  .fatal{max-width:440px;margin:90px auto;padding:30px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;line-height:1.8;font-size:15px}
+  .fatal .ic{font-size:38px;display:block;margin-bottom:10px}
+  .fatal b{color:var(--green)}
+
   @media(max-width:860px){
-    .sidebar{width:60px}.brand h1,.brand .sub,.navlink span,.sidefoot .who div,.connbtn span{display:none}
+    .sidebar{width:60px}.brand h1,.brand .sub,.navlink span,.sidefoot .who div,.connbtn span,.sidelink span{display:none}
     .kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.main{padding:18px 16px 50px}
   }
 </style>
@@ -139,6 +146,8 @@
       <button class="navlink" data-p="settings"><span class="ic">⚙</span><span>ตั้งค่า</span></button>
     </nav>
     <div class="sidefoot">
+      <a class="sidelink" id="filesLink" href="#"><span>📎 จับคู่หลักฐาน</span></a>
+      <a class="sidelink" id="receiptLink" href="#"><span>🧾 ใบแทนใบเสร็จ</span></a>
       <a class="connbtn" id="connBtn" href="#"><span>🔗 เชื่อม Google</span></a>
       <div class="who"><div class="av">D</div><div><div id="whoName">เจ้าของธุรกิจ</div></div></div>
     </div>
@@ -253,6 +262,7 @@
         <table>
           <tr><td>สถานะการเชื่อม Google</td><td id="setConn">—</td></tr>
           <tr><td>รหัสกลุ่ม (tenant)</td><td id="setTenant" style="font-family:monospace;font-size:12px">—</td></tr>
+          <tr><td>จำนวนรายการที่โหลดได้</td><td id="setRows">—</td></tr>
           <tr><td>แหล่งข้อมูล</td><td>Google Sheet ของคุณเอง</td></tr>
           <tr><td>หมวดที่พบในระบบ</td><td id="setCats">—</td></tr>
         </table>
@@ -267,18 +277,14 @@
 <script>
 const API = "https://accoutingsuppor02.organization-23c.workers.dev/api/expenses";
 const WORKER = "https://accoutingsuppor02.organization-23c.workers.dev";
-const TENANT = new URLSearchParams(location.search).get("tenant") || "";
-const CONAME = new URLSearchParams(location.search).get("name") || "บริษัทของคุณ";
+const QS = new URLSearchParams(location.search);
+const TENANT = QS.get("tenant") || "";
+const K = QS.get("k") || "";
+const CONAME = QS.get("name") || "บริษัทของคุณ";
 let CONNECTED = false;
 
-let ALL = [
-  { date:"2026-07-21", amount:128,  vendor:"ShopeeFood",       category:"อาหาร & รับรอง",         note:"ค่าอาหารประชุม",       sender:"มิว",  status:"รอเบิก",  img:"" },
-  { date:"2026-07-20", amount:5000, vendor:"ช่างแอร์ สมชาย",   category:"ค่าบริการ & จ้างงาน",    note:"ค่าล้างแอร์ออฟฟิศ",    sender:"แนน",  status:"จ่ายแล้ว", img:"" },
-  { date:"2026-07-19", amount:890,  vendor:"ปั๊ม ปตท.",        category:"เดินทาง & ขนส่ง",        note:"ค่าน้ำมันรถส่งของ",    sender:"มิว",  status:"จ่ายแล้ว", img:"" },
-  { date:"2026-07-18", amount:1590, vendor:"Lazada",           category:"วัสดุ & อุปกรณ์สำนักงาน", note:"กระดาษ + หมึกปริ้น",   sender:"แนน",  status:"รอเบิก",  img:"" },
-  { date:"2026-07-17", amount:2400, vendor:"Facebook Ads",     category:"การตลาด & โฆษณา",        note:"ยิงแอดโปรตู้ชกมวย",    sender:"วิลลี่",status:"จ่ายแล้ว", img:"" },
-  { date:"2026-07-14", amount:450,  vendor:"การไฟฟ้า",         category:"ค่าน้ำ ค่าไฟ ค่าเน็ต",   note:"ค่าไฟออฟฟิศ",          sender:"แนน",  status:"จ่ายแล้ว", img:"" },
-];
+// ไม่มีข้อมูลตัวอย่างแล้ว — ถ้าโหลดไม่ได้ต้องขึ้นข้อความ ไม่ใช่โชว์ของปลอม
+let ALL = [];
 
 const THMON=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const baht=n=>"฿"+Number(n||0).toLocaleString("th-TH",{minimumFractionDigits:0,maximumFractionDigits:2});
@@ -408,10 +414,11 @@ function monthKeys(){
 }
 function buildRepMonths(){
   const ks=monthKeys();
-  el("repMonth").innerHTML=ks.map(k=>{const[y,m]=k.split("-");return `<option value="${k}">${THMON[+m-1]} ${(+y)+543}</option>`;}).join("")||'<option>—</option>';
+  el("repMonth").innerHTML=ks.map(k=>{const[y,m]=k.split("-");return `<option value="${k}">${THMON[+m-1]} ${(+y)+543}</option>`;}).join("")||'<option value="">—</option>';
 }
 function repData(){
   const k=el("repMonth").value;
+  if(!k) return [];
   return ALL.filter(r=>{const d=pdate(r.date);return d&&(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"))===k;});
 }
 function renderReport(){
@@ -441,8 +448,9 @@ function showBill(url){
 
 /* ---------- SETTINGS ---------- */
 function renderSettings(){
-  el("setConn").innerHTML=CONNECTED?'<span class="pill" style="background:var(--green-soft);color:var(--green)">เชื่อมแล้ว</span>':'<span class="pill" style="background:var(--amber-soft);color:var(--amber)">ยังไม่เชื่อม (ข้อมูลตัวอย่าง)</span>';
-  el("setTenant").textContent=TENANT||"— (เดโม)";
+  el("setConn").innerHTML=CONNECTED?'<span class="pill" style="background:var(--green-soft);color:var(--green)">เชื่อมแล้ว</span>':'<span class="pill" style="background:var(--amber-soft);color:var(--amber)">ยังไม่เชื่อม</span>';
+  el("setTenant").textContent=TENANT||"—";
+  el("setRows").textContent=ALL.length+" รายการ";
   el("setCats").textContent=[...new Set(ALL.map(r=>r.category).filter(Boolean))].join(", ")||"—";
 }
 
@@ -476,17 +484,49 @@ el("repPrint").onclick=()=>window.print();
 function drawScoped(){renderKPIs();renderTrend();renderCats();renderVendors();renderRecent();renderExp();}
 function drawAll(){buildCatFilter();buildRepMonths();drawScoped();renderReim();renderReport();renderBills();renderSettings();
   el("coName").textContent=CONAME;
+  // ส่ง k ต่อไปทุกลิงก์ ไม่งั้นหน้าปลายทางจะโดน 401
+  const qs="?tenant="+encodeURIComponent(TENANT)+"&k="+encodeURIComponent(K);
+  el("filesLink").href=location.origin+"/files"+qs;
+  el("receiptLink").href=location.origin+"/receipt"+qs;
+  // เชื่อมแล้วก็ไม่ต้องโชว์ปุ่มเชื่อมอีก
   el("connBtn").href=WORKER+"/oauth/connect?tenant="+encodeURIComponent(TENANT);
-  if(CONNECTED){el("connBtn").classList.add("ok");el("connBtn").innerHTML='<span>✓ เชื่อม Google แล้ว</span>';el("connBtn").href="#";}
+  el("connBtn").style.display=CONNECTED?"none":"flex";
+}
+
+/* ---------- LOAD ---------- */
+function fatal(icon,msg){
+  document.body.innerHTML='<div class="fatal"><span class="ic">'+icon+'</span>'+msg+'</div>';
 }
 
 async function load(){
-  if(TENANT){
-    try{
-      const res=await fetch(`${API}?tenant=${encodeURIComponent(TENANT)}`);
-      if(res.ok){const rows=await res.json();if(Array.isArray(rows)){CONNECTED=true;if(rows.length)ALL=rows;}}
-    }catch(e){}
+  if(!TENANT||!K){
+    fatal("⚠️","<b>ลิงก์ไม่สมบูรณ์</b><br><br>กรุณาเปิดแดชบอร์ดจากปุ่มในแชท LINE<br>หรือพิมพ์ <b>แดชบอร์ด</b> ในกลุ่มเพื่อขอลิงก์ใหม่");
+    return;
   }
+  let res;
+  try{
+    res=await fetch(`${API}?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(K)}`);
+  }catch(e){
+    fatal("📡","<b>เชื่อมต่อไม่ได้</b><br><br>ตรวจอินเทอร์เน็ตแล้วรีเฟรชอีกครั้ง");
+    return;
+  }
+  if(res.status===401||res.status===403){
+    fatal("🔒","<b>ลิงก์นี้ใช้ไม่ได้แล้ว</b><br><br>พิมพ์ <b>แดชบอร์ด</b> ในกลุ่ม LINE<br>เพื่อขอลิงก์ใหม่");
+    return;
+  }
+  if(!res.ok){
+    fatal("⚠️","<b>โหลดข้อมูลไม่สำเร็จ</b> ("+res.status+")<br><br>ลองรีเฟรชอีกครั้ง<br>ถ้ายังไม่ได้ พิมพ์ <b>เชื่อม</b> ในกลุ่ม LINE");
+    return;
+  }
+  let rows;
+  try{ rows=await res.json(); }catch(e){ rows=null; }
+  if(!Array.isArray(rows)){
+    fatal("⚠️","<b>ข้อมูลผิดรูปแบบ</b><br><br>ลองรีเฟรชอีกครั้ง");
+    return;
+  }
+  CONNECTED=true;
+  // กันแถวว่างกลางชีทไม่ให้โผล่เป็นรายการเปล่า
+  ALL=rows.filter(r=>r&&(r.date||r.amount||r.vendor));
   drawAll();
 }
 load();
