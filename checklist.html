@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DEAL LINE Bot · Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#eef1ec; --surface:#fff; --ink:#17251f; --muted:#647268; --line:#e2e7df;
+    --green:#12674f; --green-soft:#e4f0ea; --amber:#b7830f; --amber-soft:#fbf0d6;
+    --red:#c0392b; --red-soft:#fbe7e4;
+    --gray-soft:#eff1ee; --side:#14201b; --orange:#dc6234;
+    --radius:16px; --shadow:0 1px 2px rgba(23,37,31,.04),0 6px 20px rgba(23,37,31,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"IBM Plex Sans Thai",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  .wrap{max-width:940px;margin:0 auto;padding:22px 18px 60px}
+
+  header{background:var(--side);color:#fff;border-radius:var(--radius);padding:20px 20px 18px;box-shadow:var(--shadow);margin-bottom:16px}
+  .htop{display:flex;align-items:center;gap:11px;margin-bottom:16px;flex-wrap:wrap}
+  .logo{width:40px;height:40px;border-radius:11px;background:var(--green);display:grid;place-items:center;font-weight:700;font-size:20px}
+  header h1{margin:0;font-size:19px;font-weight:700;letter-spacing:-.3px}
+  header .sub{font-size:12.5px;color:#8fa199;margin-top:-2px}
+  .now{margin-left:auto;background:rgba(220,98,52,.2);color:#ffb08c;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:999px}
+  .reset{background:transparent;border:1px solid rgba(255,255,255,.18);color:#c3cec8;font-family:inherit;font-size:12.5px;font-weight:500;padding:5px 12px;border-radius:999px;cursor:pointer}
+  .reset:hover{background:rgba(255,255,255,.08);color:#fff}
+
+  .progwrap{display:flex;align-items:center;gap:14px}
+  .track{flex:1;height:12px;background:rgba(255,255,255,.1);border-radius:8px;overflow:hidden}
+  .fill{height:100%;background:linear-gradient(90deg,#2fae83,#12674f);border-radius:8px;width:0;transition:width .5s cubic-bezier(.2,.7,.2,1)}
+  .pct{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;min-width:56px;text-align:right}
+  .count{font-size:12px;color:#8fa199;margin-top:6px}
+
+  /* บั๊กค้าง */
+  .bugs{background:var(--surface);border:1px solid #f0c9c2;border-left:4px solid var(--red);
+        border-radius:var(--radius);padding:16px 18px;margin-bottom:16px;box-shadow:var(--shadow)}
+  .bugs h2{margin:0 0 3px;font-size:15px;color:var(--red)}
+  .bugs .cap{font-size:12px;color:var(--muted);margin-bottom:11px}
+  .bug{display:flex;gap:10px;padding:9px 0;font-size:14px}
+  .bug + .bug{border-top:1px solid #f6eae8}
+  .bug .sev{flex-shrink:0;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;height:fit-content;margin-top:2px}
+  .sev.hi{background:var(--red-soft);color:var(--red)}
+  .sev.mid{background:var(--amber-soft);color:var(--amber)}
+  .bug b{display:block}
+  .bug span{font-size:12.2px;color:var(--muted)}
+  .bug code{font-family:"IBM Plex Mono",monospace;font-size:11.5px;background:var(--gray-soft);padding:1px 5px;border-radius:4px}
+
+  .phase{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+  .phead{display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .pnum{width:26px;height:26px;border-radius:8px;background:var(--gray-soft);color:var(--muted);display:grid;place-items:center;font-size:13px;font-weight:700;flex-shrink:0}
+  .phase.done .pnum{background:var(--green-soft);color:var(--green)}
+  .phase.doing .pnum{background:var(--amber-soft);color:var(--amber)}
+  .ptitle{font-weight:600;font-size:15.5px}
+  .ppill{margin-left:auto;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--gray-soft);color:var(--muted);white-space:nowrap}
+  .phase.done .ppill{background:var(--green-soft);color:var(--green)}
+  .phase.doing .ppill{background:var(--amber-soft);color:var(--amber)}
+  .pkey{font-size:11px;color:var(--orange);font-weight:600;margin-left:6px}
+  .pnew{font-size:10.5px;color:#fff;background:var(--orange);font-weight:600;margin-left:6px;padding:1px 7px;border-radius:999px;vertical-align:2px}
+
+  .items{padding:6px 18px 14px}
+  .item{display:flex;align-items:flex-start;gap:11px;padding:9px 2px;cursor:pointer}
+  .item + .item{border-top:1px solid #f0f2ee}
+  .box{width:21px;height:21px;border-radius:6px;border:2px solid #cdd6cf;flex-shrink:0;margin-top:1px;display:grid;place-items:center;transition:all .12s}
+  .box svg{width:13px;height:13px;opacity:0;transform:scale(.6);transition:all .12s}
+  .item.on .box{background:var(--green);border-color:var(--green)}
+  .item.on .box svg{opacity:1;transform:scale(1)}
+  .label{font-size:14.5px}
+  .item.on .label{color:var(--muted);text-decoration:line-through}
+  .note{display:block;font-size:12px;color:var(--muted);margin-top:1px;text-decoration:none!important}
+  .note.warn{color:var(--red)}
+
+  /* แผนที่โค้ด */
+  .files{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+         box-shadow:var(--shadow);margin:22px 0 12px;overflow:hidden}
+  .files > .phead{border-bottom:1px solid var(--line)}
+  .repo{padding:14px 18px}
+  .repo + .repo{border-top:1px solid var(--line)}
+  .rname{font-family:"IBM Plex Mono",monospace;font-size:13.5px;font-weight:500;color:var(--green)}
+  .rmeta{font-size:11.5px;color:var(--muted);margin:2px 0 10px;line-height:1.6}
+  .rmeta code{font-family:"IBM Plex Mono",monospace;background:var(--gray-soft);padding:1px 5px;border-radius:4px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:0 8px 6px 0;font-weight:600}
+  td{padding:7px 8px 7px 0;border-top:1px solid #f0f2ee;vertical-align:top}
+  td.f{font-family:"IBM Plex Mono",monospace;font-size:12.5px;white-space:nowrap}
+  td.v{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);white-space:nowrap}
+  td.d{color:var(--muted);font-size:12.5px}
+
+  .foot{text-align:center;font-size:12px;color:var(--muted);margin-top:18px}
+  @media(max-width:640px){ .now{display:none} td.v{display:none} th:nth-child(2){display:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="htop">
+      <div class="logo">D</div>
+      <div>
+        <h1>DEAL LINE Finance Bot</h1>
+        <div class="sub">อัปเดต 29 ก.ค. 2569 · Checklist ทำถึงไหนแล้ว</div>
+      </div>
+      <div class="now">ติดที่ Phase 7 — ยังไม่มีลูกค้านำร่อง</div>
+      <button class="reset" id="reset">รีเซ็ต</button>
+    </div>
+    <div class="progwrap">
+      <div class="track"><div class="fill" id="fill"></div></div>
+      <div class="pct" id="pct">0%</div>
+    </div>
+    <div class="count" id="count"></div>
+  </header>
+
+  <!-- ═══════ บั๊กที่ต้องแก้ ═══════ -->
+  <div class="bugs">
+    <h2>⚠️ บั๊กค้างอยู่ตอนนี้</h2>
+    <div class="cap">เจอจากการเทสต์ 29 ก.ค. — ตัวแรกอันตรายสุด ต้องแก้ก่อนให้ลูกค้าใช้</div>
+
+    <div class="bug">
+      <span class="sev hi">ร้ายแรง</span>
+      <div>
+        <b>เชื่อม Google ซ้ำ = ข้อมูลเก่าหลุดทั้งหมด</b>
+        <span><code>oauth.js</code> สร้างชีทใหม่ทุกครั้งที่กดเชื่อม ไม่เช็คว่ามีอยู่แล้ว —
+        รายการ 12 แถว + รูปหลักฐาน + ตั้งค่า ยังอยู่ในชีทเดิม แต่ระบบมองไม่เห็น<br>
+        แก้: เช็ค <code>KV tenant:{key}</code> ก่อน มีแล้วให้ใช้ของเดิม</span>
+      </div>
+    </div>
+
+    <div class="bug">
+      <span class="sev hi">ร้ายแรง</span>
+      <div>
+        <b>แดชบอร์ดหลักโชว์ข้อมูลตัวอย่าง</b>
+        <span><code>index.html</code> ไม่ส่ง <code>&amp;k=</code> → API ตอบ 401 → หน้าเลย fallback
+        ไปโชว์ ShopeeFood / ช่างแอร์ สมชาย / Lazada ซึ่งเป็น demo<br>
+        แก้: เพิ่ม <code>KEY</code> แล้วต่อท้ายทุก fetch</span>
+      </div>
+    </div>
+
+    <div class="bug">
+      <span class="sev mid">ปานกลาง</span>
+      <div>
+        <b>เชื่อม Google เสร็จแล้วไม่มีการ์ดตอบกลับใน LINE</b>
+        <span>ลูกค้าเชื่อมเสร็จบนเว็บ กลับมา LINE แล้วเงียบ ไม่รู้ว่าสำเร็จไหม</span>
+      </div>
+    </div>
+
+    <div class="bug">
+      <span class="sev mid">ปานกลาง</span>
+      <div>
+        <b>ปุ่ม "เพิ่มข้อมูลบริษัท" ไม่ขึ้นบนการ์ด</b>
+        <span>KV flag <code>setup:{tenant}</code> ค้างเป็น true ทั้งที่ชีทว่าง →
+        worker ข้ามการเช็ค · พิมพ์ <code>migrate</code> ล้าง flag ได้</span>
+      </div>
+    </div>
+
+    <div class="bug">
+      <span class="sev mid">ปานกลาง</span>
+      <div>
+        <b>ปุ่ม "เชื่อม Google" ค้างอยู่ในแถบซ้ายแดชบอร์ด</b>
+        <span>เชื่อมไปแล้วแต่ปุ่มยังโชว์ — ควรเปลี่ยนเป็นสถานะ "เชื่อมแล้ว"</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="phases"></div>
+
+  <!-- ═══════ แผนที่โค้ด ═══════ -->
+  <div class="files">
+    <div class="phead">
+      <div class="pnum">📁</div>
+      <div class="ptitle">โค้ดอยู่ไหน</div>
+      <div class="ppill">2 repo · 12 ไฟล์</div>
+    </div>
+
+    <div class="repo">
+      <div class="rname">github.com/organization-Deal/deal-line-bot</div>
+      <div class="rmeta">
+        ตัวบอท · Cloudflare Worker ชื่อ <code>accoutingsuppor02</code><br>
+        deploy ด้วย <code>npx wrangler deploy</code> · โค้ดอยู่ในโฟลเดอร์ <code>src/</code>
+      </div>
+      <table>
+        <thead><tr><th>ไฟล์</th><th>เวอร์ชัน</th><th>ทำอะไร</th></tr></thead>
+        <tbody>
+          <tr><td class="f">index.js</td><td class="v">v1.2</td><td class="d">สมองกลาง — รับ webhook, จัดเส้นทาง, API ให้แดชบอร์ด, ระบบ token, คำสั่งข้อความ</td></tr>
+          <tr><td class="f">ocr.js</td><td class="v">v2.2</td><td class="d">อ่านบิลด้วย Claude — กฎบิลไทย, confidence รายช่อง, flag เตือน</td></tr>
+          <tr><td class="f">card.js</td><td class="v">v4.1</td><td class="d">วาดการ์ด Flex ทั้งหมด — การ์ดรอตรวจ / บันทึกแล้ว / เมนูเพิ่มเติม</td></tr>
+          <tr><td class="f">line.js</td><td class="v">v1.2</td><td class="d">คุยกับ LINE API — verify signature, โหลดรูป, ส่งข้อความ</td></tr>
+          <tr><td class="f">sheets.js</td><td class="v">v3.0</td><td class="d">อ่าน/เขียน Google Sheet · สคีมา 24 คอลัมน์ · แนบหลักฐาน · แท็บ _settings</td></tr>
+          <tr><td class="f">drive.js</td><td class="v">v2.0</td><td class="d">อัปรูปเข้า Drive ลูกค้า · ลิสต์รูปกำพร้า</td></tr>
+          <tr><td class="f">oauth.js</td><td class="v">v1.2</td><td class="d">ให้ลูกค้าเชื่อม Google เอง · สร้างชีท · หน้า onboarding</td></tr>
+          <tr><td class="f">google-auth.js</td><td class="v">—</td><td class="d">service account (โหมดสำรอง ไม่ค่อยได้ใช้แล้ว)</td></tr>
+          <tr><td class="f">provision.js</td><td class="v">v1.1</td><td class="d">สร้างชีทโหมด service account (สำรอง)</td></tr>
+          <tr><td class="f">wrangler.toml</td><td class="v">—</td><td class="d">ตั้งค่า Worker + ตัวแปร (DASHBOARD_URL, WORKER_URL, CLAUDE_MODEL)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="repo">
+      <div class="rname">github.com/organization-Deal/deal-dashboard</div>
+      <div class="rmeta">
+        หน้าเว็บ · HTML ล้วน ไม่มี build step · Cloudflare เสิร์ฟตรงจาก repo<br>
+        push แล้วขึ้นเอง · <b>ห้ามรัน <code>npm install</code> ในนี้</b> — node_modules จะทำให้ build พัง
+      </div>
+      <table>
+        <thead><tr><th>ไฟล์</th><th>เส้นทาง</th><th>ทำอะไร</th></tr></thead>
+        <tbody>
+          <tr><td class="f">index.html</td><td class="v">/</td><td class="d">แดชบอร์ด 7 หน้า — แดชบอร์ด · รายจ่าย · รายรับ · รอเบิก · รายงาน&amp;ภาษี · บิล · ตั้งค่า</td></tr>
+          <tr><td class="f">receipt.html</td><td class="v">/receipt</td><td class="d">ออกใบรับรองแทนใบเสร็จ · ติ๊กเลือกรายการ · อัปโลโก้/ลายเซ็น · พิมพ์ A4</td></tr>
+          <tr><td class="f">files.html</td><td class="v">/files</td><td class="d">จับคู่รูปหลักฐานที่อยู่ใน Drive แต่ยังไม่ผูกกับรายการ</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="repo">
+      <div class="rname">ของที่ไม่ได้อยู่ใน GitHub</div>
+      <div class="rmeta">หายแล้วสร้างใหม่ไม่ได้ — ต้องสำรองลง password manager</div>
+      <table>
+        <thead><tr><th>อยู่ที่</th><th>ชื่อ</th><th>คืออะไร</th></tr></thead>
+        <tbody>
+          <tr><td class="f">Cloudflare</td><td class="v">Secrets</td><td class="d">LINE_ACCESS_TOKEN · LINE_CHANNEL_SECRET · CLAUDE_KEY · GOOGLE_OAUTH_CLIENT_ID/SECRET · ADMIN_KEY</td></tr>
+          <tr><td class="f">Cloudflare</td><td class="v">KV</td><td class="d"><b>refresh token ของลูกค้าทุกเจ้า</b> — หายแล้วลูกค้าต้องเชื่อม Google ใหม่หมด</td></tr>
+          <tr><td class="f">Google Cloud</td><td class="v">OAuth</td><td class="d">project + consent screen — <b>ยังอยู่บน Gmail ส่วนตัว ต้องย้าย</b></td></tr>
+          <tr><td class="f">LINE</td><td class="v">OA</td><td class="d">channel ของ "รับจ่ายได้หมด"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <p class="foot">ติ๊กช่องเพื่ออัปเดตความคืบหน้า · ระบบจำไว้ให้ในเครื่องนี้</p>
+</div>
+
+<script>
+const DATA = [
+  { n:1, title:"ตัวบอท (Cloudflare Worker)", items:[
+    {id:"p1a", t:"เขียนโค้ดบอทครบ 9 ไฟล์ใน src/", d:true},
+    {id:"p1b", t:"Deploy worker accoutingsuppor02", d:true},
+    {id:"p1c", t:"1 กลุ่มไลน์ = 1 ชีท (แยกลูกค้าอัตโนมัติ)", d:true},
+  ]},
+  { n:2, title:"ต่อ LINE", items:[
+    {id:"p2a", t:"สร้าง LINE OA + Messaging API", d:true},
+    {id:"p2b", t:"ใส่ Channel secret + Access token", d:true},
+    {id:"p2c", t:"Webhook verify + Use webhook ON", d:true},
+    {id:"p2d", t:"เทสต์บอทตอบได้จริง", d:true},
+    {id:"p2e", t:"ปิด auto-reply ของ LINE", n:"ยังค้าง — กันข้อความซ้อน", d:false},
+  ]},
+  { n:3, title:"Dashboard ออนไลน์", items:[
+    {id:"p3a", t:"สร้างหน้า dashboard 7 หน้า", d:true},
+    {id:"p3b", t:"โฮสต์ออนไลน์ (deal-dashboard...workers.dev)", d:true},
+    {id:"p3c", t:"index.html เชื่อมข้อมูลจริง", n:"⚠️ ยังโชว์ข้อมูลตัวอย่าง — ไม่ส่ง &k= เลย 401", d:false, warn:true},
+    {id:"p3d", t:"receipt.html เชื่อมข้อมูลจริง", d:true},
+    {id:"p3e", t:"files.html เชื่อมข้อมูลจริง", d:true},
+    {id:"p3f", t:"เมนูข้ามหน้า (ภาพรวม · หลักฐาน · ใบแทน)", n:"มีใน receipt/files แล้ว · index.html ยังไม่มี", d:false},
+  ]},
+  { n:4, title:"GitHub auto-deploy", items:[
+    {id:"p4a", t:"repo deal-line-bot + ต่อ Cloudflare", d:true},
+    {id:"p4b", t:"repo deal-dashboard + ต่อ Cloudflare", d:true},
+    {id:"p4c", t:"ไฟล์บนเครื่อง = บน GitHub (sync ครบ)", d:true},
+    {id:"p4d", t:"ทำให้ repo เป็น private", n:"ยังไม่ได้เช็ค — ต้องทำก่อนขาย", d:false},
+  ]},
+  { n:5, title:"ต่อ Google", items:[
+    {id:"p5a", t:"เปิด Google Sheets API + Drive API", d:true},
+    {id:"p5b", t:"สร้าง service account + แก้ปัญหา org policy", d:true},
+    {id:"p5e", t:"ใส่ secret ครบ (CLAUDE_KEY, GOOGLE_*)", d:true},
+    {id:"p5h", t:"ย้าย Google project ออกจาก Gmail ส่วนตัว", n:"⚠️ บัญชีส่วนตัวโดนระงับ = ลูกค้าใช้ไม่ได้พร้อมกัน", d:false, warn:true},
+  ]},
+  { n:6, title:"ข้อมูลจริงวิ่งครบวงจร", items:[
+    {id:"p6y", t:"OCR อ่านบิล + เด้งการ์ดยืนยัน", d:true},
+    {id:"p6d", t:"ถ่ายบิล → ยืนยัน → เข้าชีทได้จริง", d:true},
+    {id:"p6f", t:"เก็บรูปบิลเข้า Drive ลูกค้า", d:true},
+    {id:"p6e", t:"เปิดแดชบอร์ดเห็นข้อมูลจริง", n:"⚠️ receipt/files เห็น · index.html ยังไม่เห็น", d:false, warn:true},
+  ]},
+  { n:10, title:"OCR แม่นขึ้น", isNew:true, items:[
+    {id:"pAa", t:"prompt ภาษาอังกฤษ ประหยัด token 55% (ค่าที่ได้ยังเป็นไทย)", d:true},
+    {id:"pAb", t:"สอนกฎบิลไทย — เลือกยอดไหน / สลิปโอนใครคือผู้รับ / พ.ศ.", d:true},
+    {id:"pAc", t:"confidence รายช่อง → การ์ดไฮไลต์สีส้มให้แตะแก้", d:true},
+    {id:"pAd", t:"flag เตือนของแปลก (เช่น เอกสารไม่ตรงประเภท)", d:true},
+    {id:"pAe", t:"ดึงเพิ่ม: ประเภทเอกสาร, VAT, หัก ณ ที่จ่าย", d:true},
+    {id:"pAf", t:"เทสต์บิลจริง 10 ใบ ตัดสินว่าจะขยับเป็น Sonnet ไหม", n:"ชื่อไทยยาว ๆ ยังอ่านเพี้ยน แต่ยอด/วันที่ถูก", d:false},
+  ]},
+  { n:11, title:"โครงสร้างชีท + หลักฐานแนบ", isNew:true, items:[
+    {id:"pBa", t:"ขยายเป็น 24 คอลัมน์ (id, จ่ายแล้ว, ใบแทน, VAT, ISO date ฯลฯ)", d:true},
+    {id:"pBb", t:"soft delete — ลบแล้วเลขแถวไม่ขยับ", d:true},
+    {id:"pBc", t:"คำสั่ง migrate อัปเกรดชีทลูกค้าเก่าอัตโนมัติ", d:true},
+    {id:"pBd", t:"แนบหลักฐาน 4 ประเภท (ใบเสร็จ/ใบกำกับ/สลิป/อื่น)", d:true},
+    {id:"pBe", t:"หน้า /files จับคู่รูปกำพร้าเข้ารายการ", d:true},
+    {id:"pBf", t:"แท็บ _settings เก็บข้อมูลบริษัท", d:true},
+    {id:"pBg", t:"ตาราง _people แปลงชื่อ LINE เป็นชื่อจริง", n:"ยังไม่ได้ทำ — ชื่อเล่นใช้ในเอกสารบัญชีไม่ได้", d:false},
+  ]},
+  { n:12, title:"ใบรับรองแทนใบเสร็จ", isNew:true, items:[
+    {id:"pCa", t:"หน้า /receipt พิมพ์ A4 ได้", d:true},
+    {id:"pCb", t:"ออกใบแทนทุกรายการเป็นค่าเริ่มต้น บัญชีเอาออกเอง", d:true},
+    {id:"pCc", t:"ตารางโชว์ว่าแต่ละแถวมีเอกสารอะไรบ้าง", d:true},
+    {id:"pCd", t:"ติ๊กแล้วเขียนกลับชีทคอลัมน์ L ทันที", d:true},
+    {id:"pCe", t:"พิมพ์รวมใบเดียว / แยกใบต่อรายการ", d:true},
+    {id:"pCf", t:"อัปโลโก้ + ลายเซ็นเป็นไฟล์ (ย่อขนาดอัตโนมัติ)", d:true},
+    {id:"pCg", t:"เทสต์พิมพ์จริง — โลโก้/ลายเซ็นออกมาถูกที่", d:false},
+  ]},
+  { n:13, title:"UX การ์ด LINE + onboarding", isNew:true, items:[
+    {id:"pDa", t:"ลดปุ่มจาก 7 เหลือ 3 (จ่ายแล้ว + แก้ไข/ดูบิล/เพิ่มเติม)", d:true},
+    {id:"pDb", t:"เมนูรอง (แนบรูป/ลบ/แดชบอร์ด) ยุบไว้ใน เพิ่มเติม", d:true},
+    {id:"pDc", t:"ปุ่มล่างสลับ: เพิ่มข้อมูลบริษัท ↔ เปิดแดชบอร์ด", n:"⚠️ เขียนแล้วแต่ไม่ขึ้น — flag setup ค้าง", d:false, warn:true},
+    {id:"pDd", t:"เตือนในการ์ดตอนบันทึกถ้าตั้งค่าไม่ครบ", d:true},
+    {id:"pDe", t:"หน้า onboarding หลังเชื่อม Google (3 ขั้นตอน)", d:true},
+    {id:"pDf", t:"ส่งการ์ดกลับ LINE หลังเชื่อมสำเร็จ", n:"⚠️ ยังไม่มี — เชื่อมเสร็จแล้วเงียบ", d:false, warn:true},
+  ]},
+  { n:7, title:"ทดสอบลูกค้านำร่อง (พิสูจน์ว่าคนจ่าย)", key:true, items:[
+    {id:"p7a", t:"เลือกลูกค้านำร่อง 3–10 เจ้า", d:false},
+    {id:"p7b", t:"ให้ลองใช้จริง 1 เดือน (ฟรี)", d:false},
+    {id:"p7c", t:"เก็บเงินจริง (แม้ราคาถูก)", d:false},
+    {id:"p7d", t:"สรุป: มีคนจ่ายไหม + จ่ายเพื่ออะไร", n:"ถ้าไม่ผ่าน อย่าเพิ่มฟีเจอร์ต่อ", d:false},
+  ]},
+  { n:8, title:"ปุ่ม “เชื่อม Google” ของลูกค้าเอง (OAuth)", items:[
+    {id:"p8a", t:"ตั้ง OAuth consent screen + client", d:true},
+    {id:"p8b", t:"เขียน /connect + /callback flow", d:true},
+    {id:"p8c", t:"เก็บ refresh token ต่อ tenant", d:true},
+    {id:"p8d", t:"สร้างชีท + เก็บรูปใน Drive ลูกค้าเอง", d:true},
+    {id:"p8e", t:"เปิด testing mode (รับได้ ~100 บริษัท)", d:true},
+    {id:"p8f", t:"แก้บั๊ก: เชื่อมซ้ำแล้วสร้างชีทใหม่ทับของเดิม", n:"⚠️ ร้ายแรง — ลูกค้าเชื่อมซ้ำทีข้อมูลหายหมด", d:false, warn:true},
+  ]},
+  { n:9, title:"เปิดขายสาธารณะ", items:[
+    {id:"p9b", t:"Security: token ต่อ tenant + คำสั่งรีเซ็ตลิงก์", d:true},
+    {id:"p9f", t:"นโยบายความเป็นส่วนตัว + ข้อตกลงการใช้งาน", n:"จำเป็นทั้ง PDPA และยื่น Google verify", d:false},
+    {id:"p9g", t:"สำรอง secrets + KV ลง password manager", n:"refresh token ลูกค้าหายแล้วสร้างใหม่ไม่ได้", d:false},
+    {id:"p9e", t:"ระบบเก็บเงิน (Stripe / พร้อมเพย์)", d:false},
+    {id:"p9a", t:"ส่ง Google verify", n:"ทำตอนใกล้ชน 100 บริษัท ไม่ต้องรีบ", d:false},
+    {id:"p9d", t:"จับคู่สลิปอัตโนมัติ + รายงานภาษี", d:false},
+  ]},
+];
+
+const KEY="deal_checklist_v2";
+const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+
+function loadState(){ try{ return JSON.parse(localStorage.getItem(KEY)||"{}"); }catch{ return {}; } }
+function saveState(s){ try{ localStorage.setItem(KEY, JSON.stringify(s)); }catch{} }
+
+let state = loadState();
+DATA.forEach(p=>p.items.forEach(it=>{ if(!(it.id in state)) state[it.id]=!!it.d; }));
+
+const phasesEl=document.getElementById("phases");
+
+function render(){
+  phasesEl.innerHTML = DATA.map(p=>{
+    const total=p.items.length;
+    const done=p.items.filter(it=>state[it.id]).length;
+    const cls = done===total ? "done" : (done>0 ? "doing":"");
+    const pill = done===total ? "เสร็จ" : (done>0 ? "กำลังทำ" : "รอ");
+    const items = p.items.map(it=>`
+      <div class="item ${state[it.id]?"on":""}" data-id="${it.id}">
+        <div class="box">${CHECK}</div>
+        <div class="label">${it.t}${it.n?`<span class="note ${it.warn?"warn":""}">${it.n}</span>`:""}</div>
+      </div>`).join("");
+    return `<section class="phase ${cls}">
+      <div class="phead">
+        <div class="pnum">${p.n}</div>
+        <div class="ptitle">${p.title}${p.key?'<span class="pkey">★ สำคัญสุด</span>':""}${p.isNew?'<span class="pnew">เพิ่มใหม่</span>':""}</div>
+        <div class="ppill">${pill} ${done}/${total}</div>
+      </div>
+      <div class="items">${items}</div>
+    </section>`;
+  }).join("");
+  updateProgress();
+}
+
+function updateProgress(){
+  const all=DATA.flatMap(p=>p.items);
+  const done=all.filter(it=>state[it.id]).length;
+  const pct=Math.round(done/all.length*100);
+  document.getElementById("fill").style.width=pct+"%";
+  document.getElementById("pct").textContent=pct+"%";
+  document.getElementById("count").textContent=`ทำแล้ว ${done} จาก ${all.length} รายการ`;
+}
+
+phasesEl.addEventListener("click", e=>{
+  const row=e.target.closest(".item"); if(!row) return;
+  state[row.dataset.id]=!state[row.dataset.id];
+  saveState(state); render();
+});
+
+document.getElementById("reset").addEventListener("click", ()=>{
+  if(!confirm("รีเซ็ตความคืบหน้าทั้งหมดกลับเป็นค่าเริ่มต้น?")) return;
+  state={}; DATA.forEach(p=>p.items.forEach(it=>state[it.id]=!!it.d));
+  saveState(state); render();
+});
+
+render();
+</script>
+</body>
+</html>
