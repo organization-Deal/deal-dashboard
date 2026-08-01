@@ -147,7 +147,7 @@
     </nav>
     <div class="sidefoot">
       <a class="sidelink" id="filesLink" href="#"><span>📎 จับคู่หลักฐาน</span></a>
-      <a class="sidelink" id="receiptLink" href="#"><span>🧾 ใบแทนใบเสร็จ</span></a>
+      <a class="sidelink" id="receiptLink" href="#"><span>📂 เอกสารอัตโนมัติ</span></a>
       <a class="connbtn" id="connBtn" href="#"><span>🔗 เชื่อม Google</span></a>
       <div class="who"><div class="av">D</div><div><div id="whoName">เจ้าของธุรกิจ</div></div></div>
     </div>
@@ -250,7 +250,7 @@
     <!-- BILLS -->
     <section class="page" id="page-bills">
       <div class="card">
-        <h3>บิล/ใบเสร็จ</h3><div class="cs">รูปบิลทั้งหมดที่เก็บใน Google Drive ของคุณ</div>
+        <h3>เอกสารรายการ</h3><div class="cs">หลักฐานต้นฉบับ + ใบเบิก + ใบแทน PDF ที่ระบบสร้างใน Google Drive</div>
         <div id="billGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:12px"></div>
       </div>
     </section>
@@ -361,11 +361,15 @@ function renderRecent(){
 function rowHTML(r){
   const d=pdate(r.date); const dd=d?d.getDate():"–"; const mm=d?THMON[d.getMonth()]:"";
   const badge=r.status==="จ่ายแล้ว"?"paid":"pending";
+  const docs=[];
+  if(r.img) docs.push(`<a href="${r.img}" target="_blank" rel="noopener">📎 หลักฐาน</a>`);
+  if(r.claimPdfUrl) docs.push(`<a href="${r.claimPdfUrl}" target="_blank" rel="noopener">📄 ใบเบิก</a>`);
+  if(r.receiptPdfUrl) docs.push(`<a href="${r.receiptPdfUrl}" target="_blank" rel="noopener">🧾 ใบแทน</a>`);
   return `<div class="row">
     <div class="rdate"><div class="d">${dd}</div><div class="m">${mm}</div></div>
     <div class="rmeta"><div class="nm">${r.vendor||"-"}</div><div class="ds">${r.note||""}${r.sender?" · "+r.sender:""}</div>
       <div class="chips"><span class="chip">${r.category||"-"}</span><span class="badge ${badge}">${r.status||"รอเบิก"}</span></div></div>
-    <div class="ramt"><div class="n">${baht(r.amount)}</div>${r.img?`<a onclick="showBill('${r.img}')">🧾 ดูบิล</a>`:""}</div>
+    <div class="ramt"><div class="n">${baht(r.amount)}</div><div style="display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px">${docs.join("")}</div></div>
   </div>`;
 }
 
@@ -437,8 +441,18 @@ function renderReport(){
 
 /* ---------- BILLS ---------- */
 function renderBills(){
-  const withImg=ALL.filter(r=>r.img);
-  el("billGrid").innerHTML=withImg.length?withImg.map(r=>`<div style="border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer" onclick="showBill('${r.img}')"><div style="background:var(--green-soft);height:90px;display:grid;place-items:center;font-size:28px">🧾</div><div style="padding:8px 10px"><div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.vendor||"บิล"}</div><div style="font-size:11px;color:var(--muted)">${baht(r.amount)} · ${r.date||""}</div></div></div>`).join(""):'<div class="empty" style="grid-column:1/-1">ยังไม่มีรูปบิล — ถ่ายบิลในไลน์แล้วรูปจะมาที่นี่</div>';
+  const rows=ALL.filter(r=>r.img||r.claimPdfUrl||r.receiptPdfUrl);
+  el("billGrid").innerHTML=rows.length?rows.map(r=>{
+    const links=[];
+    if(r.img) links.push(`<a class="btn" href="${r.img}" target="_blank" rel="noopener">📎 หลักฐาน</a>`);
+    if(r.claimPdfUrl) links.push(`<a class="btn" href="${r.claimPdfUrl}" target="_blank" rel="noopener">📄 ใบเบิก</a>`);
+    if(r.receiptPdfUrl) links.push(`<a class="btn solid" href="${r.receiptPdfUrl}" target="_blank" rel="noopener">🧾 ใบแทน</a>`);
+    return `<div style="border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff">
+      <div style="background:var(--green-soft);height:76px;display:grid;place-items:center;font-size:28px">📂</div>
+      <div style="padding:10px"><div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.vendor||"รายการ"}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">${baht(r.amount)} · ${r.date||""}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${links.join("")}</div></div></div>`;
+  }).join(""):'<div class="empty" style="grid-column:1/-1">ยังไม่มีเอกสาร — กดบันทึกรายการใน LINE แล้วระบบจะสร้างใบเบิกและใบแทนให้อัตโนมัติ</div>';
 }
 function showBill(url){
   if(!url||url==="#")return;
@@ -456,8 +470,8 @@ function renderSettings(){
 
 /* ---------- EXPORT ---------- */
 function toCSV(rows){
-  const head=["วันที่","ยอด","ร้าน/ผู้รับ","หมวด","รายละเอียด","ผู้ส่ง","สถานะ","ลิงก์รูป"];
-  const body=rows.map(r=>[r.date,r.amount,r.vendor,r.category,r.note,r.sender,r.status,r.img].map(v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`).join(","));
+  const head=["วันที่","ยอด","ร้าน/ผู้รับ","ผู้โอน","หมวด","รายละเอียด","ผู้ส่ง","สถานะ","หลักฐาน","ใบเบิก PDF","ใบแทน PDF"];
+  const body=rows.map(r=>[r.date,r.amount,r.vendor,r.transferor,r.category,r.note,r.sender,r.status,r.img,r.claimPdfUrl,r.receiptPdfUrl].map(v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`).join(","));
   return "\ufeff"+[head.join(","),...body].join("\n");
 }
 function download(name,text){
