@@ -122,6 +122,19 @@
 
   .note{font-size:12px;color:var(--muted);background:var(--amber-soft);border-radius:10px;padding:10px 12px;margin-top:10px}
   .pill{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px}
+  .dateinfo{display:flex;gap:10px;flex-wrap:wrap;margin-top:5px;font-size:11.5px;color:var(--muted)}
+  .dateinfo b{color:var(--ink);font-weight:600}
+  .late{display:inline-flex;align-items:center;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--amber-soft);color:var(--amber)}
+  .late.future{background:var(--red-soft);color:var(--red)}
+  .accounting-note{display:flex;gap:8px;align-items:flex-start;background:#f8faf7;border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin:-2px 0 14px;font-size:12px;color:var(--muted)}
+  .log-item{display:flex;align-items:flex-start;gap:12px;padding:13px 4px;border-bottom:1px solid #f0f2ee}
+  .log-item:last-child{border-bottom:none}
+  .log-time{width:145px;flex-shrink:0;font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted)}
+  .log-main{flex:1;min-width:0}
+  .log-main .title{font-weight:600;font-size:13.5px}
+  .log-main .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .log-docs{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .micro-link{font-size:11px;color:var(--green);text-decoration:none}
 
   /* modal */
   .modal{position:fixed;inset:0;background:rgba(20,32,27,.6);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
@@ -139,6 +152,7 @@
     .sidebar{width:60px}.brand h1,.brand .sub,.navlink span,.sidefoot .who div,.connbtn span,.sidelink span{display:none}
     .kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.main{padding:18px 16px 50px}
     .syncstate{margin-left:0}.syncstate .label{display:none}.head .co{margin-left:auto}
+    .log-item{display:block}.log-time{width:auto;margin-bottom:5px}.log-docs{justify-content:flex-start;margin-top:7px}
   }
 </style>
 </head>
@@ -153,6 +167,7 @@
       <button class="navlink" data-p="reimburse"><span class="ic">⏳</span><span>รอเบิก</span></button>
       <button class="navlink" data-p="reports"><span class="ic">▦</span><span>รายงาน & ภาษี</span></button>
       <button class="navlink" data-p="bills"><span class="ic">🧾</span><span>บิล/ใบเสร็จ</span></button>
+      <button class="navlink" data-p="activity"><span class="ic">◷</span><span>ประวัติการบันทึก</span></button>
       <button class="navlink" data-p="settings"><span class="ic">⚙</span><span>ตั้งค่า</span></button>
     </nav>
     <div class="sidefoot">
@@ -186,10 +201,11 @@
         <div class="kpi pending"><div class="lb">รอเบิก</div><div class="big" id="kPending">฿0</div><div class="foot" id="kPendingCount">0 รายการ</div></div>
         <div class="kpi paid"><div class="lb">จ่ายแล้ว</div><div class="big" id="kPaid">฿0</div><div class="foot" id="kPaidCount">0 รายการ</div></div>
       </div>
+      <div class="accounting-note"><span>ℹ️</span><span><b>ยอดและกราฟ</b> ยึดวันที่รายการจริงตามสลิป ส่วน <b>รายการล่าสุด</b> เรียงตามวันที่และเวลาที่กดบันทึกเข้าระบบ</span></div>
       <div class="grid2">
         <div>
-          <div class="card"><h3>แนวโน้มรายจ่าย</h3><div class="cs">ยอดใช้จ่ายรายวันในช่วงที่เลือก</div><svg class="trend" id="trend" viewBox="0 0 600 150" preserveAspectRatio="none"></svg></div>
-          <div class="card"><h3>รายการล่าสุด</h3><div class="cs">บิลที่เพิ่งบันทึก</div><div id="recent"></div></div>
+          <div class="card"><h3>แนวโน้มรายจ่าย</h3><div class="cs">ยอดใช้จ่ายรายวันตามวันที่รายการในช่วงที่เลือก</div><svg class="trend" id="trend" viewBox="0 0 600 150" preserveAspectRatio="none"></svg></div>
+          <div class="card"><h3>รายการล่าสุด</h3><div class="cs">เรียงตามเวลาที่บันทึกเข้าระบบ ไม่จำกัดเดือนบัญชี</div><div id="recent"></div></div>
         </div>
         <div>
           <div class="card"><h3>หมวดที่ใช้เยอะสุด</h3><div class="cs">ช่วงที่เลือก</div><div id="cats"></div></div>
@@ -205,6 +221,7 @@
           <input type="text" id="q" placeholder="ค้นหาร้าน / รายละเอียด…" />
           <select id="fStatus"><option value="">ทุกสถานะ</option><option>รอเบิก</option><option>จ่ายแล้ว</option></select>
           <select id="fCat"></select>
+          <select id="fDateBasis"><option value="transaction">ช่วงเดือน: วันที่รายการ</option><option value="recorded">ช่วงเดือน: วันที่บันทึก</option></select>
           <select id="fSort"><option value="new">ล่าสุดก่อน</option><option value="old">เก่าสุดก่อน</option><option value="hi">ยอดมาก→น้อย</option><option value="lo">ยอดน้อย→มาก</option></select>
           <button class="btn" id="expCsv">⬇ ส่งออก CSV</button>
         </div>
@@ -269,6 +286,15 @@
       </div>
     </section>
 
+    <!-- ACTIVITY -->
+    <section class="page" id="page-activity">
+      <div class="card">
+        <h3>ประวัติการบันทึก</h3><div class="cs">เปรียบเทียบวันที่บันทึกเข้าระบบกับวันที่รายการจริงตามหลักฐาน</div>
+        <div class="accounting-note" style="margin-top:10px"><span>ℹ️</span><span>หน้านี้เป็นประวัติการรับรายการจากข้อมูลที่มีอยู่ในชีท ไม่ใช่ Audit Log ทุกการคลิก การแก้ไข หรือการเปลี่ยนสถานะ</span></div>
+        <div id="activityRows"></div>
+      </div>
+    </section>
+
     <!-- SETTINGS -->
     <section class="page" id="page-settings">
       <div class="card">
@@ -277,6 +303,7 @@
           <tr><td>สถานะการเชื่อม Google</td><td id="setConn">—</td></tr>
           <tr><td>รหัสกลุ่ม (tenant)</td><td id="setTenant" style="font-family:monospace;font-size:12px">—</td></tr>
           <tr><td>จำนวนรายการที่โหลดได้</td><td id="setRows">—</td></tr>
+          <tr><td>โครงสร้างวันที่</td><td>วันที่รายการจริง + วันที่บันทึกเข้าระบบ</td></tr>
           <tr><td>แหล่งข้อมูล</td><td>Google Sheet ของคุณเอง</td></tr>
           <tr><td>หมวดที่พบในระบบ</td><td id="setCats">—</td></tr>
         </table>
@@ -318,15 +345,41 @@ function pdate(s){
   let y=+m[1]; if(y>2400) y-=543;
   return new Date(y,+m[2]-1,+m[3]);
 }
-function inRange(r){
-  const d=pdate(r.date); if(!d) return RANGE==="all";
+function cdate(s){
+  if(!s) return null;
+  const d=new Date(s);
+  return Number.isNaN(d.getTime())?null:d;
+}
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
+function fmtDate(d,withTime=false){
+  if(!d) return "—";
+  const opt={day:"numeric",month:"short",year:"numeric"};
+  if(withTime){opt.hour="2-digit";opt.minute="2-digit";}
+  return d.toLocaleString("th-TH",opt);
+}
+function dateFor(r,basis="transaction"){return basis==="recorded"?cdate(r.createdAt):pdate(r.dateISO||r.date);}
+function dayGap(r){
+  const tx=pdate(r.dateISO||r.date), cr=cdate(r.createdAt);
+  if(!tx||!cr) return null;
+  const a=Date.UTC(tx.getFullYear(),tx.getMonth(),tx.getDate());
+  const b=Date.UTC(cr.getFullYear(),cr.getMonth(),cr.getDate());
+  return Math.round((b-a)/86400000);
+}
+function gapBadge(r){
+  const gap=dayGap(r);
+  if(gap==null||gap===0) return "";
+  if(gap>0) return `<span class="late">ย้อนหลัง ${gap} วัน</span>`;
+  return `<span class="late future">วันที่รายการหลังวันบันทึก ${Math.abs(gap)} วัน</span>`;
+}
+function inRange(r,basis="transaction"){
+  const d=dateFor(r,basis); if(!d) return RANGE==="all";
   const now=new Date();
   if(RANGE==="all") return true;
   if(RANGE==="this") return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
   if(RANGE==="last"){const lm=new Date(now.getFullYear(),now.getMonth()-1,1);return d.getMonth()===lm.getMonth()&&d.getFullYear()===lm.getFullYear();}
   return true;
 }
-const scoped=()=>ALL.filter(inRange);
+const scoped=(basis="transaction")=>ALL.filter(r=>inRange(r,basis));
 
 /* ---------- OVERVIEW ---------- */
 function renderKPIs(){
@@ -374,20 +427,24 @@ function renderVendors(){
   el("vendors").innerHTML=arr.length?arr.map(([n,v])=>`<div class="catrow"><div class="top"><span>${n}</span><span class="cv">${baht(v)}</span></div><div class="track"><div class="fill" style="width:${Math.max(6,(v/max)*100)}%;background:var(--orange)"></div></div></div>`).join(""):'<div class="empty">ยังไม่มีข้อมูล</div>';
 }
 function renderRecent(){
-  const D=scoped().slice(0,5);
-  el("recent").innerHTML=D.length?D.map(rowHTML).join(""):'<div class="empty">ยังไม่มีรายการ</div>';
+  const D=ALL.slice().sort((a,b)=>(cdate(b.createdAt)?.getTime()||0)-(cdate(a.createdAt)?.getTime()||0)).slice(0,5);
+  el("recent").innerHTML=D.length?D.map(r=>rowHTML(r,{primary:"recorded"})).join(""):'<div class="empty">ยังไม่มีรายการ</div>';
 }
-function rowHTML(r){
-  const d=pdate(r.date); const dd=d?d.getDate():"–"; const mm=d?THMON[d.getMonth()]:"";
+function rowHTML(r,{primary="transaction"}={}){
+  const tx=pdate(r.dateISO||r.date);
+  const cr=cdate(r.createdAt);
+  const mainDate=primary==="recorded"?(cr||tx):(tx||cr);
+  const dd=mainDate?mainDate.getDate():"–"; const mm=mainDate?THMON[mainDate.getMonth()]:"";
   const badge=r.status==="จ่ายแล้ว"?"paid":"pending";
   const docs=[];
-  if(r.img) docs.push(`<a href="${r.img}" target="_blank" rel="noopener">📎 หลักฐาน</a>`);
-  if(r.claimPdfUrl) docs.push(`<a href="${r.claimPdfUrl}" target="_blank" rel="noopener">📄 ใบเบิก</a>`);
-  if(r.receiptPdfUrl) docs.push(`<a href="${r.receiptPdfUrl}" target="_blank" rel="noopener">🧾 ใบแทน</a>`);
+  if(r.img) docs.push(`<a href="${esc(r.img)}" target="_blank" rel="noopener">📎 หลักฐาน</a>`);
+  if(r.claimPdfUrl) docs.push(`<a href="${esc(r.claimPdfUrl)}" target="_blank" rel="noopener">📄 ใบเบิก</a>`);
+  if(r.receiptPdfUrl) docs.push(`<a href="${esc(r.receiptPdfUrl)}" target="_blank" rel="noopener">🧾 ใบแทน</a>`);
   return `<div class="row">
     <div class="rdate"><div class="d">${dd}</div><div class="m">${mm}</div></div>
-    <div class="rmeta"><div class="nm">${r.vendor||"-"}</div><div class="ds">${r.note||""}${r.sender?" · "+r.sender:""}</div>
-      <div class="chips"><span class="chip">${r.category||"-"}</span><span class="badge ${badge}">${r.status||"รอเบิก"}</span></div></div>
+    <div class="rmeta"><div class="nm">${esc(r.vendor||"-")}</div><div class="ds">${esc(r.note||"")}${r.sender?" · "+esc(r.sender):""}</div>
+      <div class="dateinfo"><span>วันที่รายการ <b>${fmtDate(tx)}</b></span><span>บันทึก <b>${fmtDate(cr,true)}</b></span>${gapBadge(r)}</div>
+      <div class="chips"><span class="chip">${esc(r.category||"-")}</span><span class="badge ${badge}">${esc(r.status||"รอเบิก")}</span></div></div>
     <div class="ramt"><div class="n">${baht(r.amount)}</div><div style="display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px">${docs.join("")}</div></div>
   </div>`;
 }
@@ -401,11 +458,12 @@ function buildCatFilter(){
 }
 function filteredExp(){
   const q=el("q").value.trim().toLowerCase(),st=el("fStatus").value,ct=el("fCat").value,so=el("fSort")?el("fSort").value:"new";
-  let list=scoped().filter(r=>(!st||r.status===st)&&(!ct||r.category===ct)&&(!q||((r.vendor||"")+(r.note||"")).toLowerCase().includes(q)));
+  const basis=el("fDateBasis")?.value||"transaction";
+  let list=scoped(basis).filter(r=>(!st||r.status===st)&&(!ct||r.category===ct)&&(!q||((r.vendor||"")+(r.note||"")+(r.sender||"")).toLowerCase().includes(q)));
   list.sort((a,b)=>{
     if(so==="hi")return +b.amount- +a.amount;
     if(so==="lo")return +a.amount- +b.amount;
-    const da=pdate(a.date)||0,db=pdate(b.date)||0;
+    const da=dateFor(a,basis)?.getTime()||0,db=dateFor(b,basis)?.getTime()||0;
     return so==="old"?da-db:db-da;
   });
   return list;
@@ -483,6 +541,24 @@ function showBill(url){
   el("modal").classList.add("show");
 }
 
+/* ---------- ACTIVITY ---------- */
+function renderActivity(){
+  const rows=ALL.slice().sort((a,b)=>(cdate(b.createdAt)?.getTime()||0)-(cdate(a.createdAt)?.getTime()||0));
+  el("activityRows").innerHTML=rows.length?rows.map(r=>{
+    const tx=pdate(r.dateISO||r.date),cr=cdate(r.createdAt);
+    const docs=[];
+    if(r.img) docs.push(`<a class="micro-link" href="${esc(r.img)}" target="_blank" rel="noopener">หลักฐาน</a>`);
+    if(r.claimPdfUrl) docs.push(`<a class="micro-link" href="${esc(r.claimPdfUrl)}" target="_blank" rel="noopener">ใบเบิก</a>`);
+    if(r.receiptPdfUrl) docs.push(`<a class="micro-link" href="${esc(r.receiptPdfUrl)}" target="_blank" rel="noopener">ใบแทน</a>`);
+    return `<div class="log-item">
+      <div class="log-time">${fmtDate(cr,true)}</div>
+      <div class="log-main"><div class="title">บันทึกรายการ ${esc(r.vendor||r.note||"ไม่ระบุรายการ")} · ${baht(r.amount)}</div>
+      <div class="sub">วันที่รายการตามหลักฐาน: ${fmtDate(tx)} · ผู้ส่ง: ${esc(r.sender||r.payerName||"—")} ${gapBadge(r)}</div></div>
+      <div class="log-docs">${docs.join("")}</div>
+    </div>`;
+  }).join(""):'<div class="empty">ยังไม่มีประวัติการบันทึก</div>';
+}
+
 /* ---------- SETTINGS ---------- */
 function renderSettings(){
   el("setConn").innerHTML=CONNECTED?'<span class="pill" style="background:var(--green-soft);color:var(--green)">เชื่อมแล้ว</span>':'<span class="pill" style="background:var(--amber-soft);color:var(--amber)">ยังไม่เชื่อม</span>';
@@ -493,8 +569,8 @@ function renderSettings(){
 
 /* ---------- EXPORT ---------- */
 function toCSV(rows){
-  const head=["วันที่","ยอด","ร้าน/ผู้รับ","ผู้โอน","หมวด","รายละเอียด","ผู้ส่ง","สถานะ","หลักฐาน","ใบเบิก PDF","ใบแทน PDF"];
-  const body=rows.map(r=>[r.date,r.amount,r.vendor,r.transferor,r.category,r.note,r.sender,r.status,r.img,r.claimPdfUrl,r.receiptPdfUrl].map(v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`).join(","));
+  const head=["วันที่รายการ","วันที่บันทึก","ย้อนหลัง (วัน)","ยอด","ร้าน/ผู้รับ","ผู้โอน","หมวด","รายละเอียด","ผู้ส่ง","สถานะ","หลักฐาน","ใบเบิก PDF","ใบแทน PDF"];
+  const body=rows.map(r=>[r.dateISO||r.date,r.createdAt,dayGap(r),r.amount,r.vendor,r.transferor,r.category,r.note,r.sender,r.status,r.img,r.claimPdfUrl,r.receiptPdfUrl].map(v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`).join(","));
   return "\ufeff"+[head.join(","),...body].join("\n");
 }
 function download(name,text){
@@ -503,7 +579,7 @@ function download(name,text){
 }
 
 /* ---------- NAV / DRAW ---------- */
-const TITLES={overview:"แดชบอร์ด",expenses:"รายจ่าย",income:"รายรับ",reimburse:"รอเบิก",reports:"รายงาน & ภาษี",bills:"บิล/ใบเสร็จ",settings:"ตั้งค่า"};
+const TITLES={overview:"แดชบอร์ด",expenses:"รายจ่าย",income:"รายรับ",reimburse:"รอเบิก",reports:"รายงาน & ภาษี",bills:"บิล/ใบเสร็จ",activity:"ประวัติการบันทึก",settings:"ตั้งค่า"};
 document.querySelectorAll(".navlink").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll(".navlink").forEach(x=>x.classList.remove("active"));b.classList.add("active");
   const p=b.dataset.p;document.querySelectorAll(".page").forEach(s=>s.classList.remove("show"));el("page-"+p).classList.add("show");
@@ -512,14 +588,14 @@ document.querySelectorAll(".navlink").forEach(b=>b.addEventListener("click",()=>
 el("rangeSel").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
   el("rangeSel").querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");RANGE=b.dataset.r;drawScoped();
 }));
-["q","fStatus","fCat","fSort"].forEach(id=>{const e=el(id);if(e)e.addEventListener("input",renderExp);});
+["q","fStatus","fCat","fDateBasis","fSort"].forEach(id=>{const e=el(id);if(e)e.addEventListener("input",renderExp);});
 el("expCsv").onclick=()=>download("expenses.csv",toCSV(filteredExp()));
 el("repMonth").onchange=renderReport;
 el("repCsv").onclick=()=>download("report.csv",toCSV(repData()));
 el("repPrint").onclick=()=>window.print();
 
 function drawScoped(){renderKPIs();renderTrend();renderCats();renderVendors();renderRecent();renderExp();}
-function drawAll(){buildCatFilter();buildRepMonths();drawScoped();renderReim();renderReport();renderBills();renderSettings();
+function drawAll(){buildCatFilter();buildRepMonths();drawScoped();renderReim();renderReport();renderBills();renderActivity();renderSettings();
   el("coName").textContent=CONAME;
   // ส่ง k ต่อไปทุกลิงก์ ไม่งั้นหน้าปลายทางจะโดน 401
   const qs="?tenant="+encodeURIComponent(TENANT)+"&k="+encodeURIComponent(K);
