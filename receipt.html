@@ -143,8 +143,8 @@
   table.doc-tbl{width:100%;border-collapse:collapse;margin-bottom:16px}
   .doc-tbl th,.doc-tbl td{border:1px solid #000;padding:7px 9px;vertical-align:top}
   .doc-tbl th{font-weight:700;text-align:center}
-  .doc-tbl td.d{width:22%;text-align:center;font-weight:600;white-space:nowrap}
-  .doc-tbl td.a{width:20%;text-align:right;font-weight:600;white-space:nowrap}
+  .doc-tbl td.d{width:16%;text-align:center;font-weight:600;white-space:nowrap}
+  .doc-tbl td.a{width:16%;text-align:right;font-weight:600;white-space:nowrap}
   tr.total td{font-weight:700}
   .cert{margin:18px 0 26px;line-height:1.85;font-weight:600}
   .signs{display:flex;gap:48px;margin-top:44px}
@@ -205,7 +205,7 @@
     <thead><tr>
       <th style="width:44px">ใบแทน</th>
       <th style="width:120px">ยอด</th>
-      <th>ร้าน / ผู้รับ</th>
+      <th>ผู้โอน → ผู้รับ</th>
       <th style="width:290px">เอกสารที่มีอยู่แล้ว</th>
     </tr></thead>
     <tbody id="rows"></tbody>
@@ -273,6 +273,7 @@ const WORKER = 'https://accoutingsuppor02.organization-23c.workers.dev';
 const Q      = new URLSearchParams(location.search);
 const TENANT = Q.get('tenant') || '';
 const KEY    = Q.get('k') || '';
+const FOCUS_ID = Q.get('id') || '';
 const QS     = `?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(KEY)}`;
 
 function api(path, extra=''){ return `${WORKER}${path}${QS}${extra}`; }
@@ -437,12 +438,14 @@ async function loadAll(){
     if(recs.error) throw new Error(recs.error);
 
     RECORDS = (Array.isArray(recs)?recs:[]).filter(r=>r.type!=='รายรับ');
+    if(FOCUS_ID) RECORDS = RECORDS.filter(r=>r.id===FOCUS_ID);
     SETTINGS = settings.error ? {} : settings;
 
     picked.clear();
     const touched = RECORDS.some(r => r.needSlip);
-    RECORDS.forEach(r => { if(touched ? r.needSlip : true) picked.add(r.id); });
+    RECORDS.forEach(r => { if(FOCUS_ID || (touched ? r.needSlip : true)) picked.add(r.id); });
     if(!touched && RECORDS.length) syncAll(true);
+    if(FOCUS_ID) $('printMode').value = 'separate';
 
     checkSettings();
     render();
@@ -486,7 +489,8 @@ function render(){
       <td><input type="checkbox" class="ck" ${on?'checked':''} onchange="toggle('${esc(r.id)}',this.checked)"></td>
       <td><span class="amt">฿${money(r.amount)}</span></td>
       <td>
-        <div class="ven">${esc(r.vendor||r.category||'—')}</div>
+        <div class="ven">ผู้รับ: ${esc(r.vendor||'—')}</div>
+        <div class="dt">ผู้โอน: ${esc(r.transferor || (r.docType === 'สลิปโอนเงิน' ? '—' : (r.payerName||r.sender||'—')))}</div>
         <div class="dt">${esc(r.dateText||'')} · ${esc(r.category||'')}</div>
       </td>
       <td><div class="docs">${chips}</div>${note}</td>
@@ -603,12 +607,14 @@ function buildOneSheet(items, docNo){
   const today = fmtDate(new Date().toISOString().slice(0,10));
   const payer = items[0]?.payerName || items[0]?.sender || '—';
 
-  const rows = items.map(it=>
-    '<tr><td class="d">'+esc(fmtDate(it.dateText||it.date))+'</td>'+
-    '<td>'+esc(it.note||it.vendor||'')+'</td>'+
-    '<td class="a">'+money(it.amount)+'</td>'+
-    '<td>'+esc(it.vendor||'')+'</td></tr>'
-  ).join('');
+  const rows = items.map(it=>{
+    const transferor = it.transferor || (it.docType === 'สลิปโอนเงิน' ? '—' : (it.payerName || it.sender || '—'));
+    return '<tr><td class="d">'+esc(fmtDate(it.dateText||it.date))+'</td>'+ 
+      '<td>'+esc(it.note||it.category||'')+'</td>'+ 
+      '<td class="a">'+money(it.amount)+'</td>'+ 
+      '<td>'+esc(transferor)+'</td>'+ 
+      '<td>'+esc(it.vendor||'—')+'</td></tr>';
+  }).join('');
 
   return '<div class="sheet">'+
     '<div class="head">'+logo+
@@ -617,9 +623,9 @@ function buildOneSheet(items, docNo){
     '<div class="refs">เลขที่เอกสาร: '+esc(docNo)+'<br>วันที่ : '+today+'</div>'+
     '<div class="rtitle">ใบรับรองแทนใบเสร็จรับเงิน</div>'+
     '<div class="rsub">'+esc(s.company_name||'—')+' (ผู้จ่ายเงิน)</div>'+
-    '<table class="doc-tbl"><thead><tr><th>วัน เดือน ปี</th><th>รายละเอียดรายจ่าย</th><th>จำนวนเงิน</th><th>หมายเหตุ</th></tr></thead>'+
+    '<table class="doc-tbl"><thead><tr><th>วัน เดือน ปี</th><th>รายละเอียดรายจ่าย</th><th>จำนวนเงิน</th><th>ผู้โอน / ต้นทาง</th><th>ผู้รับ / ปลายทาง</th></tr></thead>'+
     '<tbody>'+rows+
-    '<tr class="total"><td></td><td>รวมทั้งสิ้น :</td><td class="a">'+money(total)+' บาท</td><td></td></tr>'+
+    '<tr class="total"><td></td><td>รวมทั้งสิ้น :</td><td class="a">'+money(total)+' บาท</td><td></td><td></td></tr>'+
     '</tbody></table>'+
     '<div class="cert">ข้าพเจ้า '+esc(payer)+' (ผู้เบิกจ่าย) ขอรับรองว่า รายจ่ายข้างต้นนี้ไม่อาจเรียกเก็บใบเสร็จรับเงินจากผู้รับได้ และข้าพเจ้าได้จ่ายไปในงานของบริษัทโดยแท้ ตั้งแต่วันที่ '+today+'</div>'+
     '<div class="signs">'+signBlock(payer,'ผู้เบิกจ่าย','')+signBlock(s.approver_name,'ผู้อนุมัติ',s.approver_sign_url)+'</div>'+
@@ -638,7 +644,7 @@ function doPrint(){
   const mode = $('printMode').value;
 
   $('printArea').innerHTML = (mode==='separate')
-    ? items.map((it,i)=> buildOneSheet([it], `${prefix}-${stamp}-${String(i+1).padStart(2,'0')}`)).join('')
+    ? items.map((it,i)=> buildOneSheet([it], it.slipNo || `${prefix}-${stamp}-${String(it.id||i+1).slice(-8).toUpperCase()}`)).join('')
     : buildOneSheet(items, `${prefix}-${stamp}-01`);
 
   setTimeout(()=>window.print(), 60);
