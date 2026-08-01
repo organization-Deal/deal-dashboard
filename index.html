@@ -42,7 +42,16 @@
   .main{flex:1;min-width:0;padding:24px 30px 60px}
   .head{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
   .head h2{margin:0;font-size:22px;font-weight:700}
-  .head .co{margin-left:auto;font-weight:600;font-size:14px;color:var(--ink)}
+  .head .co{font-weight:600;font-size:14px;color:var(--ink)}
+  .syncstate{margin-left:auto;display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 7px 5px 10px;color:var(--muted);font-size:11.5px;white-space:nowrap;box-shadow:0 1px 2px rgba(23,37,31,.03)}
+  .syncstate .dot{width:7px;height:7px;border-radius:50%;background:#9aa59e;flex-shrink:0}
+  .syncstate.ok .dot{background:#1f9d70;box-shadow:0 0 0 3px rgba(31,157,112,.12)}
+  .syncstate.syncing .dot{background:#d69a1d;animation:syncpulse 1s ease-in-out infinite}
+  .syncstate.error .dot{background:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,.10)}
+  .syncstate button{width:25px;height:25px;border:0;border-radius:50%;background:var(--green-soft);color:var(--green);font-family:inherit;font-size:15px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+  .syncstate button:hover{background:var(--green);color:#fff}
+  .syncstate button:disabled{opacity:.55;cursor:wait}
+  @keyframes syncpulse{0%,100%{opacity:.45;transform:scale(.82)}50%{opacity:1;transform:scale(1.15)}}
   .rangesel{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:4px}
   .rangesel button{border:none;background:none;font-family:inherit;font-size:12.5px;padding:6px 11px;border-radius:8px;cursor:pointer;color:var(--muted)}
   .rangesel button.on{background:var(--green);color:#fff;font-weight:600}
@@ -129,6 +138,7 @@
   @media(max-width:860px){
     .sidebar{width:60px}.brand h1,.brand .sub,.navlink span,.sidefoot .who div,.connbtn span,.sidelink span{display:none}
     .kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.main{padding:18px 16px 50px}
+    .syncstate{margin-left:0}.syncstate .label{display:none}.head .co{margin-left:auto}
   }
 </style>
 </head>
@@ -160,6 +170,10 @@
         <button data-r="this" class="on">เดือนนี้</button>
         <button data-r="last">เดือนก่อน</button>
         <button data-r="all">ทั้งหมด</button>
+      </div>
+      <div class="syncstate syncing" id="syncState" aria-live="polite" title="แดชบอร์ดตรวจข้อมูลใหม่อัตโนมัติทุก 5 วินาที">
+        <span class="dot"></span><span class="label" id="syncText">กำลังเชื่อมข้อมูล…</span>
+        <button type="button" id="syncBtn" title="อัปเดตตอนนี้" aria-label="อัปเดตข้อมูลตอนนี้">↻</button>
       </div>
       <div class="co" id="coName">บริษัทของคุณ</div>
     </div>
@@ -283,8 +297,13 @@ const K = QS.get("k") || "";
 const CONAME = QS.get("name") || "บริษัทของคุณ";
 let CONNECTED = false;
 
-// ไม่มีข้อมูลตัวอย่างแล้ว — ถ้าโหลดไม่ได้ต้องขึ้นข้อความ ไม่ใช่โชว์ของปลอม
+// Realtime แบบ polling: Google Sheet ไม่มี event stream โดยตรง จึงตรวจข้อมูลใหม่ทุก 5 วินาที
+const REFRESH_MS = 5000;
 let ALL = [];
+let LAST_SIGNATURE = "";
+let REFRESH_TIMER = null;
+let REFRESHING = false;
+let HAS_LOADED = false;
 
 const THMON=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const baht=n=>"฿"+Number(n||0).toLocaleString("th-TH",{minimumFractionDigits:0,maximumFractionDigits:2});
@@ -375,8 +394,10 @@ function rowHTML(r){
 
 /* ---------- EXPENSES ---------- */
 function buildCatFilter(){
+  const current=el("fCat").value;
   const cats=[...new Set(ALL.map(r=>r.category).filter(Boolean))];
   el("fCat").innerHTML='<option value="">ทุกหมวด</option>'+cats.map(c=>`<option>${c}</option>`).join("");
+  if([...el("fCat").options].some(o=>o.value===current)) el("fCat").value=current;
 }
 function filteredExp(){
   const q=el("q").value.trim().toLowerCase(),st=el("fStatus").value,ct=el("fCat").value,so=el("fSort")?el("fSort").value:"new";
@@ -417,8 +438,10 @@ function monthKeys(){
   return [...set].sort().reverse();
 }
 function buildRepMonths(){
+  const current=el("repMonth").value;
   const ks=monthKeys();
   el("repMonth").innerHTML=ks.map(k=>{const[y,m]=k.split("-");return `<option value="${k}">${THMON[+m-1]} ${(+y)+543}</option>`;}).join("")||'<option value="">—</option>';
+  if(ks.includes(current)) el("repMonth").value=current;
 }
 function repData(){
   const k=el("repMonth").value;
@@ -507,9 +530,93 @@ function drawAll(){buildCatFilter();buildRepMonths();drawScoped();renderReim();r
   el("connBtn").style.display=CONNECTED?"none":"flex";
 }
 
-/* ---------- LOAD ---------- */
+/* ---------- REALTIME LOAD ---------- */
 function fatal(icon,msg){
+  if(REFRESH_TIMER) clearInterval(REFRESH_TIMER);
   document.body.innerHTML='<div class="fatal"><span class="ic">'+icon+'</span>'+msg+'</div>';
+}
+
+function syncStatus(mode,text){
+  const box=el("syncState"), btn=el("syncBtn"), txt=el("syncText");
+  if(!box||!txt) return;
+  box.classList.remove("ok","syncing","error");
+  box.classList.add(mode);
+  txt.textContent=text;
+  if(btn) btn.disabled=mode==="syncing";
+}
+
+function clockTime(d=new Date()){
+  return d.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+
+function cleanRows(rows){
+  return rows.filter(r=>r&&(r.date||r.amount||r.vendor));
+}
+
+function rowsSignature(rows){
+  // API คืนข้อมูลตามลำดับแถวในชีท จึงใช้ JSON เป็น fingerprint ได้ตรงที่สุด
+  return JSON.stringify(rows);
+}
+
+async function refreshData({initial=false,manual=false}={}){
+  if(REFRESHING) return false;
+  if(!navigator.onLine){
+    syncStatus("error","ออฟไลน์ — รอเชื่อมต่อ");
+    return false;
+  }
+  REFRESHING=true;
+  syncStatus("syncing",manual?"กำลังอัปเดต…":"กำลังซิงก์…");
+  let res;
+  try{
+    const u=`${API}?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(K)}&_=${Date.now()}`;
+    res=await fetch(u,{
+      method:"GET",
+      cache:"no-store",
+      headers:{"accept":"application/json","cache-control":"no-cache"}
+    });
+
+    if(res.status===401||res.status===403){
+      fatal("🔒","<b>ลิงก์นี้ใช้ไม่ได้แล้ว</b><br><br>พิมพ์ <b>แดชบอร์ด</b> ในกลุ่ม LINE<br>เพื่อขอลิงก์ใหม่");
+      return false;
+    }
+    if(!res.ok) throw new Error("HTTP "+res.status);
+
+    const rows=await res.json();
+    if(!Array.isArray(rows)) throw new Error("invalid response");
+
+    const next=cleanRows(rows);
+    const sig=rowsSignature(next);
+    const changed=!HAS_LOADED||sig!==LAST_SIGNATURE;
+
+    if(changed){
+      ALL=next;
+      LAST_SIGNATURE=sig;
+      CONNECTED=true;
+      drawAll();
+    }
+
+    HAS_LOADED=true;
+    syncStatus("ok",changed?`อัปเดตแล้ว ${clockTime()}`:`ข้อมูลล่าสุด ${clockTime()}`);
+    return true;
+  }catch(e){
+    console.error("dashboard refresh failed",e);
+    if(initial){
+      fatal("📡","<b>โหลดข้อมูลไม่สำเร็จ</b><br><br>ตรวจอินเทอร์เน็ตแล้วรีเฟรชอีกครั้ง<br>ถ้ายังไม่ได้ พิมพ์ <b>เชื่อม</b> ในกลุ่ม LINE");
+    }else{
+      syncStatus("error","ซิงก์ไม่สำเร็จ — จะลองใหม่");
+    }
+    return false;
+  }finally{
+    REFRESHING=false;
+    const btn=el("syncBtn"); if(btn) btn.disabled=false;
+  }
+}
+
+function startRealtime(){
+  if(REFRESH_TIMER) clearInterval(REFRESH_TIMER);
+  REFRESH_TIMER=setInterval(()=>{
+    if(!document.hidden) refreshData();
+  },REFRESH_MS);
 }
 
 async function load(){
@@ -517,32 +624,18 @@ async function load(){
     fatal("⚠️","<b>ลิงก์ไม่สมบูรณ์</b><br><br>กรุณาเปิดแดชบอร์ดจากปุ่มในแชท LINE<br>หรือพิมพ์ <b>แดชบอร์ด</b> ในกลุ่มเพื่อขอลิงก์ใหม่");
     return;
   }
-  let res;
-  try{
-    res=await fetch(`${API}?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(K)}`);
-  }catch(e){
-    fatal("📡","<b>เชื่อมต่อไม่ได้</b><br><br>ตรวจอินเทอร์เน็ตแล้วรีเฟรชอีกครั้ง");
-    return;
-  }
-  if(res.status===401||res.status===403){
-    fatal("🔒","<b>ลิงก์นี้ใช้ไม่ได้แล้ว</b><br><br>พิมพ์ <b>แดชบอร์ด</b> ในกลุ่ม LINE<br>เพื่อขอลิงก์ใหม่");
-    return;
-  }
-  if(!res.ok){
-    fatal("⚠️","<b>โหลดข้อมูลไม่สำเร็จ</b> ("+res.status+")<br><br>ลองรีเฟรชอีกครั้ง<br>ถ้ายังไม่ได้ พิมพ์ <b>เชื่อม</b> ในกลุ่ม LINE");
-    return;
-  }
-  let rows;
-  try{ rows=await res.json(); }catch(e){ rows=null; }
-  if(!Array.isArray(rows)){
-    fatal("⚠️","<b>ข้อมูลผิดรูปแบบ</b><br><br>ลองรีเฟรชอีกครั้ง");
-    return;
-  }
-  CONNECTED=true;
-  // กันแถวว่างกลางชีทไม่ให้โผล่เป็นรายการเปล่า
-  ALL=rows.filter(r=>r&&(r.date||r.amount||r.vendor));
-  drawAll();
+  const ok=await refreshData({initial:true});
+  if(ok) startRealtime();
 }
+
+el("syncBtn").addEventListener("click",()=>refreshData({manual:true}));
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden&&HAS_LOADED) refreshData();
+});
+window.addEventListener("focus",()=>{if(HAS_LOADED) refreshData();});
+window.addEventListener("online",()=>{syncStatus("syncing","กลับมาออนไลน์ — กำลังซิงก์…");refreshData({manual:true});});
+window.addEventListener("offline",()=>syncStatus("error","ออฟไลน์ — รอเชื่อมต่อ"));
+
 load();
 </script>
 </body>
