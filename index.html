@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- DASHBOARD_UI_VERSION: APPLE_MONO_BUSINESS_V5_20260802 -->
+<!-- DASHBOARD_UI_VERSION: APPLE_MONO_UNIFIED_V6_20260802 -->
 <html lang="th">
 <head>
 <meta charset="UTF-8" />
@@ -380,6 +380,33 @@
   @media(max-width:900px){.email-setup{grid-template-columns:1fr}.email-kpis{grid-template-columns:1fr 1fr}.subscription-grid{grid-template-columns:1fr 1fr}.email-item{grid-template-columns:1fr}.email-amt{text-align:left}.email-actions{justify-content:flex-start}}
   @media(max-width:560px){.email-kpis,.subscription-grid{grid-template-columns:1fr}.gmail-connect{align-items:flex-start;flex-wrap:wrap}.gmail-actions{width:100%;justify-content:flex-start}}
 
+
+  /* ── Unified integration cards ─────────────────────────── */
+  .integration-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+  .integration-card{
+    position:relative;overflow:hidden;background:rgba(255,255,255,.94);border:1px solid rgba(0,0,0,.07);
+    border-radius:24px;padding:19px 20px;box-shadow:var(--shadow);min-height:176px;
+    display:flex;flex-direction:column;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+  }
+  .integration-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);border-color:rgba(0,0,0,.11)}
+  .integration-card.needs-action{border-color:#e7c3bf}
+  .integration-card.featured{min-height:220px}
+  .integration-card .integration-top{display:flex;align-items:flex-start;gap:13px}
+  .integration-icon{width:42px;height:42px;border-radius:13px;background:#111;color:#fff;display:grid;place-items:center;font-size:15px;font-weight:800;flex:0 0 42px;letter-spacing:-.02em}
+  .integration-icon.line{background:#111}.integration-icon.google{background:#fff;color:#111;border:1px solid var(--line)}.integration-icon.gmail{background:#111}
+  .integration-copy{min-width:0;flex:1}.integration-name{font-size:15px;font-weight:700;letter-spacing:-.012em}.integration-desc{font-size:11.5px;color:var(--muted);line-height:1.55;margin-top:4px}
+  .integration-state{display:inline-flex;align-items:center;gap:7px;margin-top:14px;font-size:11.5px;color:var(--muted)}
+  .integration-state .state-dot{width:7px;height:7px;border-radius:50%;background:#a1a1a6;flex:0 0 7px}.integration-state.ok .state-dot{background:#30d158}.integration-state.warn .state-dot{background:#ff9f0a}.integration-state.bad .state-dot{background:#ff453a}
+  .integration-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:18px}.integration-actions .btn{min-width:0}
+  .integration-account{margin-top:14px;padding:12px 13px;border-radius:14px;background:#f5f5f7;border:1px solid rgba(0,0,0,.04)}
+  .integration-account strong{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.integration-account span{font-size:11px;color:var(--muted);display:block;margin-top:3px;line-height:1.45}
+  .connection-details{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:16px}
+  .system-facts{display:grid;gap:1px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--line)}
+  .system-fact{display:flex;justify-content:space-between;gap:20px;padding:12px 14px;background:#fff;font-size:12px}.system-fact span{color:var(--muted)}.system-fact strong{font-weight:600;text-align:right;word-break:break-word}
+  .page-intro{margin-bottom:18px}.page-intro h3{margin:0;font-size:19px;letter-spacing:-.02em}.page-intro p{margin:5px 0 0;color:var(--muted);font-size:12.5px;max-width:720px}
+  .returning-state{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);margin-left:2px}
+  @media(max-width:980px){.integration-grid{grid-template-columns:1fr}.connection-details{grid-template-columns:1fr}.integration-card{min-height:auto}}
+
 </style>
 </head>
 <body>
@@ -564,25 +591,39 @@
 
     <!-- EMAIL INBOX -->
     <section class="page" id="page-email">
-      <div class="email-setup">
-        <div class="card" style="margin:0">
-          <div class="cs">Gmail Auto Sync · Beta</div>
-          <h3 style="margin-top:5px">เชื่อมต่ออีเมลธุรกิจ</h3>
-          <p class="cs" style="margin-top:8px;max-width:680px">กดเชื่อมครั้งเดียว ระบบจะค้นหาใบเสร็จ ใบกำกับภาษี Invoice และค่า Subscription จาก Gmail แล้วสร้างรายการรอตรวจสอบให้อัตโนมัติ โดยไม่ต้องตั้ง Forward</p>
+      <div class="page-intro">
+        <h3>เอกสารจากอีเมล</h3>
+        <p>เชื่อมบัญชี Gmail ของธุรกิจครั้งเดียว ระบบจะค้นหาใบเสร็จ ใบกำกับภาษี Invoice และค่า Subscription แล้วนำเข้ามาเป็นรายการรอตรวจสอบให้อัตโนมัติ</p>
+      </div>
+      <div class="connection-details" style="margin-bottom:18px">
+        <div class="integration-card featured" id="gmailIntegrationCard">
+          <div class="integration-top">
+            <div class="integration-icon gmail">M</div>
+            <div class="integration-copy">
+              <div class="integration-name">Gmail</div>
+              <div class="integration-desc">อ่านอีเมลและไฟล์แนบแบบ Read-only เพื่อค้นหาเอกสารบัญชี โดยระบบไม่มีสิทธิ์ส่ง ลบ หรือแก้ไขอีเมล</div>
+            </div>
+          </div>
           <div class="gmail-disconnected" id="gmailDisconnected">
-            <button class="btn solid" id="connectGmail">เชื่อมต่อ Gmail</button>
+            <div class="integration-state" id="gmailDisconnectedState"><span class="state-dot"></span><span>ยังไม่ได้เชื่อมต่อ</span></div>
+            <div class="integration-actions"><button class="btn solid" id="connectGmail">เชื่อมต่อ Gmail</button></div>
           </div>
-          <div class="gmail-connect" id="gmailConnected" hidden>
-            <div class="gmail-mark">@</div>
-            <div class="gmail-copy"><div class="gmail-account" id="gmailAccount">บัญชี Gmail</div><div class="gmail-meta" id="gmailMeta">กำลังตรวจสถานะ…</div></div>
-            <div class="gmail-actions"><button class="btn" id="gmailSyncNow">ซิงก์ตอนนี้</button><button class="btn" id="gmailDisconnect">ยกเลิกการเชื่อมต่อ</button></div>
+          <div id="gmailConnected" hidden>
+            <div class="integration-account"><strong id="gmailAccount">บัญชี Gmail</strong><span id="gmailMeta">กำลังตรวจสถานะ…</span></div>
+            <div class="integration-state ok" id="gmailConnectedState"><span class="state-dot"></span><span>เชื่อมต่อแล้วและพร้อมซิงก์</span></div>
+            <div class="integration-actions"><button class="btn solid" id="gmailSyncNow">ซิงก์ตอนนี้</button><button class="btn" id="gmailDisconnect">ยกเลิกการเชื่อมต่อ</button></div>
           </div>
-          <div class="cs" id="emailInboxState" style="margin-top:10px"></div>
+          <div class="returning-state" id="emailInboxState"></div>
         </div>
-        <div class="email-help">
-          <strong>เริ่มใช้งานใน 3 ขั้น</strong>
-          <ol><li>กด “เชื่อมต่อ Gmail”</li><li>เลือกบัญชีอีเมลธุรกิจและกดยินยอม</li><li>ระบบซิงก์เอกสารใหม่อัตโนมัติและแจ้งกลับใน LINE</li></ol>
-          <div class="beta-note"><b>รุ่นทดสอบ 100 บัญชี</b><br>บัญชีที่จะเชื่อมต้องถูกเพิ่มเป็น Test user ใน Google Cloud ก่อน และในโหมด Testing อาจต้องเชื่อมใหม่เมื่อสิทธิ์หมดอายุ</div>
+        <div class="card" style="margin:0">
+          <div class="cs">เริ่มใช้งาน</div>
+          <h3>3 ขั้นตอนจบ</h3>
+          <div class="summary-list" style="margin-top:15px">
+            <div class="summary-item"><span>1</span><strong>กดเชื่อมต่อ Gmail</strong></div>
+            <div class="summary-item"><span>2</span><strong>เลือกอีเมลธุรกิจและกดยินยอม</strong></div>
+            <div class="summary-item"><span>3</span><strong>ตรวจรายการที่ระบบนำเข้ามา</strong></div>
+          </div>
+          <div class="accounting-note" style="margin-top:14px;margin-bottom:0"><span>Beta</span><span>รองรับ Test users สูงสุด 100 บัญชีในช่วงทดสอบ และอาจต้องเชื่อมใหม่เมื่อสิทธิ์ OAuth หมดอายุ</span></div>
         </div>
       </div>
       <div class="email-kpis">
@@ -675,18 +716,42 @@
 
     <!-- SETTINGS -->
     <section class="page" id="page-settings">
-      <div class="card">
-        <h3>ตั้งค่า</h3><div class="cs">ข้อมูลระบบ</div>
-        <table>
-          <tr><td>สถานะการเชื่อม Google</td><td id="setConn">—</td></tr>
-          <tr><td>รหัสกลุ่ม (tenant)</td><td id="setTenant" style="font-family:monospace;font-size:12px">—</td></tr>
-          <tr><td>จำนวนรายการที่โหลดได้</td><td id="setRows">—</td></tr>
-          <tr><td>โครงสร้างวันที่</td><td>วันที่รายการจริง + วันที่บันทึกเข้าระบบ</td></tr>
-          <tr><td>แหล่งข้อมูล</td><td>Google Sheet ของคุณเอง</td></tr>
-          <tr><td>หมวดที่พบในระบบ</td><td id="setCats">—</td></tr>
-        </table>
-        <div class="note">ข้อมูลทั้งหมดเก็บอยู่ใน Google Drive/Sheet ของคุณเอง — DEAL ไม่ได้เก็บสำเนาไว้</div>
+      <div class="page-intro"><h3>การเชื่อมต่อ</h3><p>ดูสถานะระบบที่เชื่อมกับธุรกิจนี้ และจัดการสิทธิ์แต่ละบริการจากจุดเดียว</p></div>
+      <div class="integration-grid">
+        <div class="integration-card">
+          <div class="integration-top"><div class="integration-icon line">L</div><div class="integration-copy"><div class="integration-name">LINE</div><div class="integration-desc">ช่องทางรับสลิป ใบเสร็จ และแจ้งผลการทำงานกลับไปยังทีม</div></div></div>
+          <div class="integration-state ok" id="setLineState"><span class="state-dot"></span><span>เชื่อมต่อแล้ว</span></div>
+          <div class="integration-actions"><button class="btn" id="showLineInfo" type="button">ดูรายละเอียด</button></div>
+        </div>
+        <div class="integration-card" id="googleIntegrationCard">
+          <div class="integration-top"><div class="integration-icon google">G</div><div class="integration-copy"><div class="integration-name">Google Drive & Sheets</div><div class="integration-desc">เก็บหลักฐาน เอกสาร PDF และข้อมูลบัญชีไว้ในพื้นที่ Google ของบริษัท</div></div></div>
+          <div class="integration-state" id="setGoogleState"><span class="state-dot"></span><span>กำลังตรวจสถานะ</span></div>
+          <div class="integration-actions"><a class="btn solid" id="setGoogleAction" href="#">เชื่อมต่อ Google</a></div>
+        </div>
+        <div class="integration-card" id="settingsGmailCard">
+          <div class="integration-top"><div class="integration-icon gmail">M</div><div class="integration-copy"><div class="integration-name">Gmail</div><div class="integration-desc">ค้นหาใบเสร็จ ใบกำกับภาษี และ Subscription จากอีเมลธุรกิจ</div></div></div>
+          <div class="integration-state" id="setGmailState"><span class="state-dot"></span><span>กำลังตรวจสถานะ</span></div>
+          <div class="integration-actions"><button class="btn solid" id="setGmailAction" type="button">จัดการ Gmail</button></div>
+        </div>
       </div>
+      <div class="connection-details">
+        <div class="card" style="margin:0">
+          <h3>ข้อมูลระบบ</h3><div class="cs">ข้อมูลอ้างอิงของ Workspace นี้</div>
+          <div class="system-facts">
+            <div class="system-fact"><span>รหัสกลุ่ม (tenant)</span><strong id="setTenant" style="font-family:monospace">—</strong></div>
+            <div class="system-fact"><span>จำนวนรายการที่โหลดได้</span><strong id="setRows">—</strong></div>
+            <div class="system-fact"><span>โครงสร้างวันที่</span><strong>วันที่รายการจริง + วันที่บันทึก</strong></div>
+            <div class="system-fact"><span>หมวดที่พบในระบบ</span><strong id="setCats">—</strong></div>
+          </div>
+        </div>
+        <div class="card" style="margin:0">
+          <h3>การเก็บข้อมูล</h3><div class="cs">ออกแบบให้ธุรกิจเป็นเจ้าของข้อมูลของตัวเอง</div>
+          <div class="accounting-note" style="margin-top:14px"><span>✓</span><span>รูปหลักฐานและเอกสารอยู่ใน Google Drive ของบริษัท</span></div>
+          <div class="accounting-note"><span>✓</span><span>ข้อมูลรายการอยู่ใน Google Sheet ของบริษัท</span></div>
+          <div class="accounting-note" style="margin-bottom:0"><span>✓</span><span>ระบบใช้สิทธิ์ตามที่ผู้ใช้อนุญาตและสามารถยกเลิกได้</span></div>
+        </div>
+      </div>
+      <span id="setConn" hidden>—</span>
     </section>
   </main>
 </div>
@@ -1134,7 +1199,12 @@ function renderEmailInbox(){
     el("gmailMeta").textContent=EMAIL_INFO.reconnectRequired?"สิทธิ์หมดอายุ · กรุณาเชื่อมใหม่":`ซิงก์ล่าสุด ${last} · รอบล่าสุดพบ ${Number(EMAIL_INFO.lastSyncCount||0)} เอกสาร`;
   }
   if(el("emailInboxState")){
-    el("emailInboxState").textContent=connected?"เชื่อมต่อแล้ว · ระบบตรวจอีเมลอัตโนมัติและเก็บไฟล์ใน Google Drive ของบริษัท":EMAIL_INFO.reconnectRequired?"สิทธิ์ Gmail หมดอายุ กรุณากดเชื่อมต่อใหม่":"ยังไม่ได้เชื่อมต่อ Gmail";
+    el("emailInboxState").textContent=connected?"ระบบตรวจอีเมลอัตโนมัติและเก็บไฟล์ไว้ใน Google Drive ของบริษัท":EMAIL_INFO.reconnectRequired?"สิทธิ์ Gmail หมดอายุ กรุณาเชื่อมต่อใหม่":"เชื่อมเพื่อเริ่มค้นหาเอกสารจากอีเมล";
+  }
+  if(el("gmailIntegrationCard"))el("gmailIntegrationCard").classList.toggle("needs-action",EMAIL_INFO.reconnectRequired===true);
+  if(el("gmailDisconnectedState")){
+    el("gmailDisconnectedState").className="integration-state "+(EMAIL_INFO.reconnectRequired?"bad":"");
+    el("gmailDisconnectedState").innerHTML=`<span class="state-dot"></span><span>${EMAIL_INFO.reconnectRequired?"สิทธิ์หมดอายุ · ต้องเชื่อมใหม่":"ยังไม่ได้เชื่อมต่อ"}</span>`;
   }
 }
 function renderSubscriptions(){
@@ -1155,7 +1225,7 @@ async function refreshEmailData({manual=false}={}){
     ]);
     if(!infoRes.ok||!docRes.ok||!subRes.ok)throw new Error(`Email API ${infoRes.status}/${docRes.status}/${subRes.status}`);
     EMAIL_INFO=await infoRes.json(); EMAIL_DOCS=await docRes.json(); SUBSCRIPTIONS=await subRes.json();
-    renderEmailInbox();renderSubscriptions();renderOnboarding();return true;
+    renderEmailInbox();renderSubscriptions();renderOnboarding();renderSettings();return true;
   }catch(err){console.error("email inbox refresh failed",err);if(el("emailInboxState"))el("emailInboxState").textContent="โหลดเอกสารจากอีเมลไม่สำเร็จ";return false;}
   finally{EMAIL_LOADING=false;}
 }
@@ -1217,11 +1287,20 @@ function openEmailEditor(id){
 
 /* ---------- SETTINGS ---------- */
 function renderSettings(){
-  el("setConn").innerHTML=CONNECTED?'<span class="pill" style="background:var(--green-soft);color:var(--green)">เชื่อมแล้ว</span>':'<span class="pill" style="background:var(--amber-soft);color:var(--amber)">ยังไม่เชื่อม</span>';
-  el("setTenant").textContent=TENANT||"—";
-  el("setRows").textContent=ALL.length+" รายการ";
-  el("setCats").textContent=[...new Set(ALL.map(r=>r.category).filter(Boolean))].join(", ")||"—";
+  if(el("setConn"))el("setConn").textContent=CONNECTED?"เชื่อมแล้ว":"ยังไม่เชื่อม";
+  if(el("setTenant"))el("setTenant").textContent=TENANT||"—";
+  if(el("setRows"))el("setRows").textContent=ALL.length+" รายการ";
+  if(el("setCats"))el("setCats").textContent=[...new Set(ALL.map(r=>r.category).filter(Boolean))].join(", ")||"—";
   if(el("coName"))el("coName").textContent=SETTINGS.company_name||CONAME;
+
+  const gs=el("setGoogleState"),ga=el("setGoogleAction");
+  if(gs){gs.className="integration-state "+(CONNECTED?"ok":"warn");gs.innerHTML=`<span class="state-dot"></span><span>${CONNECTED?"เชื่อมต่อแล้ว":"ยังไม่ได้เชื่อมต่อ"}</span>`;}
+  if(ga){ga.href=WORKER+"/oauth/connect?tenant="+encodeURIComponent(TENANT);ga.textContent=CONNECTED?"เชื่อมต่อใหม่":"เชื่อมต่อ Google";ga.className="btn "+(CONNECTED?"":"solid");}
+
+  const gmailConnected=EMAIL_INFO.connected===true;
+  const gm=el("setGmailState");
+  if(gm){const bad=EMAIL_INFO.reconnectRequired===true;gm.className="integration-state "+(gmailConnected?"ok":bad?"bad":"warn");gm.innerHTML=`<span class="state-dot"></span><span>${gmailConnected?"เชื่อมต่อแล้ว":bad?"สิทธิ์หมดอายุ":"ยังไม่ได้เชื่อมต่อ"}</span>`;}
+  if(el("setGmailAction"))el("setGmailAction").textContent=gmailConnected?"เปิดกล่องเอกสาร":"เชื่อมต่อ Gmail";
 }
 
 /* ---------- EXPORT ---------- */
@@ -1244,8 +1323,8 @@ el("onboardingToggle").addEventListener("click",()=>el("onboardingCard").classLi
 document.querySelectorAll(".onboard-step").forEach(b=>b.addEventListener("click",()=>onboardAction(b.dataset.step)));
 
 // จัดการข้อมูลธุรกิจ
-el("saveBusiness").onclick=()=>saveSettings({company_name:el("bizCompany").value.trim(),company_address:el("bizAddress").value.trim().replace(/\n/g,"\\n"),tax_id:el("bizTaxId").value.trim()},"bizSaveState");
-el("saveApprover").onclick=()=>saveSettings({approver_name:el("bizApprover").value.trim()},"approverSaveState");
+el("saveBusiness").onclick=async()=>{const ok=await saveSettings({company_name:el("bizCompany").value.trim(),company_address:el("bizAddress").value.trim().replace(/\n/g,"\\n"),tax_id:el("bizTaxId").value.trim()},"bizSaveState");if(ok){openPage("overview",document.querySelector('.navlink[data-p="overview"]'));window.scrollTo({top:0,behavior:"smooth"});}};
+el("saveApprover").onclick=async()=>{const ok=await saveSettings({approver_name:el("bizApprover").value.trim()},"approverSaveState");if(ok){openPage("overview",document.querySelector('.navlink[data-p="overview"]'));window.scrollTo({top:0,behavior:"smooth"});}};
 el("addCategory").onclick=async()=>{const name=el("newCategory").value.trim();if(!name)return;const a=parseSettingList("custom_categories");if(!a.includes(name))a.push(name);if(await saveSettings({custom_categories:JSON.stringify(a)})){el("newCategory").value="";}};
 el("customCategoryTags").addEventListener("click",async e=>{const b=e.target.closest("[data-remove-category]");if(!b)return;const a=parseSettingList("custom_categories");a.splice(+b.dataset.removeCategory,1);await saveSettings({custom_categories:JSON.stringify(a)});});
 el("addFinance").onclick=async()=>{const x={label:el("finLabel").value.trim(),bank:el("finBank").value.trim(),number:el("finNumber").value.trim(),name:el("finName").value.trim()};if(!x.label&&!x.bank&&!x.number)return;const a=parseSettingList("payment_channels");a.push(x);if(await saveSettings({payment_channels:JSON.stringify(a)},"financeSaveState")){["finLabel","finBank","finNumber","finName"].forEach(id=>el(id).value="");}};
@@ -1259,7 +1338,9 @@ if(el("emailStatus"))el("emailStatus").addEventListener("change",renderEmailInbo
 if(el("emailRefresh"))el("emailRefresh").onclick=async()=>{await refreshEmailData({manual:true});if(EMAIL_INFO.connected)await syncGmail({manual:true});};
 if(el("connectGmail"))el("connectGmail").onclick=()=>{location.href=WORKER+`/gmail/connect?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(K)}`;};
 if(el("gmailSyncNow"))el("gmailSyncNow").onclick=()=>syncGmail({manual:true});
-if(el("gmailDisconnect"))el("gmailDisconnect").onclick=async()=>{if(!confirm("ยกเลิกการเชื่อมต่อ Gmail? ระบบจะหยุดดึงเอกสารใหม่ แต่ข้อมูลที่บันทึกไว้จะไม่หาย"))return;const {res}=await emailPost("/api/gmail-disconnect",{});if(!res.ok){alert("ยกเลิกการเชื่อมต่อไม่สำเร็จ");return;}EMAIL_INFO={connected:false};renderEmailInbox();renderOnboarding();};
+if(el("gmailDisconnect"))el("gmailDisconnect").onclick=async()=>{if(!confirm("ยกเลิกการเชื่อมต่อ Gmail? ระบบจะหยุดดึงเอกสารใหม่ แต่ข้อมูลที่บันทึกไว้จะไม่หาย"))return;const {res}=await emailPost("/api/gmail-disconnect",{});if(!res.ok){alert("ยกเลิกการเชื่อมต่อไม่สำเร็จ");return;}EMAIL_INFO={connected:false};renderEmailInbox();renderOnboarding();renderSettings();};
+if(el("setGmailAction"))el("setGmailAction").onclick=()=>{if(EMAIL_INFO.connected)return openPage("email",document.querySelector('[data-p="email"]'));location.href=WORKER+`/gmail/connect?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(K)}`;};
+if(el("showLineInfo"))el("showLineInfo").onclick=()=>onboardAction("line");
 if(el("emailList"))el("emailList").addEventListener("click",async e=>{const b=e.target.closest("[data-email-action]");if(!b)return;const id=b.dataset.id,act=b.dataset.emailAction;if(act==="approve")return approveEmail(id);if(act==="edit")return openEmailEditor(id);if(act==="ignore"){if(!confirm("ข้ามเอกสารนี้และไม่นำไปบันทึกรายจ่าย?"))return;await emailPost("/api/email-ignore",{id});await refreshEmailData();}});
 
 el("rangeSel").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
