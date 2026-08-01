@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- DASHBOARD_UI_VERSION: APPLE_MONO_V4_20260802 -->
+<!-- DASHBOARD_UI_VERSION: APPLE_MONO_BUSINESS_V5_20260802 -->
 <html lang="th">
 <head>
 <meta charset="UTF-8" />
@@ -257,13 +257,88 @@
   .btn,.connbtn,.sidelink,.toolbar input[type=text],.toolbar select{box-shadow:none}
   a:not(.btn):not(.navlink):not(.sidelink){text-decoration-color:#b8b8bd}
 
+  /* ── Business management / onboarding ─────────────── */
+  nav{overflow-y:auto;scrollbar-width:thin;scrollbar-color:#d2d2d7 transparent}
+  .nav-divider{height:1px;background:var(--line);margin:10px 10px 12px}
+  .business-group{margin:0 0 10px}
+  .compact-only{display:none}
+  .nav-section-toggle{
+    width:100%;border:0;background:transparent;color:var(--ink);display:flex;align-items:center;gap:10px;
+    padding:9px 12px;border-radius:12px;cursor:pointer;text-align:left;font-size:13px;font-weight:650;
+  }
+  .nav-section-toggle:hover{background:rgba(0,0,0,.035)}
+  .nav-section-toggle .section-icon{width:18px;height:18px;display:grid;place-items:center;color:var(--muted)}
+  .nav-section-toggle .section-icon svg{width:17px;height:17px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .nav-section-toggle .section-label{flex:1}
+  .nav-section-toggle .chev{font-size:14px;color:var(--muted-2);transition:transform .18s ease}
+  .business-group.closed .chev{transform:rotate(-90deg)}
+  .business-group.closed .subnav{display:none}
+  .subnav{padding:2px 4px 2px 38px}
+  .subnavlink{
+    width:100%;border:0;background:transparent;color:var(--muted);display:flex;align-items:center;gap:7px;
+    padding:7px 9px;border-radius:9px;cursor:pointer;text-align:left;font-size:12px;margin:1px 0;
+  }
+  .subnavlink:hover{background:rgba(0,0,0,.035);color:var(--ink)}
+  .subnavlink.active{background:#ededf0;color:var(--ink);font-weight:600}
+  .subnavlink .new-badge{margin-left:auto;font-size:8.5px;line-height:1;padding:3px 6px;border-radius:999px;background:#e8f7eb;color:var(--green);font-weight:700}
+  .onboarding{margin:12px 12px 6px;border:1px solid var(--line);border-radius:15px;background:#fff;overflow:hidden}
+  .onboarding-head{width:100%;border:0;background:transparent;padding:11px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;text-align:left}
+  .onboarding-head strong{font-size:11px;flex:1;color:var(--ink)}
+  .onboarding-head .count{font-size:9.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .onboarding-head .chev{font-size:12px;color:var(--muted-2);transition:transform .18s ease}
+  .onboarding.closed .chev{transform:rotate(-90deg)}
+  .onboarding.closed .onboarding-body{display:none}
+  .onboarding-progress{height:3px;background:#ededf0;margin:0 12px 7px;border-radius:999px;overflow:hidden}
+  .onboarding-progress span{display:block;height:100%;width:0;background:var(--ink);border-radius:999px;transition:width .28s ease}
+  .onboarding-body{padding:3px 7px 9px}
+  .onboard-step{width:100%;border:0;background:transparent;display:flex;align-items:flex-start;gap:8px;padding:6px 6px;border-radius:9px;text-align:left;cursor:pointer;color:var(--muted);font-size:10.5px;line-height:1.35}
+  .onboard-step:hover{background:#f5f5f7;color:var(--ink)}
+  .step-dot{width:15px;height:15px;border-radius:50%;border:1.4px solid #a8a8ad;flex-shrink:0;margin-top:0;display:grid;place-items:center;font-size:9px;color:#fff}
+  .onboard-step.done{color:#8a8a8f;text-decoration:line-through;text-decoration-color:#c6c6c9}
+  .onboard-step.done .step-dot{background:#6ac47a;border-color:#6ac47a;text-decoration:none}
+  .onboard-step.next{color:var(--ink);font-weight:600}
+  .onboard-step.next .step-dot{border-color:var(--ink);box-shadow:0 0 0 3px rgba(29,29,31,.07)}
+
+  /* business pages */
+  .biz-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:16px}
+  .biz-form{display:grid;gap:13px}
+  .field label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin:0 0 6px}
+  .field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);padding:11px 12px;outline:none;transition:.16s ease}
+  .field textarea{min-height:94px;resize:vertical}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:#86868b;box-shadow:0 0 0 3px rgba(29,29,31,.08)}
+  .form-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:3px}
+  .save-state{font-size:11px;color:var(--muted)}
+  .summary-list{display:grid;gap:1px;border:1px solid var(--line);border-radius:15px;overflow:hidden;background:var(--line)}
+  .summary-item{display:flex;justify-content:space-between;gap:16px;background:#fff;padding:12px 13px;font-size:12px}
+  .summary-item span:first-child{color:var(--muted)}
+  .summary-item strong{text-align:right;max-width:62%;overflow-wrap:anywhere}
+  .tag-editor{display:flex;gap:7px;margin-bottom:12px}
+  .tag-editor input{flex:1}
+  .tag-cloud{display:flex;flex-wrap:wrap;gap:7px}
+  .manage-tag{display:inline-flex;align-items:center;gap:6px;background:#f2f2f7;border:1px solid #e5e5ea;border-radius:999px;padding:6px 9px;font-size:11px}
+  .manage-tag button{border:0;background:transparent;color:var(--muted);cursor:pointer;padding:0;font-size:13px;line-height:1}
+  .manage-tag.detected{background:#fff;color:var(--muted)}
+  .list-card{border:1px solid var(--line);border-radius:15px;overflow:hidden;background:#fff}
+  .list-card-row{display:grid;grid-template-columns:1.2fr .8fr auto;gap:10px;align-items:center;padding:12px 13px;border-top:1px solid #f0f0f3;font-size:12px}
+  .list-card-row:first-child{border-top:0}
+  .list-card-row .sub{font-size:10.5px;color:var(--muted);margin-top:2px}
+  .icon-btn{width:29px;height:29px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--muted)}
+  .icon-btn:hover{color:var(--red);border-color:#e7c3bf}
+  .empty-compact{padding:28px 15px;text-align:center;color:var(--muted);font-size:12px}
+  .business-tab{display:none}
+  .business-tab.show{display:block;animation:pageIn .2s ease}
+  .status-line{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:10px}
+  .status-line .light{width:8px;height:8px;border-radius:50%;background:#a8a8ad}
+  .status-line.ok .light{background:var(--green)}
+
   @media(max-width:1120px){
     .kpis{grid-template-columns:repeat(2,1fr)}
-    .grid2{grid-template-columns:1fr}
+    .grid2,.biz-grid{grid-template-columns:1fr}
   }
   @media(max-width:860px){
     .sidebar{width:74px}
-    .brand{padding:20px 16px}.brand h1,.brand .sub,.navlink span:not(.ic),.sidefoot .who div,.connbtn span,.sidelink span,.quick-title{display:none}
+    .brand{padding:20px 16px}.brand h1,.brand .sub,.navlink span:not(.ic),.sidefoot .who div,.connbtn span,.sidelink span,.quick-title,.nav-section-toggle .section-label,.nav-section-toggle .chev,.subnav,.onboarding,.business-group{display:none}
+    .compact-only{display:flex}
     .logo{width:40px;height:40px}
     nav{padding:4px 10px}.navlink{justify-content:center;padding:11px}.navlink .ic{width:20px}
     .sidefoot{padding:10px}.connbtn,.sidelink{justify-content:center;padding:10px}.who{justify-content:center}
@@ -274,7 +349,7 @@
   }
   @media(max-width:600px){
     .sidebar{position:fixed;bottom:0;top:auto;width:100%;height:68px;border-right:0;border-top:1px solid rgba(0,0,0,.09);z-index:40}
-    .brand,.sidefoot{display:none}.sidebar nav{display:flex;gap:3px;padding:7px 8px;overflow-x:auto}
+    .brand,.sidefoot,.business-group,.onboarding,.nav-divider,.compact-only{display:none!important}.sidebar nav{display:flex;gap:3px;padding:7px 8px;overflow-x:auto}
     .navlink{min-width:54px;flex:1;margin:0;padding:8px;border-radius:11px}.navlink:nth-child(n+6){display:none}
     .navlink.active{box-shadow:none;background:#1d1d1f;color:#fff;border-color:transparent}.navlink.active .ic{color:#fff}
     .main{padding:20px 14px 92px;width:100%}.head{align-items:flex-start}.head-title{width:100%}
@@ -304,7 +379,37 @@
       <button class="navlink" data-p="reports"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19V3"/></svg></span><span>รายงานและภาษี</span></button>
       <button class="navlink" data-p="bills"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5"/><path d="M9 12h7M9 16h7"/></svg></span><span>เอกสาร</span></button>
       <button class="navlink" data-p="activity"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg></span><span>ประวัติ</span></button>
-      <button class="navlink" data-p="settings"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21h-4v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3.1 14H3v-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3h4v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>ตั้งค่า</span></button>
+      <div class="nav-divider"></div>
+      <div class="business-group" id="businessGroup">
+        <button class="nav-section-toggle" id="businessToggle" type="button">
+          <span class="section-icon"><svg viewBox="0 0 24 24"><path d="M4 21v-9l8-6 8 6v9"/><path d="M9 21v-6h6v6"/><path d="M8 6V3h8v3"/></svg></span>
+          <span class="section-label">จัดการธุรกิจ</span><span class="chev">⌄</span>
+        </button>
+        <div class="subnav" id="businessMenu">
+          <button class="subnavlink" data-biz="profile">ดู/แก้ไขข้อมูลธุรกิจ</button>
+          <button class="subnavlink" data-biz="approver">ผู้อนุมัติค่าใช้จ่าย</button>
+          <button class="subnavlink" data-biz="categories">หมวดหมู่</button>
+          <button class="subnavlink" data-biz="finance">ช่องทางการเงิน <span class="new-badge">ใหม่</span></button>
+          <button class="subnavlink" data-biz="team">ทีมของฉัน</button>
+          <button class="subnavlink" data-p="settings">ตั้งค่า</button>
+        </div>
+      </div>
+      <button class="navlink compact-only" data-biz="profile"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 21v-9l8-6 8 6v9"/><path d="M9 21v-6h6v6"/></svg></span><span>จัดการธุรกิจ</span></button>
+      <button class="navlink compact-only" data-p="settings"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21h-4v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3.1 14H3v-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3h4v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>ตั้งค่า</span></button>
+      <div class="onboarding" id="onboardingCard">
+        <button class="onboarding-head" id="onboardingToggle" type="button">
+          <strong>เริ่มต้นใช้งาน</strong><span class="count" id="onboardingCount">0/6</span><span class="chev">⌄</span>
+        </button>
+        <div class="onboarding-progress"><span id="onboardingBar"></span></div>
+        <div class="onboarding-body" id="onboardingSteps">
+          <button class="onboard-step" data-step="line"><span class="step-dot"></span><span>เชื่อมต่อ LINE</span></button>
+          <button class="onboard-step" data-step="business"><span class="step-dot"></span><span>สร้างข้อมูลธุรกิจ</span></button>
+          <button class="onboard-step" data-step="google"><span class="step-dot"></span><span>เชื่อมต่อ Google</span></button>
+          <button class="onboard-step" data-step="receipt"><span class="step-dot"></span><span>อัปโหลดใบเสร็จแรก</span></button>
+          <button class="onboard-step" data-step="signature"><span class="step-dot"></span><span>ใส่ลายเซ็นรับรองใบแทน</span></button>
+          <button class="onboard-step" data-step="sheet"><span class="step-dot"></span><span>ตรวจรายการจาก Sheet</span></button>
+        </div>
+      </div>
     </nav>
     <div class="sidefoot">
       <div class="quick-title">Quick actions</div>
@@ -435,6 +540,69 @@
       </div>
     </section>
 
+    <!-- BUSINESS MANAGEMENT -->
+    <section class="page" id="page-business">
+      <div class="business-tab show" id="biz-profile">
+        <div class="biz-grid">
+          <div class="card"><h3>ข้อมูลธุรกิจ</h3><div class="cs">ข้อมูลนี้ใช้บนใบขอเบิกและใบรับรองแทนใบเสร็จ</div>
+            <div class="biz-form">
+              <div class="field"><label>ชื่อบริษัท / ธุรกิจ</label><input id="bizCompany" placeholder="เช่น บริษัท ตัวอย่าง จำกัด"></div>
+              <div class="field"><label>ที่อยู่</label><textarea id="bizAddress" placeholder="ที่อยู่สำหรับออกเอกสาร"></textarea></div>
+              <div class="field"><label>เลขประจำตัวผู้เสียภาษี</label><input id="bizTaxId" inputmode="numeric" placeholder="13 หลัก"></div>
+              <div class="form-actions"><button class="btn solid" id="saveBusiness">บันทึกข้อมูลธุรกิจ</button><a class="btn" id="openAssetSettings" href="#">โลโก้และลายเซ็น</a><span class="save-state" id="bizSaveState"></span></div>
+            </div>
+          </div>
+          <div class="card"><h3>ความพร้อมของเอกสาร</h3><div class="cs">ตรวจข้อมูลที่จำเป็นก่อนสร้างเอกสารอัตโนมัติ</div><div class="summary-list" id="businessReadiness"></div></div>
+        </div>
+      </div>
+
+      <div class="business-tab" id="biz-approver">
+        <div class="biz-grid">
+          <div class="card"><h3>ผู้อนุมัติค่าใช้จ่าย</h3><div class="cs">ชื่อผู้มีอำนาจอนุมัติที่แสดงในใบขอเบิก</div>
+            <div class="biz-form"><div class="field"><label>ชื่อผู้อนุมัติ</label><input id="bizApprover" placeholder="ชื่อ–นามสกุล"></div>
+            <div class="form-actions"><button class="btn solid" id="saveApprover">บันทึกผู้อนุมัติ</button><a class="btn" id="openSignatureSettings" href="#">อัปโหลดลายเซ็น</a><span class="save-state" id="approverSaveState"></span></div></div>
+          </div>
+          <div class="card"><h3>สถานะลายเซ็น</h3><div class="cs">ใช้บนใบขอเบิกและใบแทนที่ระบบสร้างใหม่</div><div id="signatureStatus"></div></div>
+        </div>
+      </div>
+
+      <div class="business-tab" id="biz-categories">
+        <div class="card"><h3>หมวดหมู่</h3><div class="cs">เพิ่มหมวดที่ใช้บ่อย หมวดจากรายการเดิมจะแสดงด้านล่างโดยอัตโนมัติ</div>
+          <div class="tag-editor"><input id="newCategory" placeholder="ชื่อหมวดใหม่"><button class="btn solid" id="addCategory">เพิ่มหมวด</button></div>
+          <div class="tag-cloud" id="customCategoryTags"></div>
+          <div style="height:18px"></div><h3 style="font-size:14px">หมวดที่พบจากรายการ</h3><div class="cs">อ่านจาก Google Sheet ปัจจุบัน</div><div class="tag-cloud" id="detectedCategoryTags"></div>
+        </div>
+      </div>
+
+      <div class="business-tab" id="biz-finance">
+        <div class="biz-grid">
+          <div class="card"><h3>ช่องทางการเงิน</h3><div class="cs">บันทึกบัญชีธนาคารหรือช่องทางจ่ายเงินที่ธุรกิจใช้ประจำ</div>
+            <div class="biz-form">
+              <div class="field"><label>ชื่อเรียก</label><input id="finLabel" placeholder="เช่น บัญชีบริษัทหลัก"></div>
+              <div class="field"><label>ธนาคาร / ช่องทาง</label><input id="finBank" placeholder="เช่น SCB, PromptPay"></div>
+              <div class="field"><label>เลขบัญชี / หมายเลข</label><input id="finNumber" placeholder="เลขบัญชีหรือเบอร์พร้อมเพย์"></div>
+              <div class="field"><label>ชื่อบัญชี</label><input id="finName" placeholder="ชื่อเจ้าของบัญชี"></div>
+              <div class="form-actions"><button class="btn solid" id="addFinance">เพิ่มช่องทาง</button><span class="save-state" id="financeSaveState"></span></div>
+            </div>
+          </div>
+          <div class="card"><h3>ช่องทางที่บันทึกไว้</h3><div class="cs">ใช้เป็นข้อมูลอ้างอิงของธุรกิจ</div><div class="list-card" id="financeList"></div></div>
+        </div>
+      </div>
+
+      <div class="business-tab" id="biz-team">
+        <div class="biz-grid">
+          <div class="card"><h3>ทีมของฉัน</h3><div class="cs">รายชื่อผู้ใช้งานและบทบาทภายในธุรกิจ</div>
+            <div class="biz-form">
+              <div class="field"><label>ชื่อสมาชิก</label><input id="teamName" placeholder="ชื่อ–นามสกุล"></div>
+              <div class="field"><label>บทบาท</label><input id="teamRole" placeholder="เช่น บัญชี, ผู้อนุมัติ, พนักงาน"></div>
+              <div class="form-actions"><button class="btn solid" id="addTeam">เพิ่มสมาชิก</button><span class="save-state" id="teamSaveState"></span></div>
+            </div>
+          </div>
+          <div class="card"><h3>สมาชิก</h3><div class="cs">ผู้ส่งรายการที่พบจาก LINE จะแสดงเป็นข้อมูลประกอบ</div><div class="list-card" id="teamList"></div></div>
+        </div>
+      </div>
+    </section>
+
     <!-- SETTINGS -->
     <section class="page" id="page-settings">
       <div class="card">
@@ -463,6 +631,8 @@ const TENANT = QS.get("tenant") || "";
 const K = QS.get("k") || "";
 const CONAME = QS.get("name") || "บริษัทของคุณ";
 let CONNECTED = false;
+let SETTINGS = {};
+let BUSINESS_TAB = "profile";
 
 // Realtime แบบ polling: Google Sheet ไม่มี event stream โดยตรง จึงตรวจข้อมูลใหม่ทุก 5 วินาที
 const REFRESH_MS = 5000;
@@ -699,12 +869,142 @@ function renderActivity(){
   }).join(""):'<div class="empty">ยังไม่มีประวัติการบันทึก</div>';
 }
 
+/* ---------- BUSINESS MANAGEMENT / ONBOARDING ---------- */
+function apiUrl(path){return `${WORKER}${path}?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(K)}`;}
+function parseSettingList(key){
+  const raw=SETTINGS[key];
+  if(Array.isArray(raw)) return raw;
+  if(!raw) return [];
+  try{const v=JSON.parse(raw);return Array.isArray(v)?v:[];}catch{return String(raw).split(",").map(x=>x.trim()).filter(Boolean);}
+}
+async function saveSettings(patch,stateId=""){
+  const state=stateId?el(stateId):null;
+  if(state) state.textContent="กำลังบันทึก…";
+  try{
+    const body={...SETTINGS,...patch};
+    const res=await fetch(apiUrl("/api/settings"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    SETTINGS=await res.json();
+    if(state) state.textContent="บันทึกแล้ว";
+    renderBusiness();renderOnboarding();renderSettings();
+    setTimeout(()=>{if(state)state.textContent="";},1800);
+    return true;
+  }catch(err){console.error("save settings failed",err);if(state)state.textContent="บันทึกไม่สำเร็จ";return false;}
+}
+async function refreshSettings(){
+  try{
+    const res=await fetch(apiUrl("/api/settings")+`&_=${Date.now()}`,{cache:"no-store",headers:{"cache-control":"no-cache"}});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    SETTINGS=await res.json();
+    renderBusiness();renderOnboarding();renderSettings();
+    return true;
+  }catch(err){console.warn("settings refresh failed",err);return false;}
+}
+function escAttr(v){return esc(v).replace(/`/g,"&#96;");}
+function setBusinessTab(tab){
+  BUSINESS_TAB=tab;
+  document.querySelectorAll(".business-tab").forEach(x=>x.classList.remove("show"));
+  const target=el("biz-"+tab);if(target)target.classList.add("show");
+  document.querySelectorAll(".subnavlink[data-biz]").forEach(x=>x.classList.toggle("active",x.dataset.biz===tab));
+  renderBusiness();
+}
+function openPage(p,source=null){
+  document.querySelectorAll(".navlink,.subnavlink").forEach(x=>x.classList.remove("active"));
+  if(source)source.classList.add("active");
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
+  const page=el("page-"+p);if(page)page.classList.add("show");
+  el("pageTitle").textContent=TITLES[p]||"จัดการธุรกิจ";
+  el("rangeSel").style.display=(p==="overview"||p==="expenses")?"flex":"none";
+  if(p==="expenses"){
+    localStorage.setItem(`sheet-checked:${TENANT}`,"1");
+    renderOnboarding();
+  }
+}
+function openBusiness(tab,source=null){
+  document.querySelectorAll(".navlink,.subnavlink").forEach(x=>x.classList.remove("active"));
+  if(source)source.classList.add("active");
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
+  el("page-business").classList.add("show");
+  el("pageTitle").textContent={profile:"ข้อมูลธุรกิจ",approver:"ผู้อนุมัติค่าใช้จ่าย",categories:"หมวดหมู่",finance:"ช่องทางการเงิน",team:"ทีมของฉัน"}[tab]||"จัดการธุรกิจ";
+  el("rangeSel").style.display="none";
+  setBusinessTab(tab);
+}
+function renderBusiness(){
+  if(!el("bizCompany"))return;
+  el("bizCompany").value=SETTINGS.company_name||"";
+  el("bizAddress").value=String(SETTINGS.company_address||"").replace(/\\n/g,"\n");
+  el("bizTaxId").value=SETTINGS.tax_id||"";
+  el("bizApprover").value=SETTINGS.approver_name||"";
+  const qs=`?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(K)}`;
+  el("openAssetSettings").href=location.origin+"/receipt"+qs;
+  el("openSignatureSettings").href=location.origin+"/receipt"+qs;
+  const readiness=[
+    ["ชื่อธุรกิจ",SETTINGS.company_name||"ยังไม่กรอก"],
+    ["เลขผู้เสียภาษี",SETTINGS.tax_id||"ยังไม่กรอก"],
+    ["ผู้อนุมัติ",SETTINGS.approver_name||"ยังไม่กรอก"],
+    ["ลายเซ็น",SETTINGS.approver_sign_url?"พร้อมใช้งาน":"ยังไม่อัปโหลด"],
+  ];
+  el("businessReadiness").innerHTML=readiness.map(([k,v])=>`<div class="summary-item"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join("");
+  el("signatureStatus").innerHTML=`<div class="status-line ${SETTINGS.approver_sign_url?"ok":""}"><span class="light"></span><span>${SETTINGS.approver_sign_url?"มีลายเซ็นพร้อมใช้ในเอกสารใหม่":"ยังไม่มีลายเซ็นผู้อนุมัติ"}</span></div>${SETTINGS.approver_sign_url?`<div style="margin-top:14px"><img src="${escAttr(SETTINGS.approver_sign_url)}" alt="ลายเซ็น" style="max-width:220px;max-height:90px;object-fit:contain;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff"></div>`:""}`;
+
+  const custom=parseSettingList("custom_categories");
+  el("customCategoryTags").innerHTML=custom.length?custom.map((c,i)=>`<span class="manage-tag">${esc(c)}<button data-remove-category="${i}" aria-label="ลบ">×</button></span>`).join(""):'<span style="font-size:12px;color:var(--muted)">ยังไม่มีหมวดที่เพิ่มเอง</span>';
+  const detected=[...new Set(ALL.map(r=>r.category).filter(Boolean))];
+  el("detectedCategoryTags").innerHTML=detected.length?detected.map(c=>`<span class="manage-tag detected">${esc(c)}</span>`).join(""):'<span style="font-size:12px;color:var(--muted)">ยังไม่พบหมวดจากรายการ</span>';
+
+  const channels=parseSettingList("payment_channels");
+  el("financeList").innerHTML=channels.length?channels.map((x,i)=>`<div class="list-card-row"><div><strong>${esc(x.label||x.bank||"ช่องทางการเงิน")}</strong><div class="sub">${esc(x.name||"")}</div></div><div>${esc(x.bank||"—")}<div class="sub">${esc(x.number||"—")}</div></div><button class="icon-btn" data-remove-finance="${i}" aria-label="ลบ">×</button></div>`).join(""):'<div class="empty-compact">ยังไม่ได้เพิ่มช่องทางการเงิน</div>';
+
+  const members=parseSettingList("team_members");
+  const detectedSenders=[...new Set(ALL.map(r=>r.sender||r.payerName).filter(Boolean))];
+  const combined=[...members.map(x=>({...x,source:"saved"})),...detectedSenders.filter(n=>!members.some(x=>x.name===n)).map(n=>({name:n,role:"ผู้ส่งรายการจาก LINE",source:"detected"}))];
+  el("teamList").innerHTML=combined.length?combined.map((x,i)=>`<div class="list-card-row"><div><strong>${esc(x.name||"—")}</strong><div class="sub">${esc(x.role||"สมาชิก")}</div></div><div>${x.source==="detected"?"ตรวจพบอัตโนมัติ":"บันทึกไว้"}</div>${x.source==="saved"?`<button class="icon-btn" data-remove-team="${i}" aria-label="ลบ">×</button>`:"<span></span>"}</div>`).join(""):'<div class="empty-compact">ยังไม่มีข้อมูลสมาชิก</div>';
+}
+function onboardingState(){
+  return {
+    line:Boolean(TENANT),
+    business:Boolean(SETTINGS.company_name),
+    google:Boolean(CONNECTED),
+    receipt:ALL.some(r=>r.img||r.amount),
+    signature:Boolean(SETTINGS.approver_sign_url),
+    sheet:localStorage.getItem(`sheet-checked:${TENANT}`)==="1",
+  };
+}
+function renderOnboarding(){
+  const st=onboardingState();const order=["line","business","google","receipt","signature","sheet"];
+  const done=order.filter(k=>st[k]).length;
+  el("onboardingCount").textContent=`${done}/6`;
+  el("onboardingBar").style.width=`${done/6*100}%`;
+  let foundNext=false;
+  document.querySelectorAll(".onboard-step").forEach(b=>{
+    const yes=st[b.dataset.step];b.classList.toggle("done",yes);b.classList.remove("next");
+    b.querySelector(".step-dot").textContent=yes?"✓":"";
+    if(!yes&&!foundNext){b.classList.add("next");foundNext=true;}
+  });
+  if(done===6)localStorage.setItem(`onboarding-complete:${TENANT}`,"1");
+}
+function onboardAction(step){
+  if(step==="business")return openBusiness("profile",document.querySelector('[data-biz="profile"]'));
+  if(step==="signature")return openBusiness("approver",document.querySelector('[data-biz="approver"]'));
+  if(step==="google"){location.href=WORKER+"/oauth/connect?tenant="+encodeURIComponent(TENANT);return;}
+  if(step==="receipt"){
+    el("modalBody").innerHTML='<h3 style="margin-top:0">อัปโหลดใบเสร็จแรก</h3><p style="color:var(--muted);font-size:13px">กลับไปที่กลุ่ม LINE แล้วส่งรูปใบเสร็จหรือสลิปให้บอท จากนั้นตรวจข้อมูลและกดบันทึก</p><button class="btn solid" onclick="document.getElementById(\'modal\').classList.remove(\'show\')">เข้าใจแล้ว</button>';
+    el("modal").classList.add("show");return;
+  }
+  if(step==="sheet")return openPage("expenses",document.querySelector('.navlink[data-p="expenses"]'));
+  if(step==="line"){
+    el("modalBody").innerHTML='<h3 style="margin-top:0">LINE เชื่อมต่อแล้ว</h3><p style="color:var(--muted);font-size:13px">ลิงก์ Dashboard นี้เปิดจากธุรกิจใน LINE ของคุณอยู่แล้ว</p>';
+    el("modal").classList.add("show");
+  }
+}
+
 /* ---------- SETTINGS ---------- */
 function renderSettings(){
   el("setConn").innerHTML=CONNECTED?'<span class="pill" style="background:var(--green-soft);color:var(--green)">เชื่อมแล้ว</span>':'<span class="pill" style="background:var(--amber-soft);color:var(--amber)">ยังไม่เชื่อม</span>';
   el("setTenant").textContent=TENANT||"—";
   el("setRows").textContent=ALL.length+" รายการ";
   el("setCats").textContent=[...new Set(ALL.map(r=>r.category).filter(Boolean))].join(", ")||"—";
+  if(el("coName"))el("coName").textContent=SETTINGS.company_name||CONAME;
 }
 
 /* ---------- EXPORT ---------- */
@@ -719,12 +1019,23 @@ function download(name,text){
 }
 
 /* ---------- NAV / DRAW ---------- */
-const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"รอเบิก",reports:"รายงานและภาษี",bills:"เอกสาร",activity:"ประวัติการบันทึก",settings:"ตั้งค่า"};
-document.querySelectorAll(".navlink").forEach(b=>b.addEventListener("click",()=>{
-  document.querySelectorAll(".navlink").forEach(x=>x.classList.remove("active"));b.classList.add("active");
-  const p=b.dataset.p;document.querySelectorAll(".page").forEach(s=>s.classList.remove("show"));el("page-"+p).classList.add("show");
-  el("pageTitle").textContent=TITLES[p]; el("rangeSel").style.display=(p==="overview"||p==="expenses")?"flex":"none";
-}));
+const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"รอเบิก",reports:"รายงานและภาษี",bills:"เอกสาร",activity:"ประวัติการบันทึก",settings:"ตั้งค่า",business:"จัดการธุรกิจ"};
+document.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>openPage(b.dataset.p,b)));
+document.querySelectorAll("[data-biz]").forEach(b=>b.addEventListener("click",()=>openBusiness(b.dataset.biz,b)));
+el("businessToggle").addEventListener("click",()=>el("businessGroup").classList.toggle("closed"));
+el("onboardingToggle").addEventListener("click",()=>el("onboardingCard").classList.toggle("closed"));
+document.querySelectorAll(".onboard-step").forEach(b=>b.addEventListener("click",()=>onboardAction(b.dataset.step)));
+
+// จัดการข้อมูลธุรกิจ
+el("saveBusiness").onclick=()=>saveSettings({company_name:el("bizCompany").value.trim(),company_address:el("bizAddress").value.trim().replace(/\n/g,"\\n"),tax_id:el("bizTaxId").value.trim()},"bizSaveState");
+el("saveApprover").onclick=()=>saveSettings({approver_name:el("bizApprover").value.trim()},"approverSaveState");
+el("addCategory").onclick=async()=>{const name=el("newCategory").value.trim();if(!name)return;const a=parseSettingList("custom_categories");if(!a.includes(name))a.push(name);if(await saveSettings({custom_categories:JSON.stringify(a)})){el("newCategory").value="";}};
+el("customCategoryTags").addEventListener("click",async e=>{const b=e.target.closest("[data-remove-category]");if(!b)return;const a=parseSettingList("custom_categories");a.splice(+b.dataset.removeCategory,1);await saveSettings({custom_categories:JSON.stringify(a)});});
+el("addFinance").onclick=async()=>{const x={label:el("finLabel").value.trim(),bank:el("finBank").value.trim(),number:el("finNumber").value.trim(),name:el("finName").value.trim()};if(!x.label&&!x.bank&&!x.number)return;const a=parseSettingList("payment_channels");a.push(x);if(await saveSettings({payment_channels:JSON.stringify(a)},"financeSaveState")){["finLabel","finBank","finNumber","finName"].forEach(id=>el(id).value="");}};
+el("financeList").addEventListener("click",async e=>{const b=e.target.closest("[data-remove-finance]");if(!b)return;const a=parseSettingList("payment_channels");a.splice(+b.dataset.removeFinance,1);await saveSettings({payment_channels:JSON.stringify(a)},"financeSaveState");});
+el("addTeam").onclick=async()=>{const x={name:el("teamName").value.trim(),role:el("teamRole").value.trim()};if(!x.name)return;const a=parseSettingList("team_members");a.push(x);if(await saveSettings({team_members:JSON.stringify(a)},"teamSaveState")){el("teamName").value="";el("teamRole").value="";}};
+el("teamList").addEventListener("click",async e=>{const b=e.target.closest("[data-remove-team]");if(!b)return;const a=parseSettingList("team_members");a.splice(+b.dataset.removeTeam,1);await saveSettings({team_members:JSON.stringify(a)},"teamSaveState");});
+
 el("rangeSel").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
   el("rangeSel").querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");RANGE=b.dataset.r;drawScoped();
 }));
@@ -735,8 +1046,8 @@ el("repCsv").onclick=()=>download("report.csv",toCSV(repData()));
 el("repPrint").onclick=()=>window.print();
 
 function drawScoped(){renderKPIs();renderTrend();renderCats();renderVendors();renderRecent();renderExp();}
-function drawAll(){buildCatFilter();buildRepMonths();drawScoped();renderReim();renderReport();renderBills();renderActivity();renderSettings();
-  el("coName").textContent=CONAME;
+function drawAll(){buildCatFilter();buildRepMonths();drawScoped();renderReim();renderReport();renderBills();renderActivity();renderSettings();renderBusiness();renderOnboarding();
+  el("coName").textContent=SETTINGS.company_name||CONAME;
   // ส่ง k ต่อไปทุกลิงก์ ไม่งั้นหน้าปลายทางจะโดน 401
   const qs="?tenant="+encodeURIComponent(TENANT)+"&k="+encodeURIComponent(K);
   el("filesLink").href=location.origin+"/files"+qs;
@@ -841,14 +1152,14 @@ async function load(){
     return;
   }
   const ok=await refreshData({initial:true});
-  if(ok) startRealtime();
+  if(ok){await refreshSettings();startRealtime();}
 }
 
-el("syncBtn").addEventListener("click",()=>refreshData({manual:true}));
+el("syncBtn").addEventListener("click",async()=>{await Promise.all([refreshData({manual:true}),refreshSettings()]);});
 document.addEventListener("visibilitychange",()=>{
-  if(!document.hidden&&HAS_LOADED) refreshData();
+  if(!document.hidden&&HAS_LOADED){refreshData();refreshSettings();}
 });
-window.addEventListener("focus",()=>{if(HAS_LOADED) refreshData();});
+window.addEventListener("focus",()=>{if(HAS_LOADED){refreshData();refreshSettings();}});
 window.addEventListener("online",()=>{syncStatus("syncing","กลับมาออนไลน์ — กำลังซิงก์…");refreshData({manual:true});});
 window.addEventListener("offline",()=>syncStatus("error","ออฟไลน์ — รอเชื่อมต่อ"));
 
