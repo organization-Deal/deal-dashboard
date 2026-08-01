@@ -459,6 +459,23 @@
   .returning-state{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);margin-left:2px}
   @media(max-width:980px){.integration-grid{grid-template-columns:1fr}.connection-details{grid-template-columns:1fr}.integration-card{min-height:auto}}
 
+  /* ── Reimbursement batches ───────────────────────── */
+  .batch-hero{background:#1d1d1f;color:#fff;border-radius:28px;padding:24px 26px;margin-bottom:16px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;box-shadow:var(--shadow)}
+  .batch-hero .eyebrow{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5);font-weight:650}
+  .batch-hero h3{font-size:24px;letter-spacing:-.035em;margin:4px 0 5px}.batch-hero p{margin:0;color:rgba(255,255,255,.62);font-size:12.5px;max-width:720px}
+  .batch-next{text-align:right}.batch-next span{display:block;font-size:10.5px;color:rgba(255,255,255,.48);text-transform:uppercase;letter-spacing:.06em}.batch-next strong{display:block;font-size:18px;margin-top:4px}
+  .batch-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}.batch-kpi{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 18px;box-shadow:var(--shadow)}.batch-kpi span{font-size:11.5px;color:var(--muted)}.batch-kpi strong{display:block;font-size:25px;letter-spacing:-.035em;margin-top:5px}.batch-kpi small{display:block;color:var(--muted-2);font-size:10.5px;margin-top:2px}
+  .batch-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.75fr);gap:16px;align-items:start}.batch-section{background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}.batch-section-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}.batch-section-head h3{margin:0;font-size:16px}.batch-section-head p{margin:3px 0 0;font-size:11.5px;color:var(--muted)}.batch-section-head .actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .batch-group{border:1px solid var(--line);border-radius:17px;overflow:hidden;margin-bottom:12px;background:#fff}.batch-group:last-child{margin-bottom:0}.batch-group-head{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:14px 15px;background:#fafafa;border-bottom:1px solid var(--line)}.batch-person{font-weight:700;font-size:13.5px}.batch-person-sub{font-size:10.8px;color:var(--muted);margin-top:2px}.batch-group-total{text-align:right}.batch-group-total strong{display:block;font-size:15px}.batch-group-total span{font-size:10.5px;color:var(--muted)}.batch-group-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+  .batch-item-list{padding:0 14px}.batch-item{display:grid;grid-template-columns:28px 88px minmax(0,1fr) 110px;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}.batch-item:last-child{border-bottom:0}.batch-item input{width:16px;height:16px}.batch-item-date{font-size:11px;color:var(--muted)}.batch-item-main{min-width:0}.batch-item-main strong{font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.batch-item-main span{font-size:10.5px;color:var(--muted);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.batch-item-amount{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+  .batch-status{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:10px;color:var(--muted);background:#fff}.batch-status.urgent{color:#8a5a00;background:#fff8e6;border-color:#f3dfae}.batch-status.done{color:var(--green);background:var(--green-soft);border-color:#cfe8d4}.batch-status.paid{color:#fff;background:#1d1d1f;border-color:#1d1d1f}
+  .batch-empty{padding:34px 18px;text-align:center;color:var(--muted);font-size:12px;border:1px dashed var(--line-strong);border-radius:16px;background:#fafafa}
+  .batch-history{width:100%;border-collapse:collapse}.batch-history th{font-size:10.5px;color:var(--muted);font-weight:600;text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}.batch-history td{font-size:11.5px;padding:11px 8px;border-bottom:1px solid var(--line);vertical-align:middle}.batch-history tr:last-child td{border-bottom:0}.batch-history .num{text-align:right}.batch-doc-link{font-weight:650;text-decoration:none}.batch-doc-link:hover{text-decoration:underline}.batch-status-select{border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 8px;font-size:11px}
+  .batch-settings{display:grid;gap:12px}.batch-settings .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.batch-settings label{font-size:10.8px;color:var(--muted);display:block;margin-bottom:5px}.batch-settings input,.batch-settings select{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;padding:9px 10px;color:var(--ink)}.batch-toggle{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:13px;padding:11px 12px}.batch-toggle input{width:18px;height:18px}
+  .batch-help{font-size:11.5px;line-height:1.6;color:var(--muted);background:#fafafa;border:1px solid var(--line);border-radius:14px;padding:13px}.batch-help b{color:var(--ink)}
+  @media(max-width:1100px){.batch-layout{grid-template-columns:1fr}.batch-kpis{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:720px){.batch-hero{grid-template-columns:1fr}.batch-next{text-align:left}.batch-kpis{grid-template-columns:1fr 1fr}.batch-group-head{grid-template-columns:1fr}.batch-group-total{text-align:left}.batch-group-actions{justify-content:flex-start}.batch-item{grid-template-columns:26px 1fr 90px}.batch-item-date{display:none}}
+
 </style>
 </head>
 <body>
@@ -473,6 +490,7 @@
       <button class="navlink" data-p="expenses"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v13"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg></span><span>รายจ่าย</span></button>
       <button class="navlink" data-p="income"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21V8"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span><span>รายรับ</span></button>
       <button class="navlink" data-p="reimburse"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span>รอเบิก</span></button>
+      <button class="navlink" data-p="batches"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/><circle cx="18" cy="17" r="2"/></svg></span><span>รอบเบิก</span></button>
       <button class="navlink" data-p="reports"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19V3"/></svg></span><span>รายงานและภาษี</span></button>
       <button class="navlink" data-p="bills"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5"/><path d="M9 12h7M9 16h7"/></svg></span><span>เอกสาร</span></button>
       <button class="navlink" data-p="email"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><span>เอกสารจากอีเมล</span></button>
@@ -593,6 +611,44 @@
         <h3>สรุปยอดรอเบิก</h3><div class="cs">แยกตามผู้ส่งบิล — ใครสำรองจ่ายไปเท่าไร ค้างกี่วัน</div>
         <div id="reimTotal" style="font-size:24px;font-weight:700;color:var(--amber);margin-bottom:14px"></div>
         <table><thead><tr><th>ผู้ส่ง</th><th class="num">จำนวนบิล</th><th class="num">ยอดรวม</th><th class="num">ค้างนานสุด</th></tr></thead><tbody id="reimBody"></tbody></table>
+      </div>
+    </section>
+
+    <!-- REIMBURSEMENT BATCHES -->
+    <section class="page" id="page-batches">
+      <div class="batch-hero">
+        <div><div class="eyebrow">REIMBURSEMENT CONTROL</div><h3>รอบเบิก</h3><p>รวมหลายรายการของผู้เบิกคนเดียวเป็นใบขอเบิกรวมหนึ่งใบ บัญชีตรวจ อนุมัติ และจ่ายเป็นรอบได้โดยไม่ต้องไล่เปิดทีละรายการ</p></div>
+        <div class="batch-next"><span>รอบถัดไป</span><strong id="batchNext">จันทร์ 11:00 น.</strong></div>
+      </div>
+      <div class="batch-kpis">
+        <div class="batch-kpi"><span>รอเข้ารอบ</span><strong id="batchKItems">0</strong><small>รายการ</small></div>
+        <div class="batch-kpi"><span>ยอดรอเข้ารอบ</span><strong id="batchKTotal">฿0</strong><small>ยังไม่รวมเป็นเอกสาร</small></div>
+        <div class="batch-kpi"><span>ผู้เบิก</span><strong id="batchKPeople">0</strong><small>คนที่มีรายการค้าง</small></div>
+        <div class="batch-kpi"><span>คำขอด่วน</span><strong id="batchKUrgent">0</strong><small>รายการที่ต้องรีบดำเนินการ</small></div>
+      </div>
+      <div class="batch-layout">
+        <div>
+          <div class="batch-section">
+            <div class="batch-section-head"><div><h3>รายการรอเข้ารอบ</h3><p>ระบบจัดกลุ่มตามผู้เบิกให้อัตโนมัติ เลือกรายการแล้วสร้างรอบด่วน หรือปิดรอบเฉพาะคนนั้นได้ทันที</p></div><div class="actions"><button class="btn" id="batchRefresh">อัปเดต</button><button class="btn solid" id="batchCloseAll">ปิดรอบทั้งหมดตอนนี้</button></div></div>
+            <div id="batchPendingGroups"><div class="batch-empty">กำลังโหลดรายการรอเข้ารอบ…</div></div>
+          </div>
+          <div class="batch-section">
+            <div class="batch-section-head"><div><h3>รอบเบิกที่ผ่านมา</h3><p>หนึ่งแถวคือใบขอเบิกรวมหนึ่งใบ หากเกินจำนวนรายการสูงสุด ระบบจะแบ่งเป็น P1, P2 อัตโนมัติ</p></div></div>
+            <div style="overflow:auto"><table class="batch-history"><thead><tr><th>เลขเอกสาร</th><th>ผู้เบิก</th><th>ประเภท</th><th class="num">รายการ</th><th class="num">ยอดรวม</th><th>เอกสาร</th><th>สถานะ</th></tr></thead><tbody id="batchHistory"></tbody></table></div>
+          </div>
+        </div>
+        <div>
+          <div class="batch-section">
+            <div class="batch-section-head"><div><h3>ตั้งค่ารอบอัตโนมัติ</h3><p>ค่าเริ่มต้นคือทุกวันจันทร์ เวลา 11:00 น. ตามเวลาไทย</p></div></div>
+            <div class="batch-settings">
+              <div class="batch-toggle"><div><strong style="font-size:12.5px">เปิดปิดรอบอัตโนมัติ</strong><div style="font-size:10.5px;color:var(--muted)">ระบบทำงานผ่าน Cloudflare Cron</div></div><input type="checkbox" id="batchEnabled"></div>
+              <div class="field-row"><div><label>วันปิดรอบ</label><select id="batchWeekday"><option value="1">วันจันทร์</option><option value="2">วันอังคาร</option><option value="3">วันพุธ</option><option value="4">วันพฤหัสบดี</option><option value="5">วันศุกร์</option></select></div><div><label>เวลา</label><input id="batchTime" type="time" value="11:00"></div></div>
+              <div><label>จำนวนรายการสูงสุดต่อ PDF</label><input id="batchMaxItems" type="number" min="1" max="10" value="10"></div>
+              <button class="btn solid" id="batchSaveSettings">บันทึกการตั้งค่า</button><span class="save-state" id="batchSaveState"></span>
+            </div>
+          </div>
+          <div class="batch-help"><b>วิธีทำงาน</b><br>1. พนักงานส่งหลายรายการได้ตลอดสัปดาห์<br>2. เมื่อถึงเวลาปิดรอบ ระบบรวมตามผู้เบิก<br>3. สร้างเลขรอบและใบขอเบิกรวม PDF<br>4. บัญชีกดอนุมัติและจ่ายจากหน้านี้<br><br><b>กรณีด่วน</b> เลือกรายการของคนนั้นแล้วกด “สร้างรอบด่วน” ระบบจะออกเอกสารทันทีโดยไม่รอวันจันทร์</div>
+        </div>
       </div>
     </section>
 
@@ -803,6 +859,12 @@
             <div class="biz-form">
               <div class="field"><label>ชื่อสมาชิก</label><input id="teamName" placeholder="ชื่อ–นามสกุล"></div>
               <div class="field"><label>บทบาท</label><input id="teamRole" placeholder="เช่น บัญชี, ผู้อนุมัติ, พนักงาน"></div>
+              <div class="field"><label>LINE User ID (ไม่บังคับ)</label><input id="teamLineId" placeholder="ใช้จับคู่ผู้เบิกให้แม่นยำ"></div>
+              <div class="field-row">
+                <div class="field"><label>ธนาคาร</label><input id="teamBank" placeholder="เช่น SCB"></div>
+                <div class="field"><label>เลขบัญชี</label><input id="teamAccountNo" placeholder="เลขบัญชีรับเงิน"></div>
+              </div>
+              <div class="field"><label>ชื่อบัญชี</label><input id="teamAccountName" placeholder="ชื่อบัญชีของผู้เบิก"></div>
               <div class="form-actions"><button class="btn solid" id="addTeam">เพิ่มสมาชิก</button><span class="save-state" id="teamSaveState"></span></div>
             </div>
           </div>
@@ -870,6 +932,9 @@ let SUBSCRIPTIONS = [];
 let EMAIL_INFO = {};
 let EMAIL_LOADING = false;
 let EMAIL_SYNCING = false;
+let BATCH_DATA = {pending:{groups:[],itemCount:0,total:0,urgentCount:0,people:0},batches:[],settings:{}};
+let BATCH_LOADING = false;
+let BATCH_POLL_TICK = 0;
 
 // Realtime แบบ polling: Google Sheet ไม่มี event stream โดยตรง จึงตรวจข้อมูลใหม่ทุก 5 วินาที
 const REFRESH_MS = 5000;
@@ -1218,6 +1283,7 @@ function openPage(p,source=null){
     renderOnboarding();
   }
   if(p==="email"||p==="subscriptions") refreshEmailData();
+  if(p==="batches") refreshBatchData();
 }
 function openBusiness(tab,source=null){
   document.querySelectorAll(".navlink,.subnavlink").forEach(x=>x.classList.remove("active"));
@@ -1257,7 +1323,11 @@ function renderBusiness(){
   const members=parseSettingList("team_members");
   const detectedSenders=[...new Set(ALL.map(r=>r.sender||r.payerName).filter(Boolean))];
   const combined=[...members.map(x=>({...x,source:"saved"})),...detectedSenders.filter(n=>!members.some(x=>x.name===n)).map(n=>({name:n,role:"ผู้ส่งรายการจาก LINE",source:"detected"}))];
-  el("teamList").innerHTML=combined.length?combined.map((x,i)=>`<div class="list-card-row"><div><strong>${esc(x.name||"—")}</strong><div class="sub">${esc(x.role||"สมาชิก")}</div></div><div>${x.source==="detected"?"ตรวจพบอัตโนมัติ":"บันทึกไว้"}</div>${x.source==="saved"?`<button class="icon-btn" data-remove-team="${i}" aria-label="ลบ">×</button>`:"<span></span>"}</div>`).join(""):'<div class="empty-compact">ยังไม่มีข้อมูลสมาชิก</div>';
+  el("teamList").innerHTML=combined.length?combined.map((x,i)=>{
+    const bank=[x.bank,x.accountNo].filter(Boolean).join(" · ");
+    const owner=x.accountName?`ชื่อบัญชี ${esc(x.accountName)}`:"";
+    return `<div class="list-card-row"><div><strong>${esc(x.name||"—")}</strong><div class="sub">${esc(x.role||"สมาชิก")}${bank?` · ${esc(bank)}`:""}${owner?`<br>${owner}`:""}</div></div><div>${x.source==="detected"?"ตรวจพบอัตโนมัติ":"บันทึกไว้"}</div>${x.source==="saved"?`<button class="icon-btn" data-remove-team="${i}" aria-label="ลบ">×</button>`:"<span></span>"}</div>`;
+  }).join(""):'<div class="empty-compact">ยังไม่มีข้อมูลสมาชิก</div>';
 }
 function onboardingState(){
   return {
@@ -1442,6 +1512,99 @@ function openEmailEditor(id){
   };
 }
 
+
+/* ---------- REIMBURSEMENT BATCHES ---------- */
+const BATCH_WEEKDAYS=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
+function batchDate(v){const d=pdate(v)||cdate(v);return d?fmtDate(d):"—";}
+function batchStatusClass(v){return v==="จ่ายแล้ว"?"paid":v==="อนุมัติแล้ว"?"done":v==="ด่วน"?"urgent":"";}
+function batchSettingsText(){
+  const s=BATCH_DATA.settings||{};
+  const hh=String(Number(s.hour??11)).padStart(2,"0"),mm=String(Number(s.minute??0)).padStart(2,"0");
+  return `${BATCH_WEEKDAYS[Number(s.weekday??1)]||"จันทร์"} ${hh}:${mm} น.`;
+}
+function renderBatches(){
+  if(!el("batchPendingGroups"))return;
+  const p=BATCH_DATA.pending||{groups:[]};
+  const st=BATCH_DATA.settings||{};
+  el("batchKItems").textContent=Number(p.itemCount||0).toLocaleString("th-TH");
+  el("batchKTotal").textContent=baht(p.total||0);
+  el("batchKPeople").textContent=Number(p.people||0).toLocaleString("th-TH");
+  el("batchKUrgent").textContent=Number(p.urgentCount||0).toLocaleString("th-TH");
+  el("batchNext").textContent=(st.enabled?batchSettingsText():"ยังไม่เปิดรอบอัตโนมัติ");
+  el("batchEnabled").checked=st.enabled===true;
+  el("batchWeekday").value=String(Number(st.weekday??1));
+  el("batchTime").value=`${String(Number(st.hour??11)).padStart(2,"0")}:${String(Number(st.minute??0)).padStart(2,"0")}`;
+  el("batchMaxItems").value=String(Number(st.maxItems||10));
+
+  const groups=Array.isArray(p.groups)?p.groups:[];
+  el("batchPendingGroups").innerHTML=groups.length?groups.map((g,gi)=>{
+    const items=(g.items||[]).map(r=>`<div class="batch-item">
+      <input type="checkbox" data-batch-item="${escAttr(r.id)}" data-group="${gi}" checked aria-label="เลือกรายการ">
+      <div class="batch-item-date">${batchDate(r.dateISO||r.createdAt)}</div>
+      <div class="batch-item-main"><strong>${esc(r.vendor||r.note||"ไม่ระบุรายการ")}</strong><span>${esc(r.note||r.category||"—")}${r.batchType==="ด่วน"||r.batchStatus==="ขอเบิกด่วน"?' · <b style="color:#8a5a00">ด่วน</b>':""}</span></div>
+      <div class="batch-item-amount">${baht(r.amount)}</div>
+    </div>`).join("");
+    return `<div class="batch-group" data-batch-group="${gi}">
+      <div class="batch-group-head">
+        <div><div class="batch-person">${esc(g.payerName||"ไม่ระบุผู้เบิก")}</div><div class="batch-person-sub">${Number(g.itemCount||0)} รายการ${g.urgentCount?` · <span style="color:#8a5a00">ด่วน ${g.urgentCount}</span>`:""}</div></div>
+        <div class="batch-group-total"><strong>${baht(g.total||0)}</strong><span>ยอดรอเข้ารอบ</span></div>
+        <div class="batch-group-actions"><button class="btn" data-batch-action="urgent" data-group="${gi}">สร้างรอบด่วน</button><button class="btn solid" data-batch-action="close" data-payer="${escAttr(g.payerKey||"")}">ปิดรอบคนนี้</button></div>
+      </div><div class="batch-item-list">${items}</div>
+    </div>`;
+  }).join(""):'<div class="batch-empty"><b>ไม่มีรายการรอเข้ารอบ</b><br>รายการใหม่ที่ยังไม่จ่ายจะมาอยู่ตรงนี้อัตโนมัติ</div>';
+
+  const batches=Array.isArray(BATCH_DATA.batches)?BATCH_DATA.batches:[];
+  el("batchHistory").innerHTML=batches.length?batches.map(b=>`<tr>
+    <td><strong>${esc(b.docId||b.runNo||"—")}</strong><div style="font-size:10px;color:var(--muted)">${esc(b.runNo||"")} ${b.part&&b.part!=="1/1"?`· ${esc(b.part)}`:""}</div></td>
+    <td>${esc(b.payerName||"—")}</td>
+    <td><span class="batch-status ${b.type==="ด่วน"?"urgent":""}">${esc(b.type||"ปกติ")}</span></td>
+    <td class="num">${Number(b.itemCount||0).toLocaleString("th-TH")}</td>
+    <td class="num"><strong>${baht(b.total||0)}</strong></td>
+    <td>${b.pdfUrl?`<a class="batch-doc-link" href="${escAttr(b.pdfUrl)}" target="_blank" rel="noopener">เปิด PDF ↗</a>`:"—"}</td>
+    <td><select class="batch-status-select" data-batch-status="${escAttr(b.id||b.docId)}"><option ${b.status==="รออนุมัติ"?"selected":""}>รออนุมัติ</option><option ${b.status==="อนุมัติแล้ว"?"selected":""}>อนุมัติแล้ว</option><option ${b.status==="จ่ายแล้ว"?"selected":""}>จ่ายแล้ว</option><option ${b.status==="ยกเลิก"?"selected":""}>ยกเลิก</option></select></td>
+  </tr>`).join(""):'<tr><td colspan="7" class="batch-empty">ยังไม่มีรอบเบิกที่สร้างแล้ว</td></tr>';
+}
+async function batchPost(path,body={}){
+  const res=await fetch(apiUrl(path),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok||data.ok===false)throw new Error(data.reason||data.error||data.message||`HTTP ${res.status}`);
+  return data;
+}
+async function refreshBatchData({quiet=false}={}){
+  if(BATCH_LOADING)return false;
+  BATCH_LOADING=true;
+  if(!quiet&&el("batchRefresh")){el("batchRefresh").disabled=true;el("batchRefresh").textContent="กำลังอัปเดต…";}
+  try{
+    const res=await fetch(apiUrl("/api/batches")+`&_=${Date.now()}`,{cache:"no-store",headers:{"cache-control":"no-cache"}});
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    BATCH_DATA=await res.json();
+    renderBatches();return true;
+  }catch(err){console.error("batch refresh failed",err);if(!quiet)alert("โหลดรอบเบิกไม่สำเร็จ: "+err.message);return false;}
+  finally{BATCH_LOADING=false;if(el("batchRefresh")){el("batchRefresh").disabled=false;el("batchRefresh").textContent="อัปเดต";}}
+}
+function selectedBatchIds(groupIndex){
+  return [...document.querySelectorAll(`[data-batch-item][data-group="${groupIndex}"]:checked`)].map(x=>x.dataset.batchItem).filter(Boolean);
+}
+async function runBatchAction(button){
+  const action=button.dataset.batchAction;
+  const old=button.textContent;button.disabled=true;button.textContent="กำลังสร้าง…";
+  try{
+    let out;
+    if(action==="urgent"){
+      const ids=selectedBatchIds(button.dataset.group);
+      if(!ids.length)throw new Error("เลือกรายการอย่างน้อย 1 รายการ");
+      if(!confirm(`สร้างรอบด่วนจาก ${ids.length} รายการตอนนี้?`))return;
+      out=await batchPost("/api/batch-urgent",{expenseIds:ids});
+    }else{
+      if(!confirm("ปิดรอบของผู้เบิกคนนี้และสร้างใบขอเบิกรวมตอนนี้?"))return;
+      out=await batchPost("/api/batch-close",{payerKey:button.dataset.payer});
+    }
+    alert(out.itemCount?`สร้างรอบ ${out.runNo} สำเร็จ\n${out.itemCount} รายการ · ${baht(out.total)}`:(out.message||"ไม่มีรายการที่ต้องสร้าง"));
+    await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);
+  }catch(err){alert("สร้างรอบไม่สำเร็จ: "+err.message);}
+  finally{button.disabled=false;button.textContent=old;}
+}
+
 /* ---------- SETTINGS ---------- */
 function renderSettings(){
   if(el("setConn"))el("setConn").textContent=CONNECTED?"เชื่อมแล้ว":"ยังไม่เชื่อม";
@@ -1472,7 +1635,7 @@ function download(name,text){
 }
 
 /* ---------- NAV / DRAW ---------- */
-const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"รอเบิก",reports:"รายงานและภาษี",bills:"ศูนย์เอกสารบัญชี",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",settings:"ตั้งค่า",business:"จัดการธุรกิจ"};
+const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"รอเบิก",batches:"รอบเบิก",reports:"รายงานและภาษี",bills:"ศูนย์เอกสารบัญชี",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",settings:"ตั้งค่า",business:"จัดการธุรกิจ"};
 document.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>openPage(b.dataset.p,b)));
 document.querySelectorAll("[data-biz]").forEach(b=>b.addEventListener("click",()=>openBusiness(b.dataset.biz,b)));
 el("businessToggle").addEventListener("click",()=>el("businessGroup").classList.toggle("closed"));
@@ -1486,9 +1649,20 @@ el("addCategory").onclick=async()=>{const name=el("newCategory").value.trim();if
 el("customCategoryTags").addEventListener("click",async e=>{const b=e.target.closest("[data-remove-category]");if(!b)return;const a=parseSettingList("custom_categories");a.splice(+b.dataset.removeCategory,1);await saveSettings({custom_categories:JSON.stringify(a)});});
 el("addFinance").onclick=async()=>{const x={label:el("finLabel").value.trim(),bank:el("finBank").value.trim(),number:el("finNumber").value.trim(),name:el("finName").value.trim()};if(!x.label&&!x.bank&&!x.number)return;const a=parseSettingList("payment_channels");a.push(x);if(await saveSettings({payment_channels:JSON.stringify(a)},"financeSaveState")){["finLabel","finBank","finNumber","finName"].forEach(id=>el(id).value="");}};
 el("financeList").addEventListener("click",async e=>{const b=e.target.closest("[data-remove-finance]");if(!b)return;const a=parseSettingList("payment_channels");a.splice(+b.dataset.removeFinance,1);await saveSettings({payment_channels:JSON.stringify(a)},"financeSaveState");});
-el("addTeam").onclick=async()=>{const x={name:el("teamName").value.trim(),role:el("teamRole").value.trim()};if(!x.name)return;const a=parseSettingList("team_members");a.push(x);if(await saveSettings({team_members:JSON.stringify(a)},"teamSaveState")){el("teamName").value="";el("teamRole").value="";}};
+el("addTeam").onclick=async()=>{const x={name:el("teamName").value.trim(),role:el("teamRole").value.trim(),lineUserId:el("teamLineId").value.trim(),bank:el("teamBank").value.trim(),accountNo:el("teamAccountNo").value.trim(),accountName:el("teamAccountName").value.trim()};if(!x.name)return;const a=parseSettingList("team_members");a.push(x);if(await saveSettings({team_members:JSON.stringify(a)},"teamSaveState")){["teamName","teamRole","teamLineId","teamBank","teamAccountNo","teamAccountName"].forEach(id=>el(id).value="");}};
 el("teamList").addEventListener("click",async e=>{const b=e.target.closest("[data-remove-team]");if(!b)return;const a=parseSettingList("team_members");a.splice(+b.dataset.removeTeam,1);await saveSettings({team_members:JSON.stringify(a)},"teamSaveState");});
 
+
+
+if(el("batchRefresh"))el("batchRefresh").onclick=()=>refreshBatchData();
+if(el("batchCloseAll"))el("batchCloseAll").onclick=async()=>{
+  if(!confirm("ปิดรอบรายการที่ค้างทั้งหมดและสร้างใบขอเบิกรวมแยกตามผู้เบิกตอนนี้?"))return;
+  const b=el("batchCloseAll"),old=b.textContent;b.disabled=true;b.textContent="กำลังปิดรอบ…";
+  try{const out=await batchPost("/api/batch-close",{});alert(out.itemCount?`สร้างรอบ ${out.runNo} สำเร็จ\n${out.people||0} คน · ${out.itemCount} รายการ · ${baht(out.total)}`:(out.message||"ไม่มีรายการรอเข้ารอบ"));await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert("ปิดรอบไม่สำเร็จ: "+err.message);}finally{b.disabled=false;b.textContent=old;}
+};
+if(el("batchPendingGroups"))el("batchPendingGroups").addEventListener("click",e=>{const b=e.target.closest("[data-batch-action]");if(b)runBatchAction(b);});
+if(el("batchHistory"))el("batchHistory").addEventListener("change",async e=>{const s=e.target.closest("[data-batch-status]");if(!s)return;const before=s.dataset.previous||"";s.disabled=true;try{await batchPost("/api/batch-status",{batchId:s.dataset.batchStatus,status:s.value});await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert("อัปเดตสถานะไม่สำเร็จ: "+err.message);if(before)s.value=before;}finally{s.disabled=false;}});
+if(el("batchSaveSettings"))el("batchSaveSettings").onclick=async()=>{const [h,m]=String(el("batchTime").value||"11:00").split(":").map(Number);const ok=await saveSettings({batch_enabled:el("batchEnabled").checked?"TRUE":"FALSE",batch_weekday:String(el("batchWeekday").value||1),batch_hour:String(Number.isFinite(h)?h:11),batch_minute:String(Number.isFinite(m)?m:0),batch_max_items:String(Math.max(1,Math.min(10,Number(el("batchMaxItems").value||10)))),batch_timezone:"Asia/Bangkok"},"batchSaveState");if(ok)await refreshBatchData({quiet:true});};
 
 if(el("emailQ"))el("emailQ").addEventListener("input",renderEmailInbox);
 if(el("emailStatus"))el("emailStatus").addEventListener("change",renderEmailInbox);
@@ -1512,7 +1686,7 @@ el("repPrint").onclick=()=>window.print();
 if(el("docCsv"))el("docCsv").onclick=exportDocumentCSV;
 
 function drawScoped(){renderKPIs();renderTrend();renderCats();renderVendors();renderRecent();renderExp();}
-function drawAll(){buildCatFilter();buildRepMonths();drawScoped();renderReim();renderReport();renderBills();renderActivity();renderSettings();renderBusiness();renderOnboarding();renderEmailInbox();renderSubscriptions();
+function drawAll(){buildCatFilter();buildRepMonths();drawScoped();renderReim();renderReport();renderBills();renderActivity();renderSettings();renderBusiness();renderOnboarding();renderEmailInbox();renderSubscriptions();renderBatches();
   el("coName").textContent=SETTINGS.company_name||CONAME;
   // ส่ง k ต่อไปทุกลิงก์ ไม่งั้นหน้าปลายทางจะโดน 401
   const qs="?tenant="+encodeURIComponent(TENANT)+"&k="+encodeURIComponent(K);
@@ -1608,7 +1782,7 @@ async function refreshData({initial=false,manual=false}={}){
 function startRealtime(){
   if(REFRESH_TIMER) clearInterval(REFRESH_TIMER);
   REFRESH_TIMER=setInterval(()=>{
-    if(!document.hidden){refreshData();EMAIL_POLL_TICK++;if(EMAIL_POLL_TICK%3===0&&(el("page-email")?.classList.contains("show")||el("page-subscriptions")?.classList.contains("show")))refreshEmailData();}
+    if(!document.hidden){refreshData();EMAIL_POLL_TICK++;BATCH_POLL_TICK++;if(EMAIL_POLL_TICK%3===0&&(el("page-email")?.classList.contains("show")||el("page-subscriptions")?.classList.contains("show")))refreshEmailData();if(BATCH_POLL_TICK%3===0&&el("page-batches")?.classList.contains("show"))refreshBatchData({quiet:true});}
   },REFRESH_MS);
 }
 
@@ -1618,17 +1792,17 @@ async function load(){
     return;
   }
   const ok=await refreshData({initial:true});
-  if(ok){await refreshSettings();await refreshEmailData();
+  if(ok){await refreshSettings();await Promise.all([refreshEmailData(),refreshBatchData({quiet:true})]);
     const last=Date.parse(EMAIL_INFO.lastSyncAt||"");
     if(EMAIL_INFO.connected&&(!Number.isFinite(last)||Date.now()-last>10*60*1000))syncGmail({manual:false});
     startRealtime();const target=QS.get("page");if(target&&el("page-"+target)){const b=document.querySelector(`[data-p="${target}"]`);openPage(target,b);}}
 }
 
-el("syncBtn").addEventListener("click",async()=>{await Promise.all([refreshData({manual:true}),refreshSettings()]);});
+el("syncBtn").addEventListener("click",async()=>{await Promise.all([refreshData({manual:true}),refreshSettings(),refreshBatchData({quiet:true})]);});
 document.addEventListener("visibilitychange",()=>{
-  if(!document.hidden&&HAS_LOADED){refreshData();refreshSettings();}
+  if(!document.hidden&&HAS_LOADED){refreshData();refreshSettings();if(el("page-batches")?.classList.contains("show"))refreshBatchData({quiet:true});}
 });
-window.addEventListener("focus",()=>{if(HAS_LOADED){refreshData();refreshSettings();}});
+window.addEventListener("focus",()=>{if(HAS_LOADED){refreshData();refreshSettings();if(el("page-batches")?.classList.contains("show"))refreshBatchData({quiet:true});}});
 window.addEventListener("online",()=>{syncStatus("syncing","กลับมาออนไลน์ — กำลังซิงก์…");refreshData({manual:true});});
 window.addEventListener("offline",()=>syncStatus("error","ออฟไลน์ — รอเชื่อมต่อ"));
 
