@@ -362,6 +362,21 @@
     .sidebar,.head,.toolbar{display:none!important}.main{padding:0}.card{box-shadow:none;border:0}.page{display:none!important}#page-reports{display:block!important}
   }
 
+  /* Email Inbox */
+  .email-setup{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.8fr);gap:18px;align-items:stretch;margin-bottom:18px}
+  .inbox-address{display:flex;gap:10px;margin-top:16px}.inbox-address input{flex:1;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:14px;background:#f5f5f7}
+  .email-help{padding:18px;border-radius:18px;background:#f5f5f7;border:1px solid var(--line)}
+  .email-help ol{margin:10px 0 0;padding-left:20px;color:var(--muted);font-size:13px;line-height:1.7}
+  .email-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.email-kpi{padding:17px 18px;border:1px solid var(--line);border-radius:17px;background:#fff}.email-kpi .v{font-size:24px;font-weight:750;margin-top:6px}.email-kpi .l{font-size:12px;color:var(--muted)}
+  .email-list{display:flex;flex-direction:column;gap:10px}.email-item{border:1px solid var(--line);border-radius:18px;padding:17px 18px;background:#fff;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start}.email-item:hover{border-color:#c9c9ce}
+  .email-title{font-size:15px;font-weight:700;line-height:1.35}.email-sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.55}.email-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.email-amt{text-align:right;font-size:18px;font-weight:750;white-space:nowrap}.email-actions{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap;margin-top:11px}.btn.small{padding:7px 10px;font-size:11px;border-radius:10px}.btn.danger{color:#b42318;border-color:#f0c7c3;background:#fff}.btn.ghost{background:#f5f5f7;border-color:#f5f5f7}
+  .email-status{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:700;background:#f0f0f2;color:#555}.email-status.review{background:#fff4d6;color:#8a5a00}.email-status.done{background:#eaf7ed;color:#207a3d}.email-status.dup{background:#fff0ef;color:#b42318}.email-status.skip{background:#f1f1f3;color:#6e6e73}.email-status.error{background:#fff0ef;color:#b42318}
+  .email-warning{margin-top:9px;padding:9px 11px;background:#fff8e6;border-radius:10px;font-size:11px;color:#765000}.email-duplicate{margin-top:9px;padding:9px 11px;background:#fff1f0;border-radius:10px;font-size:11px;color:#9b1c13}.email-preview{margin-top:10px;font-size:12px;color:var(--muted)}.email-preview summary{cursor:pointer;color:var(--text);font-weight:600}.email-preview div{white-space:pre-wrap;line-height:1.6;margin-top:8px;padding:10px 12px;background:var(--soft);border-radius:10px;max-height:180px;overflow:auto}
+  .subscription-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.sub-card{padding:18px;border:1px solid var(--line);border-radius:18px;background:#fff}.sub-name{font-weight:700;font-size:15px}.sub-vendor{font-size:11px;color:var(--muted);margin-top:3px}.sub-amount{font-size:22px;font-weight:750;margin-top:15px}.sub-foot{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.5}
+  .email-empty{padding:48px 20px;text-align:center;color:var(--muted);font-size:13px}
+  @media(max-width:900px){.email-setup{grid-template-columns:1fr}.email-kpis{grid-template-columns:1fr 1fr}.subscription-grid{grid-template-columns:1fr 1fr}.email-item{grid-template-columns:1fr}.email-amt{text-align:left}.email-actions{justify-content:flex-start}}
+  @media(max-width:560px){.email-kpis,.subscription-grid{grid-template-columns:1fr}.inbox-address{flex-direction:column}}
+
 </style>
 </head>
 <body>
@@ -378,6 +393,8 @@
       <button class="navlink" data-p="reimburse"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span>รอเบิก</span></button>
       <button class="navlink" data-p="reports"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19V3"/></svg></span><span>รายงานและภาษี</span></button>
       <button class="navlink" data-p="bills"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5"/><path d="M9 12h7M9 16h7"/></svg></span><span>เอกสาร</span></button>
+      <button class="navlink" data-p="email"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><span>เอกสารจากอีเมล</span></button>
+      <button class="navlink" data-p="subscriptions"><span class="ic"><svg viewBox="0 0 24 24"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="8" cy="7" r="3"/></svg></span><span>รายจ่ายประจำ</span></button>
       <button class="navlink" data-p="activity"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg></span><span>ประวัติ</span></button>
       <div class="nav-divider"></div>
       <div class="business-group" id="businessGroup">
@@ -398,13 +415,14 @@
       <button class="navlink compact-only" data-p="settings"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21h-4v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3.1 14H3v-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3h4v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>ตั้งค่า</span></button>
       <div class="onboarding" id="onboardingCard">
         <button class="onboarding-head" id="onboardingToggle" type="button">
-          <strong>เริ่มต้นใช้งาน</strong><span class="count" id="onboardingCount">0/6</span><span class="chev">⌄</span>
+          <strong>เริ่มต้นใช้งาน</strong><span class="count" id="onboardingCount">0/7</span><span class="chev">⌄</span>
         </button>
         <div class="onboarding-progress"><span id="onboardingBar"></span></div>
         <div class="onboarding-body" id="onboardingSteps">
           <button class="onboard-step" data-step="line"><span class="step-dot"></span><span>เชื่อมต่อ LINE</span></button>
           <button class="onboard-step" data-step="business"><span class="step-dot"></span><span>สร้างข้อมูลธุรกิจ</span></button>
           <button class="onboard-step" data-step="google"><span class="step-dot"></span><span>เชื่อมต่อ Google</span></button>
+          <button class="onboard-step" data-step="email"><span class="step-dot"></span><span>เปิดอีเมลรับเอกสาร</span></button>
           <button class="onboard-step" data-step="receipt"><span class="step-dot"></span><span>อัปโหลดใบเสร็จแรก</span></button>
           <button class="onboard-step" data-step="signature"><span class="step-dot"></span><span>ใส่ลายเซ็นรับรองใบแทน</span></button>
           <button class="onboard-step" data-step="sheet"><span class="step-dot"></span><span>ตรวจรายการจาก Sheet</span></button>
@@ -540,6 +558,47 @@
       </div>
     </section>
 
+
+    <!-- EMAIL INBOX -->
+    <section class="page" id="page-email">
+      <div class="email-setup">
+        <div class="card" style="margin:0">
+          <div class="cs">Auto document inbox</div>
+          <h3 style="margin-top:5px">อีเมลรับใบเสร็จและใบกำกับภาษี</h3>
+          <p class="cs" style="margin-top:8px;max-width:680px">ส่งหรือ Forward อีเมลจาก Adobe, Google Workspace, Microsoft, Cloudflare และบริการรายเดือนอื่น ๆ มาที่อีเมลนี้ ระบบจะเก็บไฟล์ อ่านข้อมูล และสร้างรายการรอตรวจสอบให้อัตโนมัติ</p>
+          <div class="inbox-address"><input id="emailInboxAddress" readonly value="กำลังสร้างอีเมล…"><button class="btn solid" id="copyEmailInbox">คัดลอก</button><button class="btn" id="rotateEmailInbox">เปลี่ยนอีเมล</button></div>
+          <div class="cs" id="emailInboxState" style="margin-top:10px"></div>
+        </div>
+        <div class="email-help">
+          <strong>เริ่มใช้งานใน 3 ขั้น</strong>
+          <ol><li>คัดลอกอีเมลด้านซ้าย</li><li>ตั้ง Forward ใน Gmail/Outlook หรือใส่อีเมลนี้เป็น Billing email</li><li>เอกสารใหม่จะเข้าหน้านี้และแจ้งใน LINE</li></ol>
+        </div>
+      </div>
+      <div class="email-kpis">
+        <div class="email-kpi"><div class="l">รอตรวจสอบ</div><div class="v" id="emailKReview">0</div></div>
+        <div class="email-kpi"><div class="l">สงสัยซ้ำ</div><div class="v" id="emailKDuplicate">0</div></div>
+        <div class="email-kpi"><div class="l">บันทึกแล้ว</div><div class="v" id="emailKDone">0</div></div>
+        <div class="email-kpi"><div class="l">รายจ่ายประจำที่พบ</div><div class="v" id="emailKSubscription">0</div></div>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <input id="emailQ" placeholder="ค้นหาผู้ขาย เลขเอกสาร หรือหัวข้ออีเมล…">
+          <select id="emailStatus"><option value="">ทุกสถานะ</option><option>รอตรวจสอบ</option><option>สงสัยซ้ำ</option><option>บันทึกแล้ว</option><option>ไม่ใช่เอกสาร</option><option>อ่านไม่สำเร็จ</option><option>ข้ามแล้ว</option></select>
+          <button class="btn" id="emailRefresh">อัปเดต</button>
+        </div>
+        <div class="email-list" id="emailList"><div class="email-empty">กำลังโหลดเอกสารจากอีเมล…</div></div>
+      </div>
+    </section>
+
+    <!-- SUBSCRIPTIONS -->
+    <section class="page" id="page-subscriptions">
+      <div class="card" style="margin-bottom:18px">
+        <div class="cs">Recurring expenses</div><h3 style="margin-top:5px">รายจ่ายประจำและ Subscription</h3>
+        <p class="cs" style="margin-top:8px">ระบบรวมบริการที่ตรวจพบจากใบแจ้งหนี้และใบเสร็จในอีเมล เพื่อดูยอดล่าสุด ความถี่ และวันที่คาดว่าจะเรียกเก็บรอบถัดไป</p>
+      </div>
+      <div class="subscription-grid" id="subscriptionList"><div class="email-empty">ยังไม่พบรายจ่ายประจำ</div></div>
+    </section>
+
     <!-- BUSINESS MANAGEMENT -->
     <section class="page" id="page-business">
       <div class="business-tab show" id="biz-profile">
@@ -633,6 +692,10 @@ const CONAME = QS.get("name") || "บริษัทของคุณ";
 let CONNECTED = false;
 let SETTINGS = {};
 let BUSINESS_TAB = "profile";
+let EMAIL_DOCS = [];
+let SUBSCRIPTIONS = [];
+let EMAIL_INFO = {};
+let EMAIL_LOADING = false;
 
 // Realtime แบบ polling: Google Sheet ไม่มี event stream โดยตรง จึงตรวจข้อมูลใหม่ทุก 5 วินาที
 const REFRESH_MS = 5000;
@@ -641,6 +704,7 @@ let LAST_SIGNATURE = "";
 let REFRESH_TIMER = null;
 let REFRESHING = false;
 let HAS_LOADED = false;
+let EMAIL_POLL_TICK = 0;
 
 const THMON=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const baht=n=>"฿"+Number(n||0).toLocaleString("th-TH",{minimumFractionDigits:0,maximumFractionDigits:2});
@@ -919,6 +983,7 @@ function openPage(p,source=null){
     localStorage.setItem(`sheet-checked:${TENANT}`,"1");
     renderOnboarding();
   }
+  if(p==="email"||p==="subscriptions") refreshEmailData();
 }
 function openBusiness(tab,source=null){
   document.querySelectorAll(".navlink,.subnavlink").forEach(x=>x.classList.remove("active"));
@@ -965,28 +1030,30 @@ function onboardingState(){
     line:Boolean(TENANT),
     business:Boolean(SETTINGS.company_name),
     google:Boolean(CONNECTED),
+    email:Boolean(EMAIL_INFO.address),
     receipt:ALL.some(r=>r.img||r.amount),
     signature:Boolean(SETTINGS.approver_sign_url),
     sheet:localStorage.getItem(`sheet-checked:${TENANT}`)==="1",
   };
 }
 function renderOnboarding(){
-  const st=onboardingState();const order=["line","business","google","receipt","signature","sheet"];
+  const st=onboardingState();const order=["line","business","google","email","receipt","signature","sheet"];
   const done=order.filter(k=>st[k]).length;
-  el("onboardingCount").textContent=`${done}/6`;
-  el("onboardingBar").style.width=`${done/6*100}%`;
+  el("onboardingCount").textContent=`${done}/7`;
+  el("onboardingBar").style.width=`${done/7*100}%`;
   let foundNext=false;
   document.querySelectorAll(".onboard-step").forEach(b=>{
     const yes=st[b.dataset.step];b.classList.toggle("done",yes);b.classList.remove("next");
     b.querySelector(".step-dot").textContent=yes?"✓":"";
     if(!yes&&!foundNext){b.classList.add("next");foundNext=true;}
   });
-  if(done===6)localStorage.setItem(`onboarding-complete:${TENANT}`,"1");
+  if(done===7)localStorage.setItem(`onboarding-complete:${TENANT}`,"1");
 }
 function onboardAction(step){
   if(step==="business")return openBusiness("profile",document.querySelector('[data-biz="profile"]'));
   if(step==="signature")return openBusiness("approver",document.querySelector('[data-biz="approver"]'));
   if(step==="google"){location.href=WORKER+"/oauth/connect?tenant="+encodeURIComponent(TENANT);return;}
+  if(step==="email")return openPage("email",document.querySelector('[data-p="email"]'));
   if(step==="receipt"){
     el("modalBody").innerHTML='<h3 style="margin-top:0">อัปโหลดใบเสร็จแรก</h3><p style="color:var(--muted);font-size:13px">กลับไปที่กลุ่ม LINE แล้วส่งรูปใบเสร็จหรือสลิปให้บอท จากนั้นตรวจข้อมูลและกดบันทึก</p><button class="btn solid" onclick="document.getElementById(\'modal\').classList.remove(\'show\')">เข้าใจแล้ว</button>';
     el("modal").classList.add("show");return;
@@ -996,6 +1063,121 @@ function onboardAction(step){
     el("modalBody").innerHTML='<h3 style="margin-top:0">LINE เชื่อมต่อแล้ว</h3><p style="color:var(--muted);font-size:13px">ลิงก์ Dashboard นี้เปิดจากธุรกิจใน LINE ของคุณอยู่แล้ว</p>';
     el("modal").classList.add("show");
   }
+}
+
+
+/* ---------- EMAIL INBOX / SUBSCRIPTIONS ---------- */
+function currencyAmount(amount,currency="THB"){
+  const n=Number(amount||0).toLocaleString("th-TH",{minimumFractionDigits:2,maximumFractionDigits:2});
+  return String(currency||"THB").toUpperCase()==="THB"?`฿${n}`:`${esc(currency||"")} ${n}`;
+}
+function emailStatusClass(status){
+  if(status==="รอตรวจสอบ")return "review";
+  if(status==="บันทึกแล้ว")return "done";
+  if(status==="สงสัยซ้ำ")return "dup";
+  if(status==="อ่านไม่สำเร็จ")return "error";
+  return "skip";
+}
+function emailFiltered(){
+  const q=(el("emailQ")?.value||"").trim().toLowerCase();
+  const status=el("emailStatus")?.value||"";
+  return EMAIL_DOCS.filter(r=>{
+    if(status&&r.status!==status)return false;
+    if(!q)return true;
+    return [r.vendor,r.invoiceNo,r.subject,r.filename,r.note,r.from].join(" ").toLowerCase().includes(q);
+  });
+}
+function emailItemHTML(r){
+  const original=r.driveUrl?`<a class="btn small" href="${escAttr(r.driveUrl)}" target="_blank" rel="noopener">เปิดไฟล์ต้นฉบับ</a>`:"";
+  const approve=(r.status!=="บันทึกแล้ว"&&r.status!=="ไม่ใช่เอกสาร"&&r.status!=="ข้ามแล้ว")?`<button class="btn small solid" data-email-action="approve" data-id="${escAttr(r.id)}">บันทึกรายจ่าย</button>`:"";
+  const edit=(r.status!=="บันทึกแล้ว")?`<button class="btn small ghost" data-email-action="edit" data-id="${escAttr(r.id)}">แก้ไข</button>`:"";
+  const ignore=(r.status!=="บันทึกแล้ว"&&r.status!=="ข้ามแล้ว")?`<button class="btn small danger" data-email-action="ignore" data-id="${escAttr(r.id)}">ข้าม</button>`:"";
+  const tx=pdate(r.documentDate), received=cdate(r.receivedAt);
+  return `<div class="email-item">
+    <div>
+      <div class="email-title">${esc(r.vendor||r.subject||r.filename||"ไม่ระบุเอกสาร")}</div>
+      <div class="email-sub">${esc(r.docType||"รอตรวจประเภท")} ${r.invoiceNo?`· เลขที่ ${esc(r.invoiceNo)}`:""}<br>${esc(r.subject||"")}<br>จาก ${esc(r.from||"—")} · ได้รับ ${fmtDate(received,true)}</div>
+      <div class="email-meta"><span class="email-status ${emailStatusClass(r.status)}">${esc(r.status||"รอตรวจสอบ")}</span>${r.category?`<span class="chip">${esc(r.category)}</span>`:""}${r.isSubscription?'<span class="chip">รายจ่ายประจำ</span>':""}${tx?`<span class="chip">วันที่ ${fmtDate(tx)}</span>`:""}</div>
+      ${r.flag?`<div class="email-warning">${esc(r.flag)}</div>`:""}
+      ${r.duplicateStatus?`<div class="email-duplicate">สงสัยซ้ำ: ${esc(r.duplicateStatus)}${r.duplicateOf?` · อ้างอิง ${esc(r.duplicateOf)}`:""}</div>`:""}
+      ${r.bodyPreview?`<details class="email-preview"><summary>ดูข้อความในอีเมล</summary><div>${esc(r.bodyPreview)}</div></details>`:""}
+    </div>
+    <div><div class="email-amt">${r.amount?currencyAmount(r.amount,r.currency):"—"}</div><div class="email-sub" style="text-align:right">${r.vatAmount?`VAT ${currencyAmount(r.vatAmount,r.currency)}`:""}</div><div class="email-actions">${original}${edit}${ignore}${approve}</div></div>
+  </div>`;
+}
+function renderEmailInbox(){
+  if(!el("emailList"))return;
+  el("emailKReview").textContent=EMAIL_DOCS.filter(x=>x.status==="รอตรวจสอบ").length;
+  el("emailKDuplicate").textContent=EMAIL_DOCS.filter(x=>x.status==="สงสัยซ้ำ").length;
+  el("emailKDone").textContent=EMAIL_DOCS.filter(x=>x.status==="บันทึกแล้ว").length;
+  el("emailKSubscription").textContent=SUBSCRIPTIONS.length;
+  const rows=emailFiltered();
+  el("emailList").innerHTML=rows.length?rows.map(emailItemHTML).join(""):'<div class="email-empty">ยังไม่มีเอกสารจากอีเมล<br><br>คัดลอกอีเมลรับเอกสารด้านบน แล้วตั้ง Forward หรือใช้เป็น Billing email</div>';
+  if(el("emailInboxAddress"))el("emailInboxAddress").value=EMAIL_INFO.address||"ยังไม่ได้ตั้ง EMAIL_DOMAIN ใน Cloudflare";
+  if(el("emailInboxState"))el("emailInboxState").textContent=EMAIL_INFO.enabled?"พร้อมรับเอกสาร · ระบบจะเก็บไฟล์ใน Google Drive ของบริษัท":"ต้องตั้ง EMAIL_DOMAIN และ Email Routing ก่อนเปิดใช้งาน";
+}
+function renderSubscriptions(){
+  if(!el("subscriptionList"))return;
+  const total=SUBSCRIPTIONS.length;
+  el("subscriptionList").innerHTML=total?SUBSCRIPTIONS.map(x=>`<div class="sub-card"><div class="sub-name">${esc(x.name)}</div><div class="sub-vendor">${esc(x.vendor||"")}</div><div class="sub-amount">${currencyAmount(x.lastAmount,x.currency)}</div><div class="sub-foot">พบ ${x.count} รอบ${x.variable?" · ยอดแปรผัน":""}<br>ล่าสุด ${fmtDate(pdate(x.lastDate)||cdate(x.lastDate))}<br>คาดว่ารอบถัดไป ${fmtDate(pdate(x.nextExpected))}</div></div>`).join(""):'<div class="email-empty" style="grid-column:1/-1">ยังไม่พบรายจ่ายประจำ<br><br>เมื่อระบบได้รับใบแจ้งหนี้หรือใบเสร็จ Subscription จากอีเมล จะสรุปให้ตรงนี้อัตโนมัติ</div>';
+}
+async function refreshEmailData({manual=false}={}){
+  if(EMAIL_LOADING)return false;
+  EMAIL_LOADING=true;
+  if(manual&&el("emailInboxState"))el("emailInboxState").textContent="กำลังอัปเดต…";
+  try{
+    const stamp=`&_=${Date.now()}`;
+    const [infoRes,docRes,subRes]=await Promise.all([
+      fetch(apiUrl("/api/email-inbox-info")+stamp,{cache:"no-store"}),
+      fetch(apiUrl("/api/email-documents")+stamp,{cache:"no-store"}),
+      fetch(apiUrl("/api/subscriptions")+stamp,{cache:"no-store"}),
+    ]);
+    if(!infoRes.ok||!docRes.ok||!subRes.ok)throw new Error(`Email API ${infoRes.status}/${docRes.status}/${subRes.status}`);
+    EMAIL_INFO=await infoRes.json(); EMAIL_DOCS=await docRes.json(); SUBSCRIPTIONS=await subRes.json();
+    renderEmailInbox();renderSubscriptions();renderOnboarding();return true;
+  }catch(err){console.error("email inbox refresh failed",err);if(el("emailInboxState"))el("emailInboxState").textContent="โหลดเอกสารจากอีเมลไม่สำเร็จ";return false;}
+  finally{EMAIL_LOADING=false;}
+}
+async function emailPost(path,body){
+  const res=await fetch(apiUrl(path),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body||{})});
+  let data={};try{data=await res.json();}catch{}
+  return {res,data};
+}
+async function approveEmail(id,force=false){
+  const {res,data}=await emailPost("/api/email-approve",{id,force});
+  if(res.status===409&&data.reason==="duplicate"){
+    const reasons=(data.duplicateCheck?.matches||[]).map(x=>`${x.reason} · ${x.vendor||""} ${baht(x.amount)}`).join("\n");
+    if(confirm(`ระบบพบรายการที่อาจซ้ำ\n\n${reasons}\n\nต้องการบันทึกซ้ำอยู่ดีหรือไม่?`))return approveEmail(id,true);
+    return;
+  }
+  if(!res.ok){alert(data.hint||data.reason||"บันทึกไม่สำเร็จ");return;}
+  await Promise.all([refreshEmailData(),refreshData({manual:true})]);
+}
+function openEmailEditor(id){
+  const r=EMAIL_DOCS.find(x=>x.id===id);if(!r)return;
+  el("modalBody").innerHTML=`<h3 style="margin-top:0">ตรวจเอกสารจากอีเมล</h3>
+    <div class="form-grid" style="margin-top:16px">
+      <label><span>ผู้ขาย/ผู้ให้บริการ</span><input id="emVendor" value="${escAttr(r.vendor||"")}"></label>
+      <label><span>เลขที่เอกสาร</span><input id="emInvoice" value="${escAttr(r.invoiceNo||"")}"></label>
+      <label><span>วันที่เอกสาร</span><input id="emDate" type="date" value="${escAttr(r.documentDate||"")}"></label>
+      <label><span>วันครบกำหนด</span><input id="emDue" type="date" value="${escAttr(r.dueDate||"")}"></label>
+      <label><span>ยอดรวม</span><input id="emAmount" type="number" step="0.01" value="${escAttr(r.amount||0)}"></label>
+      <label><span>สกุลเงิน</span><input id="emCurrency" value="${escAttr(r.currency||"THB")}"></label>
+      <label><span>ก่อน VAT</span><input id="emSubtotal" type="number" step="0.01" value="${escAttr(r.subtotal||0)}"></label>
+      <label><span>VAT</span><input id="emVat" type="number" step="0.01" value="${escAttr(r.vatAmount||0)}"></label>
+      <label><span>หมวด</span><input id="emCategory" value="${escAttr(r.category||"")}"></label>
+      <label><span>รอบบริการ</span><input id="emPeriod" value="${escAttr(r.servicePeriod||"")}"></label>
+      <label style="grid-column:1/-1"><span>รายละเอียด</span><textarea id="emNote" rows="3">${esc(r.note||"")}</textarea></label>
+      <label style="grid-column:1/-1;display:flex;align-items:center;gap:9px"><input id="emSubscription" type="checkbox" ${r.isSubscription?"checked":""} style="width:auto"><span>ติดตามเป็นรายจ่ายประจำ / Subscription</span></label>
+      <label style="grid-column:1/-1"><span>ชื่อบริการ/แพ็กเกจ</span><input id="emSubscriptionName" value="${escAttr(r.subscriptionName||"")}"></label>
+    </div>
+    <div style="display:flex;gap:9px;justify-content:flex-end;margin-top:18px"><button class="btn" id="emCancel">ยกเลิก</button><button class="btn solid" id="emSave">บันทึกการแก้ไข</button></div>`;
+  el("modal").classList.add("show");
+  el("emCancel").onclick=()=>el("modal").classList.remove("show");
+  el("emSave").onclick=async()=>{
+    const patch={vendor:el("emVendor").value.trim(),invoiceNo:el("emInvoice").value.trim(),documentDate:el("emDate").value,dueDate:el("emDue").value,amount:+el("emAmount").value||0,currency:el("emCurrency").value.trim().toUpperCase(),subtotal:+el("emSubtotal").value||0,vatAmount:+el("emVat").value||0,category:el("emCategory").value.trim(),servicePeriod:el("emPeriod").value.trim(),note:el("emNote").value.trim(),isSubscription:el("emSubscription").checked,subscriptionName:el("emSubscriptionName").value.trim()};
+    const {res,data}=await emailPost("/api/email-update",{id,patch});if(!res.ok){alert(data.reason||"บันทึกไม่สำเร็จ");return;}el("modal").classList.remove("show");await refreshEmailData();
+  };
 }
 
 /* ---------- SETTINGS ---------- */
@@ -1019,7 +1201,7 @@ function download(name,text){
 }
 
 /* ---------- NAV / DRAW ---------- */
-const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"รอเบิก",reports:"รายงานและภาษี",bills:"เอกสาร",activity:"ประวัติการบันทึก",settings:"ตั้งค่า",business:"จัดการธุรกิจ"};
+const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"รอเบิก",reports:"รายงานและภาษี",bills:"เอกสาร",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",settings:"ตั้งค่า",business:"จัดการธุรกิจ"};
 document.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>openPage(b.dataset.p,b)));
 document.querySelectorAll("[data-biz]").forEach(b=>b.addEventListener("click",()=>openBusiness(b.dataset.biz,b)));
 el("businessToggle").addEventListener("click",()=>el("businessGroup").classList.toggle("closed"));
@@ -1036,6 +1218,14 @@ el("financeList").addEventListener("click",async e=>{const b=e.target.closest("[
 el("addTeam").onclick=async()=>{const x={name:el("teamName").value.trim(),role:el("teamRole").value.trim()};if(!x.name)return;const a=parseSettingList("team_members");a.push(x);if(await saveSettings({team_members:JSON.stringify(a)},"teamSaveState")){el("teamName").value="";el("teamRole").value="";}};
 el("teamList").addEventListener("click",async e=>{const b=e.target.closest("[data-remove-team]");if(!b)return;const a=parseSettingList("team_members");a.splice(+b.dataset.removeTeam,1);await saveSettings({team_members:JSON.stringify(a)},"teamSaveState");});
 
+
+if(el("emailQ"))el("emailQ").addEventListener("input",renderEmailInbox);
+if(el("emailStatus"))el("emailStatus").addEventListener("change",renderEmailInbox);
+if(el("emailRefresh"))el("emailRefresh").onclick=()=>refreshEmailData({manual:true});
+if(el("copyEmailInbox"))el("copyEmailInbox").onclick=async()=>{const value=el("emailInboxAddress").value;if(!EMAIL_INFO.address)return;await navigator.clipboard.writeText(value);el("copyEmailInbox").textContent="คัดลอกแล้ว";setTimeout(()=>el("copyEmailInbox").textContent="คัดลอก",1300);};
+if(el("rotateEmailInbox"))el("rotateEmailInbox").onclick=async()=>{if(!confirm("เปลี่ยนอีเมลรับเอกสาร? อีเมลเดิมจะใช้ไม่ได้ทันที"))return;const {res,data}=await emailPost("/api/email-inbox-info",{rotate:true});if(!res.ok){alert("เปลี่ยนอีเมลไม่สำเร็จ");return;}EMAIL_INFO=data;renderEmailInbox();};
+if(el("emailList"))el("emailList").addEventListener("click",async e=>{const b=e.target.closest("[data-email-action]");if(!b)return;const id=b.dataset.id,act=b.dataset.emailAction;if(act==="approve")return approveEmail(id);if(act==="edit")return openEmailEditor(id);if(act==="ignore"){if(!confirm("ข้ามเอกสารนี้และไม่นำไปบันทึกรายจ่าย?"))return;await emailPost("/api/email-ignore",{id});await refreshEmailData();}});
+
 el("rangeSel").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
   el("rangeSel").querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");RANGE=b.dataset.r;drawScoped();
 }));
@@ -1046,7 +1236,7 @@ el("repCsv").onclick=()=>download("report.csv",toCSV(repData()));
 el("repPrint").onclick=()=>window.print();
 
 function drawScoped(){renderKPIs();renderTrend();renderCats();renderVendors();renderRecent();renderExp();}
-function drawAll(){buildCatFilter();buildRepMonths();drawScoped();renderReim();renderReport();renderBills();renderActivity();renderSettings();renderBusiness();renderOnboarding();
+function drawAll(){buildCatFilter();buildRepMonths();drawScoped();renderReim();renderReport();renderBills();renderActivity();renderSettings();renderBusiness();renderOnboarding();renderEmailInbox();renderSubscriptions();
   el("coName").textContent=SETTINGS.company_name||CONAME;
   // ส่ง k ต่อไปทุกลิงก์ ไม่งั้นหน้าปลายทางจะโดน 401
   const qs="?tenant="+encodeURIComponent(TENANT)+"&k="+encodeURIComponent(K);
@@ -1142,7 +1332,7 @@ async function refreshData({initial=false,manual=false}={}){
 function startRealtime(){
   if(REFRESH_TIMER) clearInterval(REFRESH_TIMER);
   REFRESH_TIMER=setInterval(()=>{
-    if(!document.hidden) refreshData();
+    if(!document.hidden){refreshData();EMAIL_POLL_TICK++;if(EMAIL_POLL_TICK%3===0&&(el("page-email")?.classList.contains("show")||el("page-subscriptions")?.classList.contains("show")))refreshEmailData();}
   },REFRESH_MS);
 }
 
@@ -1152,7 +1342,7 @@ async function load(){
     return;
   }
   const ok=await refreshData({initial:true});
-  if(ok){await refreshSettings();startRealtime();}
+  if(ok){await refreshSettings();await refreshEmailData();startRealtime();const target=QS.get("page");if(target&&el("page-"+target)){const b=document.querySelector(`[data-p="${target}"]`);openPage(target,b);}}
 }
 
 el("syncBtn").addEventListener("click",async()=>{await Promise.all([refreshData({manual:true}),refreshSettings()]);});
