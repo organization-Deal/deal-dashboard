@@ -3,156 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>จับคู่หลักฐาน · DEAL</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>จับคู่หลักฐาน · รับจ่ายได้หมด</title>
 <style>
-  :root{
-    --bg:#1C1F24; --panel:#23262B; --card:#2A2E34; --line:#383D45;
-    --text:#E9EBEE; --dim:#98A0AA; --faint:#6B7280;
-    --brand:#D0021B; --blue:#3B82F6; --ok:#34C759; --warn:#FF9500;
-    --r:10px;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0;height:100%}
-  body{background:var(--bg);color:var(--text);
-       font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:14px}
-  button{font-family:inherit;cursor:pointer;border:0;border-radius:8px;transition:.13s}
-  button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-  button[disabled]{opacity:.45;cursor:not-allowed}
-
-  .bar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;
-       padding:12px 18px;background:rgba(28,31,36,.94);backdrop-filter:blur(10px);
-       border-bottom:1px solid var(--line);flex-wrap:wrap}
-  .bar h1{margin:0;font-size:15px;font-weight:600}
-  .bar .spacer{flex:1}
-  .chip{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--card);
-        border:1px solid var(--line);color:var(--dim);white-space:nowrap}
-  .chip.ok{color:var(--ok);border-color:#2C4A35}
-  .chip.warn{color:var(--warn);border-color:#4A3A1E}
-  .ghost{padding:8px 13px;font-size:13px;background:transparent;color:var(--text);
-         border:1px solid var(--line)}
-  .ghost:hover{background:var(--card)}
-  .ghost.on{background:var(--blue);border-color:var(--blue);color:#fff}
-
-  .wrap{display:grid;grid-template-columns:1fr 460px;gap:0;align-items:start}
-  @media (max-width:1000px){ .wrap{grid-template-columns:1fr} }
-
-  .col{padding:18px}
-  .col.right{position:sticky;top:53px;max-height:calc(100vh - 53px);overflow-y:auto;
-             border-left:1px solid var(--line);background:var(--panel)}
-  @media (max-width:1000px){ .col.right{position:static;max-height:none;border-left:0;
-             border-top:1px solid var(--line)} }
-
-  h2{margin:0 0 4px;font-size:12px;font-weight:600;letter-spacing:.1em;
-     text-transform:uppercase;color:var(--dim)}
-  .sub{margin:0 0 14px;font-size:12px;color:var(--faint);line-height:1.6}
-
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-  .ph{position:relative;background:var(--card);border:2px solid transparent;
-      border-radius:var(--r);overflow:hidden;cursor:pointer;transition:.13s}
-  .ph:hover{border-color:var(--line);transform:translateY(-2px)}
-  .ph.sel{border-color:var(--blue);box-shadow:0 0 0 4px rgba(59,130,246,.18)}
-  .ph img{display:block;width:100%;height:170px;object-fit:cover;background:#15171A}
-  .ph .meta{padding:7px 9px;font-size:11px;color:var(--dim);
-            display:flex;justify-content:space-between;gap:6px}
-  .ph .zoom{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:6px;
-            background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:26px;text-align:center;
-            opacity:0;transition:.13s}
-  .ph:hover .zoom{opacity:1}
-  .ph.done{opacity:0;transform:scale(.9);pointer-events:none}
-
-  .empty{padding:44px 20px;text-align:center;color:var(--faint);font-size:13px;
-         border:1px dashed var(--line);border-radius:var(--r);line-height:1.8}
-  .empty b{color:var(--text)}
-
-  .picked{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
-          padding:12px;margin-bottom:16px}
-  .picked .top{display:flex;gap:12px}
-  .picked img{width:88px;height:88px;object-fit:cover;border-radius:8px;background:#15171A;flex:0 0 auto}
-  .picked .info{flex:1;min-width:0}
-  .picked .info b{display:block;font-size:13px;margin-bottom:2px;
-                  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .picked .info span{font-size:11px;color:var(--dim)}
-  .seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-  .seg button{padding:6px 11px;font-size:12px;background:var(--panel);
-              color:var(--dim);border:1px solid var(--line)}
-  .seg button.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
-  .hint{margin-top:10px;font-size:11px;color:var(--faint);line-height:1.6}
-
-  .search{width:100%;padding:9px 11px;font-family:inherit;font-size:13px;margin-bottom:12px;
-          background:#16181C;color:var(--text);border:1px solid var(--line);border-radius:8px}
-  .search:focus{outline:2px solid var(--blue);outline-offset:-1px;border-color:transparent}
-
-  .rec{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
-       padding:11px 13px;margin-bottom:9px;transition:.13s}
-  .rec.near{border-color:#3A5230;background:#252C25}
-  .rec .r1{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
-  .rec .amt{font-size:16px;font-weight:700;white-space:nowrap}
-  .rec .ven{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .rec .r2{margin-top:3px;font-size:11px;color:var(--dim)}
-  .rec .badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;
-              background:#2C4A35;color:var(--ok);margin-left:6px}
-  .atts{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
-  .att{display:flex;align-items:center;gap:5px;font-size:10px;padding:3px 7px;
-       border-radius:20px;background:var(--panel);border:1px solid var(--line);color:var(--dim)}
-  .att a{color:var(--dim);text-decoration:none}
-  .att a:hover{color:var(--text)}
-  .att .x{cursor:pointer;color:var(--faint);font-weight:700}
-  .att .x:hover{color:var(--brand)}
-  .attach{width:100%;margin-top:10px;padding:8px;font-size:13px;font-weight:600;
-          background:var(--blue);color:#fff}
-  .attach:hover{filter:brightness(1.1)}
-
-  .lb{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.9);
-      display:none;align-items:center;justify-content:center;padding:24px}
-  .lb.on{display:flex}
-  .lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
-  .lb .close{position:absolute;top:18px;right:22px;font-size:26px;color:#fff;
-             background:transparent;padding:6px 12px}
-
-  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);
-         background:var(--card);border:1px solid var(--line);border-radius:22px;
-         padding:10px 20px;font-size:13px;opacity:0;transition:.22s;z-index:60;pointer-events:none}
-  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-  .toast.bad{border-color:var(--brand);color:#FF8A93}
-
-  @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+:root{--bg:#f5f5f7;--surface:#fff;--surface2:#fafafa;--ink:#1d1d1f;--muted:#6e6e73;--line:#e8e8ed;--line2:#d2d2d7;--green:#248a3d;--green2:#eef6f0;--amber:#8a5a00;--amber2:#fff8e6;--red:#b42318;--red2:#fdf0ef;--shadow:0 12px 40px rgba(0,0,0,.055),0 2px 8px rgba(0,0,0,.025)}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI","Leelawadee UI","Noto Sans Thai",sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}button,input{font:inherit}button{cursor:pointer}
+.shell{max-width:1500px;margin:0 auto;padding:28px 32px 64px}.topbar{display:flex;align-items:center;gap:13px;margin-bottom:22px}.brandmark{width:44px;height:44px;border-radius:14px;background:#111;color:#fff;display:grid;place-items:center;font-weight:800;box-shadow:0 8px 22px rgba(0,0,0,.13)}.titlebox{min-width:0}.kicker{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:650}.titlebox h1{font-size:27px;letter-spacing:-.035em;line-height:1.2;margin:2px 0 0}.top-actions{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:9px 12px;font-size:12px;font-weight:650;transition:.17s ease}.btn:hover{border-color:var(--line2);background:#fafafa;transform:translateY(-1px)}.btn.primary{background:#1d1d1f;color:#fff;border-color:#1d1d1f}.btn.primary:hover{background:#000}.chip{display:inline-flex;align-items:center;gap:7px;font-size:11px;padding:7px 10px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--muted)}.chip:before{content:"";width:7px;height:7px;border-radius:50%;background:#a1a1a6}.chip.ok:before{background:#30d158}.chip.warn:before{background:#ff9f0a}.chip.ok{color:var(--green)}.chip.warn{color:var(--amber)}
+.hero{background:#1d1d1f;color:#fff;border-radius:28px;padding:22px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;box-shadow:var(--shadow)}.hero h2{font-size:20px;margin:0 0 4px;letter-spacing:-.025em}.hero p{margin:0;color:rgba(255,255,255,.62);font-size:12px;max-width:760px;line-height:1.6}.hero-note{font-size:11px;color:rgba(255,255,255,.5);text-align:right;line-height:1.5}
+.workspace{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(360px,.75fr);gap:16px;align-items:start}.panel{background:rgba(255,255,255,.94);border:1px solid rgba(0,0,0,.065);border-radius:24px;padding:20px 21px;box-shadow:var(--shadow)}.panel.right{position:sticky;top:18px;max-height:calc(100vh - 36px);overflow:auto}.section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:16px}.section-head h2{font-size:16px;margin:0;letter-spacing:-.015em}.sub{font-size:11.5px;color:var(--muted);line-height:1.55;margin-top:4px}.search{width:100%;padding:10px 12px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:12px;outline:none;margin-bottom:12px}.search:focus{border-color:#8e8e93;box-shadow:0 0 0 3px rgba(0,0,0,.055)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px}.ph{position:relative;background:#f5f5f7;border:1px solid transparent;border-radius:16px;overflow:hidden;cursor:pointer;transition:.17s ease}.ph:hover{border-color:var(--line2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.055)}.ph.sel{border-color:#1d1d1f;box-shadow:0 0 0 3px rgba(0,0,0,.08)}.ph img{display:block;width:100%;height:168px;object-fit:cover;background:#ececf1}.ph .meta{padding:8px 10px;font-size:10.5px;color:var(--muted);display:flex;justify-content:space-between;gap:6px}.ph .zoom{position:absolute;top:7px;right:7px;width:27px;height:27px;border-radius:9px;background:rgba(0,0,0,.68);color:#fff;font-size:13px;line-height:27px;text-align:center;opacity:0;transition:.15s}.ph:hover .zoom{opacity:1}.ph.done{opacity:0;transform:scale(.94);pointer-events:none}
+.empty{padding:48px 20px;text-align:center;color:var(--muted);font-size:12px;border:1px dashed var(--line2);border-radius:16px;line-height:1.8}.empty b{color:var(--ink)}.picked{background:#f5f5f7;border:1px solid var(--line);border-radius:17px;padding:13px;margin-bottom:16px}.picked .top{display:flex;gap:12px}.picked img{width:82px;height:82px;object-fit:cover;border-radius:12px;background:#ececf1;flex:0 0 auto}.picked .info{flex:1;min-width:0}.picked .info b{display:block;font-size:13px;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.picked .info span{font-size:10.5px;color:var(--muted)}.seg{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}.seg button{padding:7px 10px;font-size:11px;background:#fff;color:var(--muted);border:1px solid var(--line);border-radius:10px}.seg button.on{background:#1d1d1f;border-color:#1d1d1f;color:#fff;font-weight:650}.hint{margin-top:9px;font-size:10.5px;color:var(--muted);line-height:1.55}
+.rec{background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px 14px;margin-bottom:9px;transition:.17s ease}.rec:hover{border-color:var(--line2);box-shadow:0 6px 20px rgba(0,0,0,.04)}.rec.near{border-color:#bad6c0;background:#f7fbf8}.rec .r1{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.rec .amt{font-size:15px;font-weight:750;white-space:nowrap}.rec .ven{font-size:12.5px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rec .r2{margin-top:4px;font-size:10.5px;color:var(--muted)}.rec .badge{display:inline-block;font-size:9.5px;padding:3px 7px;border-radius:999px;background:var(--green2);color:var(--green);margin-left:5px}.atts{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}.att{display:flex;align-items:center;gap:5px;font-size:9.5px;padding:4px 7px;border-radius:999px;background:#f5f5f7;border:1px solid var(--line);color:var(--muted)}.att a{color:var(--muted);text-decoration:none}.att .x{cursor:pointer;color:#a1a1a6;font-weight:700}.att .x:hover{color:var(--red)}.attach{width:100%;margin-top:10px;padding:9px;font-size:11.5px;font-weight:650;background:#1d1d1f;color:#fff;border:0;border-radius:11px}.attach:hover{background:#000}.ghost{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:9px 12px;font-size:12px;font-weight:650}.ghost:hover{border-color:var(--line2)}.ghost.on{background:#1d1d1f;color:#fff;border-color:#1d1d1f}
+.lb{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(8px)}.lb.on{display:flex}.lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:14px}.lb .close{position:absolute;top:18px;right:22px;font-size:22px;color:#fff;background:rgba(255,255,255,.12);border:0;border-radius:50%;width:40px;height:40px}.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(80px);background:#1d1d1f;color:#fff;border-radius:999px;padding:10px 17px;font-size:11.5px;opacity:0;transition:.22s;z-index:60;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.22)}.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}.toast.bad{background:#8e251d}
+@media(max-width:1000px){.workspace{grid-template-columns:1fr}.panel.right{position:static;max-height:none}.hero{display:block}.hero-note{text-align:left;margin-top:12px}}@media(max-width:620px){.shell{padding:20px 14px 48px}.titlebox h1{font-size:23px}.top-actions{width:100%;margin-left:0}.topbar{flex-wrap:wrap}.hero{padding:20px;border-radius:22px}.panel{padding:17px;border-radius:21px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ph img{height:145px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-
-<div class="bar">
-  <h1>จับคู่หลักฐาน</h1>
-  <span class="chip" id="stat">กำลังโหลด…</span>
-  <span class="spacer"></span>
-  <button class="ghost" id="btnAll" onclick="toggleAll()">แสดงรูปทั้งหมด</button>
-  <button class="ghost" onclick="loadAll()">โหลดใหม่</button>
+<div class="shell">
+  <header class="topbar"><div class="brandmark">รับ</div><div class="titlebox"><div class="kicker">Business Finance</div><h1>จับคู่หลักฐาน</h1></div><div class="top-actions"><span class="chip" id="stat">กำลังโหลด…</span><button class="ghost" id="btnAll" onclick="toggleAll()">แสดงรูปทั้งหมด</button><button class="ghost" onclick="loadAll()">โหลดใหม่</button><a class="btn" id="back" href="#">← กลับแดชบอร์ด</a></div></header>
+  <section class="hero"><div><h2>หลักฐานทุกใบควรอยู่กับรายการที่ถูกต้อง</h2><p>เลือกรูปที่ยังไม่ได้ผูกกับรายการ แล้วแนบเข้ากับรายการใน Google Sheet ระบบจะเก็บประวัติและลิงก์หลักฐานไว้ให้โดยอัตโนมัติ</p></div><div class="hero-note">เลือกรูปด้านซ้าย<br>เลือกรายการด้านขวา → กดแนบ</div></section>
+  <main class="workspace"><section class="panel"><div class="section-head"><div><h2>รูปที่ยังไม่ได้เข้ารายการ</h2><div class="sub">รูปที่อยู่ใน Google Drive แต่ยังไม่ถูกผูกกับรายการบัญชี</div></div></div><div id="grid" class="grid"></div></section><aside class="panel right"><div id="picked"></div><div class="section-head"><div><h2>รายการในชีท</h2><div class="sub">ค้นหาและเลือกรายการที่จะรับหลักฐาน</div></div></div><input class="search" id="q" placeholder="ค้นหา ร้าน / ยอด / โน้ต…" oninput="renderRecords()"><div id="recs"></div></aside></main>
 </div>
-
-<div class="wrap">
-  <section class="col">
-    <h2>รูปที่ยังไม่ได้เข้ารายการ</h2>
-    <p class="sub">รูปพวกนี้อยู่ใน Drive แล้วแต่ยังไม่ผูกกับรายการไหน — คลิกเลือกรูป แล้วไปกด "แนบ" ที่รายการทางขวา</p>
-    <div id="grid" class="grid"></div>
-  </section>
-
-  <aside class="col right">
-    <div id="picked"></div>
-    <h2>รายการในชีท</h2>
-    <input class="search" id="q" placeholder="ค้นหา ร้าน / ยอด / โน้ต…" oninput="renderRecords()">
-    <div id="recs"></div>
-  </aside>
-</div>
-
-<div class="lb" id="lb" onclick="closeLb()">
-  <button class="close" onclick="closeLb()">✕</button>
-  <img id="lbImg" alt="">
-</div>
-
-<div class="toast" id="toast"></div>
-
+<div class="lb" id="lb" onclick="closeLb()"><button class="close" onclick="closeLb()">✕</button><img id="lbImg" alt=""></div><div class="toast" id="toast"></div>
 <script>
 /* ══════════════════════════════════════════════════════════
    เปิดหน้านี้แบบ  /files?tenant=<key>&k=<token>
@@ -163,6 +35,8 @@ const WORKER = 'https://accoutingsuppor02.organization-23c.workers.dev';
 const Q      = new URLSearchParams(location.search);
 const TENANT = Q.get('tenant') || '';
 const KEY    = Q.get('k') || '';
+const HOME   = `/?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(KEY)}`;
+document.getElementById('back').href = HOME;
 
 /** ต่อ query string ให้ทุก API call — tenant + token */
 function api(path, extra = ''){
