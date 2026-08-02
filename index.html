@@ -474,6 +474,7 @@
   .batch-history{width:100%;border-collapse:collapse}.batch-history th{font-size:10.5px;color:var(--muted);font-weight:600;text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}.batch-history td{font-size:11.5px;padding:11px 8px;border-bottom:1px solid var(--line);vertical-align:middle}.batch-history tr:last-child td{border-bottom:0}.batch-history .num{text-align:right}.batch-doc-link{font-weight:650;text-decoration:none}.batch-doc-link:hover{text-decoration:underline}.batch-status-select{border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 8px;font-size:11px}
   .batch-settings{display:grid;gap:12px}.batch-settings .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.batch-settings label{font-size:10.8px;color:var(--muted);display:block;margin-bottom:5px}.batch-settings input,.batch-settings select{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;padding:9px 10px;color:var(--ink)}.batch-toggle{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:13px;padding:11px 12px}.batch-toggle input{width:18px;height:18px}
   .batch-help{font-size:11.5px;line-height:1.6;color:var(--muted);background:#fafafa;border:1px solid var(--line);border-radius:14px;padding:13px}.batch-help b{color:var(--ink)}
+  .batch-checklist{display:grid;gap:7px;margin-top:13px;padding:12px;background:#f7f7f8;border-radius:13px}.batch-check{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}.batch-check i{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:#e7e7ea;font-style:normal;font-size:10px;font-weight:800}.batch-check.done{color:var(--ink)}.batch-check.done i{background:#1d1d1f;color:#fff}.batch-next-action{margin-top:12px;padding:10px 12px;border-radius:12px;background:#f2f2f7;font-size:11px;color:var(--muted)}.batch-next-action b{color:var(--ink)}.batch-slip-link{font-size:11px;font-weight:700;text-decoration:none}.batch-slip-input{display:none}
   @media(max-width:1100px){.batch-layout{grid-template-columns:1fr}.batch-kpis{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:720px){.batch-hero{grid-template-columns:1fr}.batch-next{text-align:left}.batch-kpis{grid-template-columns:1fr 1fr}.batch-group-head{grid-template-columns:1fr}.batch-group-total{text-align:left}.batch-group-actions{justify-content:flex-start}.batch-item{grid-template-columns:26px 1fr 90px}.batch-item-date{display:none}}
 
@@ -629,7 +630,7 @@
         <div>
           <div class="head-kicker">REIMBURSEMENT WORKFLOW</div>
           <h3>เบิกจ่าย</h3>
-          <p>รายการทุกใบเดินตามขั้นตอนเดียว: รอเข้ารอบ → รออนุมัติ → พร้อมจ่าย → จ่ายแล้ว</p>
+          <p>รายการทุกใบเดินตามขั้นตอนเดียว: สร้างรอบ → อนุมัติ → บันทึก PEAK → ตั้งโอน → แนบสลิป</p>
         </div>
         <div class="batch-schedule-card">
           <span>รอบอัตโนมัติ</span>
@@ -638,11 +639,10 @@
         </div>
       </div>
 
-      <div class="batch-flow" aria-label="ขั้นตอนการเบิกจ่าย">
+      <div class="batch-flow" aria-label="ขั้นตอนการเบิกจ่าย" style="grid-template-columns:repeat(3,1fr)">
         <button class="batch-flow-step active" data-batch-stage="queue"><span>1</span><b>รอเข้ารอบ</b><small id="batchFlowQueue">0 รายการ</small></button>
-        <button class="batch-flow-step" data-batch-stage="approval"><span>2</span><b>รออนุมัติ</b><small id="batchFlowApproval">0 รอบ</small></button>
-        <button class="batch-flow-step" data-batch-stage="payment"><span>3</span><b>พร้อมจ่าย</b><small id="batchFlowPayment">0 รอบ</small></button>
-        <button class="batch-flow-step" data-batch-stage="paid"><span>4</span><b>จ่ายแล้ว</b><small id="batchFlowPaid">0 รอบ</small></button>
+        <button class="batch-flow-step" data-batch-stage="process"><span>2</span><b>กำลังดำเนินการ</b><small id="batchFlowProcess">0 รอบ</small></button>
+        <button class="batch-flow-step" data-batch-stage="paid"><span>3</span><b>จ่ายแล้ว</b><small id="batchFlowPaid">0 รอบ</small></button>
       </div>
 
       <div class="batch-kpis">
@@ -669,7 +669,7 @@
 
       <div class="batch-stage-panel" id="batchStageRounds">
         <div class="batch-section">
-          <div class="batch-section-head"><div><h3 id="batchRoundsTitle">รออนุมัติ</h3><p id="batchRoundsDesc">รอบที่สร้างเอกสารแล้วและรอผู้มีอำนาจอนุมัติ</p></div></div>
+          <div class="batch-section-head"><div><h3 id="batchRoundsTitle">กำลังดำเนินการ</h3><p id="batchRoundsDesc">ทำตามปุ่มขั้นถัดไปของแต่ละรอบจนแนบสลิปสำเร็จ</p></div></div>
           <div class="batch-round-list" id="batchHistory"></div>
         </div>
       </div>
@@ -684,7 +684,7 @@
         </div>
       </details>
 
-      <div class="batch-help"><b>ใช้งานจริงแบบสั้น ๆ</b><br>พนักงานส่งบิลได้เรื่อย ๆ → รายการอยู่ใน “รอเข้ารอบ” → ระบบหรือบัญชีสร้างรอบ → ผู้อนุมัติกดอนุมัติ → บัญชีกด “จ่ายแล้ว” หลังโอนเงินจริง<br><br><b>กรณีด่วน</b> เลือกรายการของคนเดียวกันแล้วกด “สร้างรอบด่วน” ระบบจะสร้างใบขอเบิกรวมทันที</div>
+      <div class="batch-help"><b>ใช้งานจริงแบบสั้น ๆ</b><br>พนักงานส่งบิลได้เรื่อย ๆ → สร้างรอบ → อนุมัติ → บันทึกเลขอ้างอิง PEAK → ตั้งโอน → แนบสลิปการจ่ายคืน ระบบจึงเปลี่ยนเป็น “จ่ายแล้ว” และแจ้งผู้เบิกใน LINE<br><br><b>กรณีด่วน</b> เลือกรายการของคนเดียวกันแล้วกด “สร้างรอบด่วน” ระบบจะสร้างใบขอเบิกรวมทันที</div>
     </section>
 
     <!-- REPORTS -->
@@ -1610,23 +1610,42 @@ function setBatchStage(stage){
   el('batchStageRounds').classList.toggle('show',stage!=='queue');
   if(stage!=='queue')renderBatchRounds();
 }
+function workflowChecks(b){
+  const approved=b.status==='อนุมัติแล้ว'||b.status==='จ่ายแล้ว';
+  const peak=b.peakStatus==='บันทึกแล้ว';
+  const transfer=b.transferStatus==='ตั้งโอนแล้ว';
+  const slip=!!b.paymentSlipUrl;
+  return [
+    [approved,'อนุมัติรอบ'],[peak,`บันทึก PEAK${b.peakRef?` · ${b.peakRef}`:''}`],
+    [transfer,`ตั้งโอน${b.transferRef?` · ${b.transferRef}`:''}`],[slip,'แนบสลิปและแจ้งผู้เบิก'],
+  ];
+}
 function renderBatchRounds(){
-  const map={approval:{status:'รออนุมัติ',title:'รออนุมัติ',desc:'ตรวจ PDF แล้วกดอนุมัติรอบ'},payment:{status:'อนุมัติแล้ว',title:'พร้อมจ่าย',desc:'โอนเงินจริงแล้วค่อยกด “จ่ายแล้ว”'},paid:{status:'จ่ายแล้ว',title:'จ่ายแล้ว',desc:'ประวัติรอบที่ชำระคืนผู้เบิกเรียบร้อย'}};
-  const cfg=map[BATCH_STAGE]||map.approval;
-  el('batchRoundsTitle').textContent=cfg.title;el('batchRoundsDesc').textContent=cfg.desc;
-  const rows=(BATCH_DATA.batches||[]).filter(b=>b.status===cfg.status);
+  const paid=BATCH_STAGE==='paid';
+  el('batchRoundsTitle').textContent=paid?'จ่ายแล้ว':'กำลังดำเนินการ';
+  el('batchRoundsDesc').textContent=paid?'ประวัติรอบที่แนบสลิปและชำระคืนสำเร็จ':'แต่ละรอบมีปุ่มขั้นถัดไปเพียงปุ่มเดียว ทำตามลำดับจนจบ';
+  const rows=(BATCH_DATA.batches||[]).filter(b=>paid?b.status==='จ่ายแล้ว':!["จ่ายแล้ว","ยกเลิก","ตีกลับ"].includes(b.status));
   el('batchHistory').innerHTML=rows.length?rows.map(b=>{
-    const next=BATCH_STAGE==='approval'?'<button class="btn solid" data-round-action="approve">อนุมัติรอบ</button>':BATCH_STAGE==='payment'?'<button class="btn solid" data-round-action="paid">ทำเครื่องหมายจ่ายแล้ว</button>':'';
-    const cancel=BATCH_STAGE!=='paid'?'<button class="btn" data-round-action="cancel">ยกเลิกรอบ</button>':'';
-    return `<div class="batch-round-card" data-batch-id="${escAttr(b.id||b.docId)}"><div class="batch-round-head"><div><h4>${esc(b.docId||b.runNo||'—')}</h4><div class="batch-round-meta">${esc(b.payerName||'—')} · ${Number(b.itemCount||0)} รายการ · ${batchDate(b.createdAt)}</div><div style="margin-top:7px"><span class="batch-round-state ${batchRoundStateClass(b.status)}">${esc(b.status||'—')}</span>${b.type==='ด่วน'?'<span class="batch-round-state urgent">ด่วน</span>':''}</div></div><div class="sum">${baht(b.total||0)}</div></div><div class="batch-round-actions">${b.pdfUrl?`<a class="btn" href="${escAttr(b.pdfUrl)}" target="_blank" rel="noopener">เปิดใบขอเบิก PDF</a>`:''}${next}${cancel}</div></div>`;
+    const checks=workflowChecks(b).map(([done,label])=>`<div class="batch-check ${done?'done':''}"><i>${done?'✓':'·'}</i><span>${esc(label)}</span></div>`).join('');
+    let next='';
+    if(!paid){
+      if(b.status==='รออนุมัติ')next='<button class="btn solid" data-workflow-action="approve">อนุมัติรอบ</button>';
+      else if(b.peakStatus!=='บันทึกแล้ว')next='<button class="btn solid" data-workflow-action="peak_recorded">บันทึกเข้า PEAK แล้ว</button>';
+      else if(b.transferStatus!=='ตั้งโอนแล้ว')next='<button class="btn solid" data-workflow-action="transfer_set">ตั้งโอนแล้ว</button>';
+      else if(!b.paymentSlipUrl)next='<label class="btn solid" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">แนบสลิปและจ่ายแล้ว<input class="batch-slip-input" type="file" accept="image/*,application/pdf" data-batch-slip></label>';
+    }
+    const slip=b.paymentSlipUrl?`<a class="batch-slip-link" href="${escAttr(b.paymentSlipUrl)}" target="_blank" rel="noopener">เปิดสลิปการจ่ายคืน</a>`:'';
+    const notify=b.status==='จ่ายแล้ว'?`<span class="batch-status">LINE: ${esc(b.lineNotifyStatus||'ยังไม่แจ้ง')}</span>`:'';
+    const reject=!paid?'<button class="btn" data-workflow-action="reject">ตีกลับ</button>':'';
+    return `<div class="batch-round-card" data-batch-id="${escAttr(b.id||b.docId)}"><div class="batch-round-head"><div><h4>${esc(b.docId||b.runNo||'—')}</h4><div class="batch-round-meta">${esc(b.payerName||'—')} · ${Number(b.itemCount||0)} รายการ · ${batchDate(b.createdAt)}</div><div style="margin-top:7px"><span class="batch-round-state ${batchRoundStateClass(b.status)}">${esc(b.status||'—')}</span>${b.type==='ด่วน'?'<span class="batch-round-state urgent">ด่วน</span>':''}</div></div><div class="sum">${baht(b.total||0)}</div></div><div class="batch-checklist">${checks}</div><div class="batch-next-action"><b>${paid?'ดำเนินการครบแล้ว':'ขั้นถัดไป'}</b><br>${paid?'สลิปถูกเก็บใน Drive และรายการย่อยถูกทำเครื่องหมายจ่ายแล้ว':'กดปุ่มด้านล่าง ระบบจะไม่ข้ามลำดับงาน'}</div><div class="batch-round-actions">${b.pdfUrl?`<a class="btn" href="${escAttr(b.pdfUrl)}" target="_blank" rel="noopener">เปิดใบขอเบิก PDF</a>`:''}${slip}${notify}${next}${reject}</div></div>`;
   }).join(''):'<div class="batch-empty">ไม่มีรายการในขั้นตอนนี้</div>';
 }
 function renderBatches(){
   if(!el("batchPendingGroups"))return;
   const p=BATCH_DATA.pending||{groups:[]};const st=BATCH_DATA.settings||{};
-  const approval=batchSummaryOf('awaitingApproval'),payment=batchSummaryOf('approved'),paid=batchSummaryOf('paid');
+  const processing=batchSummaryOf('processing'),paid=batchSummaryOf('paid');
   el("batchKItems").textContent=Number(p.itemCount||0).toLocaleString("th-TH");el("batchKTotal").textContent=baht(p.total||0);el("batchKPeople").textContent=Number(p.people||0).toLocaleString("th-TH");el("batchKUrgent").textContent=Number(p.urgentCount||0).toLocaleString("th-TH");
-  el('batchFlowQueue').textContent=`${Number(p.itemCount||0)} รายการ`;el('batchFlowApproval').textContent=`${Number(approval.count||0)} รอบ`;el('batchFlowPayment').textContent=`${Number(payment.count||0)} รอบ`;el('batchFlowPaid').textContent=`${Number(paid.count||0)} รอบ`;
+  el('batchFlowQueue').textContent=`${Number(p.itemCount||0)} รายการ`;el('batchFlowProcess').textContent=`${Number(processing.count||0)} รอบ`;el('batchFlowPaid').textContent=`${Number(paid.count||0)} รอบ`;
   el("batchNext").textContent=st.enabled?batchSettingsText():"ปิดอยู่ — กดตั้งค่าด้านล่าง";
   el("batchEnabled").checked=st.enabled===true;el("batchWeekday").value=String(Number(st.weekday??1));el("batchTime").value=`${String(Number(st.hour??11)).padStart(2,"0")}:${String(Number(st.minute??0)).padStart(2,"0")}`;el("batchMaxItems").value=String(Number(st.maxItems||10));
   const groups=Array.isArray(p.groups)?p.groups:[];
@@ -1676,6 +1695,30 @@ ${out.itemCount} รายการ · ${baht(out.total)}${blocked}`:(out.messag
     clearBatchSelection();
     await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);
   }catch(err){alert("สร้างรอบไม่สำเร็จ: "+err.message);}finally{button.disabled=false;button.textContent=old;}
+}
+
+async function runBatchWorkflowAction(button){
+  const card=button.closest('[data-batch-id]');const batchId=card?.dataset.batchId;const action=button.dataset.workflowAction;if(!batchId||!action)return;
+  let payload={};
+  if(action==='approve'&&!confirm('อนุมัติรอบนี้เพื่อส่งต่อให้บัญชีบันทึก PEAK?'))return;
+  if(action==='peak_recorded'){const reference=prompt('ใส่เลขอ้างอิง/เลขเอกสารจาก PEAK (เว้นว่างได้)');if(reference===null)return;payload={reference};}
+  if(action==='transfer_set'){const reference=prompt('ใส่เลขอ้างอิงการตั้งโอน (เว้นว่างได้)');if(reference===null)return;payload={reference};}
+  if(action==='reject'){const reason=prompt('ระบุเหตุผลที่ตีกลับ รายการจะกลับไปรอเข้ารอบ');if(!reason)return;payload={reason};}
+  const old=button.textContent;button.disabled=true;button.textContent='กำลังบันทึก…';
+  try{await batchPost('/api/batch-workflow',{batchId,action,payload});await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}
+  catch(err){alert('ดำเนินการไม่สำเร็จ: '+err.message);}finally{button.disabled=false;button.textContent=old;}
+}
+async function uploadBatchPaymentSlip(input){
+  const card=input.closest('[data-batch-id]');const batchId=card?.dataset.batchId;const file=input.files?.[0];if(!batchId||!file)return;
+  if(!confirm('ยืนยันว่าโอนเงินจริงแล้ว และไฟล์นี้คือสลิปการจ่ายคืน?')){input.value='';return;}
+  const form=new FormData();form.append('batchId',batchId);form.append('file',file,file.name);
+  input.disabled=true;
+  try{
+    const res=await fetch(apiUrl('/api/batch-payment-slip'),{method:'POST',body:form});const data=await res.json().catch(()=>({}));
+    if(!res.ok||data.ok===false)throw new Error(data.message||data.reason||`HTTP ${res.status}`);
+    alert(`บันทึกการจ่ายแล้วสำเร็จ\nLINE: ${data.lineNotifyStatus||'ตรวจสอบในระบบ'}`);
+    await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);
+  }catch(err){alert('แนบสลิปไม่สำเร็จ: '+err.message);}finally{input.disabled=false;input.value='';}
 }
 
 /* ---------- SETTINGS ---------- */
@@ -1740,7 +1783,8 @@ ${out.itemCount} รายการ · ${baht(out.total)}`);clearBatchSelection(
 if(el("batchCloseAll"))el("batchCloseAll").onclick=async()=>{if(!confirm("สร้างรอบปกติจากรายการที่พร้อมทั้งหมด แยกตามผู้เบิกตอนนี้?"))return;const b=el("batchCloseAll"),old=b.textContent;b.disabled=true;b.textContent="กำลังสร้าง…";try{const out=await batchPost("/api/batch-close",{});const blocked=(out.blocked||[]).length?`
 ข้าม ${(out.blocked||[]).length} คนที่ข้อมูลบัญชีไม่ครบ`:'';alert(out.itemCount?`สร้างรอบ ${out.runNo} สำเร็จ
 ${out.people||0} คน · ${out.itemCount} รายการ · ${baht(out.total)}${blocked}`:(out.message||"ไม่มีรายการรอเข้ารอบ"));clearBatchSelection();await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert("ปิดรอบไม่สำเร็จ: "+err.message);}finally{b.disabled=false;b.textContent=old;}};
-if(el('batchHistory'))el('batchHistory').addEventListener('click',async e=>{const btn=e.target.closest('[data-round-action]');if(!btn)return;const card=btn.closest('[data-batch-id]');const id=card?.dataset.batchId;if(!id)return;const action=btn.dataset.roundAction;const status=action==='approve'?'อนุมัติแล้ว':action==='paid'?'จ่ายแล้ว':'ยกเลิก';const msg=status==='จ่ายแล้ว'?'ยืนยันว่าโอนเงินจริงให้ผู้เบิกแล้ว?':status==='ยกเลิก'?'ยกเลิกรอบนี้และคืนรายการกลับเข้าคิว?':'อนุมัติรอบนี้?';if(!confirm(msg))return;btn.disabled=true;try{await batchPost('/api/batch-status',{batchId:id,status});await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert('อัปเดตสถานะไม่สำเร็จ: '+err.message);}finally{btn.disabled=false;}});
+if(el('batchHistory'))el('batchHistory').addEventListener('click',e=>{const btn=e.target.closest('[data-workflow-action]');if(btn)runBatchWorkflowAction(btn);});
+if(el('batchHistory'))el('batchHistory').addEventListener('change',e=>{if(e.target.matches('[data-batch-slip]'))uploadBatchPaymentSlip(e.target);});
 if(el("batchSaveSettings"))el("batchSaveSettings").onclick=async()=>{const [h,m]=String(el("batchTime").value||"11:00").split(":").map(Number);const ok=await saveSettings({batch_enabled:el("batchEnabled").checked?"TRUE":"FALSE",batch_weekday:String(el("batchWeekday").value||1),batch_hour:String(Number.isFinite(h)?h:11),batch_minute:String(Number.isFinite(m)?m:0),batch_max_items:String(Math.max(1,Math.min(10,Number(el("batchMaxItems").value||10)))),batch_timezone:"Asia/Bangkok"},"batchSaveState");if(ok)await refreshBatchData({quiet:true});};
 
 if(el("emailQ"))el("emailQ").addEventListener("input",renderEmailInbox);
