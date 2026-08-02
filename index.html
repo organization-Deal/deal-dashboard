@@ -477,6 +477,15 @@
   @media(max-width:1100px){.batch-layout{grid-template-columns:1fr}.batch-kpis{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:720px){.batch-hero{grid-template-columns:1fr}.batch-next{text-align:left}.batch-kpis{grid-template-columns:1fr 1fr}.batch-group-head{grid-template-columns:1fr}.batch-group-total{text-align:left}.batch-group-actions{justify-content:flex-start}.batch-item{grid-template-columns:26px 1fr 90px}.batch-item-date{display:none}}
 
+  /* ── Reimbursement workflow v2 ───────────────────── */
+  .batch-topline{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:18px}.batch-topline h3{font-size:28px;letter-spacing:-.04em;margin:4px 0 6px}.batch-topline p{margin:0;color:var(--muted);font-size:12.5px}.batch-schedule-card{min-width:220px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px 14px;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr auto;align-items:center;gap:5px 10px}.batch-schedule-card span{font-size:10.5px;color:var(--muted)}.batch-schedule-card strong{font-size:13px}.batch-schedule-card .btn{grid-row:1/3;grid-column:2}
+  .batch-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px}.batch-flow-step{appearance:none;border:1px solid var(--line);background:#fff;border-radius:16px;padding:12px;text-align:left;display:grid;grid-template-columns:28px 1fr;gap:2px 9px;cursor:pointer;color:var(--ink)}.batch-flow-step>span{grid-row:1/3;width:28px;height:28px;border-radius:50%;background:#f2f2f7;display:grid;place-items:center;font-size:11px;font-weight:800}.batch-flow-step b{font-size:12.5px}.batch-flow-step small{font-size:10.5px;color:var(--muted)}.batch-flow-step.active{border-color:#1d1d1f;box-shadow:0 0 0 1px #1d1d1f inset}.batch-flow-step.active>span{background:#1d1d1f;color:#fff}
+  .batch-stage-panel{display:none}.batch-stage-panel.show{display:block}.batch-selection-note{font-size:11px;color:var(--muted);padding:0 2px 12px}.batch-selection-note strong{color:var(--ink)}
+  .batch-group{border-radius:20px}.batch-group-head{grid-template-columns:minmax(0,1fr) auto;gap:12px}.batch-group-actions{grid-column:1/-1;justify-content:flex-start}.batch-profile{display:flex;gap:7px;flex-wrap:wrap;margin-top:5px}.batch-profile span{font-size:10px;border-radius:999px;padding:4px 7px;background:#f2f2f7;color:var(--muted)}.batch-profile .bad{background:#fff4e5;color:#925500}.batch-group.blocked{border-color:#f0d7aa}.batch-group.blocked .batch-group-head{background:#fffaf2}.batch-group.blocked .batch-item input{opacity:.45}
+  .batch-round-list{display:grid;gap:10px}.batch-round-card{border:1px solid var(--line);border-radius:18px;padding:15px;background:#fff}.batch-round-head{display:flex;justify-content:space-between;gap:12px}.batch-round-head h4{font-size:14px;margin:0}.batch-round-head .sum{text-align:right;font-size:16px;font-weight:750}.batch-round-meta{font-size:10.8px;color:var(--muted);margin-top:4px}.batch-round-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.batch-round-actions .btn{min-height:38px}.batch-round-state{display:inline-flex;border-radius:999px;padding:4px 8px;background:#f2f2f7;font-size:10px;font-weight:700}.batch-round-state.approved{background:#edf7ef;color:#24783b}.batch-round-state.paid{background:#1d1d1f;color:#fff}.batch-round-state.urgent{background:#fff5e8;color:#9a5a00;margin-left:5px}
+  .batch-settings-wrap{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}.batch-settings-wrap summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;justify-content:space-between;align-items:center}.batch-settings-wrap summary::-webkit-details-marker{display:none}.batch-settings-wrap summary b{display:block;font-size:13px}.batch-settings-wrap summary small{display:block;color:var(--muted);font-size:10.5px;margin-top:3px}.batch-settings-grid{border-top:1px solid var(--line);padding:16px 18px;display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:12px;align-items:end}.batch-settings-grid .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.batch-settings-grid label{font-size:10.5px;color:var(--muted);display:block;margin-bottom:5px}.batch-settings-grid input,.batch-settings-grid select{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;padding:9px 10px}.batch-toggle{height:100%}.batch-toggle div div{font-size:10px;color:var(--muted);margin-top:3px}.batch-help{margin-bottom:10px}
+  @media(max-width:720px){.batch-topline{align-items:stretch;flex-direction:column}.batch-schedule-card{min-width:0}.batch-flow{grid-template-columns:1fr 1fr}.batch-kpis{grid-template-columns:1fr 1fr}.batch-section{padding:15px}.batch-section-head{display:block}.batch-section-head .actions{margin:12px 0 0}.batch-section-head .actions .btn{flex:1}.batch-group-head{grid-template-columns:1fr}.batch-group-total{text-align:left}.batch-group-actions{grid-column:auto}.batch-item{grid-template-columns:28px minmax(0,1fr) auto}.batch-round-head{align-items:flex-start}.batch-settings-grid{grid-template-columns:1fr}.batch-settings-grid .field-row{grid-template-columns:1fr 1fr}}
+
 </style>
 </head>
 <body>
@@ -490,8 +499,7 @@
       <button class="navlink active" data-p="overview"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></span><span>ภาพรวม</span></button>
       <button class="navlink" data-p="expenses"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v13"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg></span><span>รายจ่าย</span></button>
       <button class="navlink" data-p="income"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21V8"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span><span>รายรับ</span></button>
-      <button class="navlink" data-p="reimburse"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span>รอเบิก</span></button>
-      <button class="navlink" data-p="batches"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/><circle cx="18" cy="17" r="2"/></svg></span><span>รอบเบิก</span></button>
+      <button class="navlink" data-p="batches"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/><circle cx="18" cy="17" r="2"/></svg></span><span>เบิกจ่าย</span></button>
       <button class="navlink" data-p="reports"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19V3"/></svg></span><span>รายงานและภาษี</span></button>
       <button class="navlink" data-p="bills"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5"/><path d="M9 12h7M9 16h7"/></svg></span><span>เอกสาร</span></button>
       <button class="navlink" data-p="email"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><span>เอกสารจากอีเมล</span></button>
@@ -617,40 +625,66 @@
 
     <!-- REIMBURSEMENT BATCHES -->
     <section class="page" id="page-batches">
-      <div class="batch-hero">
-        <div><div class="eyebrow">REIMBURSEMENT CONTROL</div><h3>รอบเบิก</h3><p>รวมหลายรายการของผู้เบิกคนเดียวเป็นใบขอเบิกรวมหนึ่งใบ บัญชีตรวจ อนุมัติ และจ่ายเป็นรอบได้โดยไม่ต้องไล่เปิดทีละรายการ</p></div>
-        <div class="batch-next"><span>รอบถัดไป</span><strong id="batchNext">จันทร์ 11:00 น.</strong></div>
-      </div>
-      <div class="batch-kpis">
-        <div class="batch-kpi"><span>รอเข้ารอบ</span><strong id="batchKItems">0</strong><small>รายการ</small></div>
-        <div class="batch-kpi"><span>ยอดรอเข้ารอบ</span><strong id="batchKTotal">฿0</strong><small>ยังไม่รวมเป็นเอกสาร</small></div>
-        <div class="batch-kpi"><span>ผู้เบิก</span><strong id="batchKPeople">0</strong><small>คนที่มีรายการค้าง</small></div>
-        <div class="batch-kpi"><span>คำขอด่วน</span><strong id="batchKUrgent">0</strong><small>รายการที่ต้องรีบดำเนินการ</small></div>
-      </div>
-      <div class="batch-layout">
+      <div class="batch-topline">
         <div>
-          <div class="batch-section">
-            <div class="batch-section-head"><div><h3>รายการรอเข้ารอบ</h3><p>ระบบจัดกลุ่มตามผู้เบิกให้อัตโนมัติ เลือกรายการแล้วสร้างรอบด่วน หรือปิดรอบเฉพาะคนนั้นได้ทันที</p></div><div class="actions"><button class="btn" id="batchRefresh">อัปเดต</button><button class="btn solid" id="batchCloseAll">ปิดรอบทั้งหมดตอนนี้</button></div></div>
-            <div id="batchPendingGroups"><div class="batch-empty">กำลังโหลดรายการรอเข้ารอบ…</div></div>
-          </div>
-          <div class="batch-section">
-            <div class="batch-section-head"><div><h3>รอบเบิกที่ผ่านมา</h3><p>หนึ่งแถวคือใบขอเบิกรวมหนึ่งใบ หากเกินจำนวนรายการสูงสุด ระบบจะแบ่งเป็น P1, P2 อัตโนมัติ</p></div></div>
-            <div style="overflow:auto"><table class="batch-history"><thead><tr><th>เลขเอกสาร</th><th>ผู้เบิก</th><th>ประเภท</th><th class="num">รายการ</th><th class="num">ยอดรวม</th><th>เอกสาร</th><th>สถานะ</th></tr></thead><tbody id="batchHistory"></tbody></table></div>
-          </div>
+          <div class="head-kicker">REIMBURSEMENT WORKFLOW</div>
+          <h3>เบิกจ่าย</h3>
+          <p>รายการทุกใบเดินตามขั้นตอนเดียว: รอเข้ารอบ → รออนุมัติ → พร้อมจ่าย → จ่ายแล้ว</p>
         </div>
-        <div>
-          <div class="batch-section">
-            <div class="batch-section-head"><div><h3>ตั้งค่ารอบอัตโนมัติ</h3><p>ค่าเริ่มต้นคือทุกวันจันทร์ เวลา 11:00 น. ตามเวลาไทย</p></div></div>
-            <div class="batch-settings">
-              <div class="batch-toggle"><div><strong style="font-size:12.5px">เปิดปิดรอบอัตโนมัติ</strong><div style="font-size:10.5px;color:var(--muted)">ระบบทำงานผ่าน Cloudflare Cron</div></div><input type="checkbox" id="batchEnabled"></div>
-              <div class="field-row"><div><label>วันปิดรอบ</label><select id="batchWeekday"><option value="1">วันจันทร์</option><option value="2">วันอังคาร</option><option value="3">วันพุธ</option><option value="4">วันพฤหัสบดี</option><option value="5">วันศุกร์</option></select></div><div><label>เวลา</label><input id="batchTime" type="time" value="11:00"></div></div>
-              <div><label>จำนวนรายการสูงสุดต่อ PDF</label><input id="batchMaxItems" type="number" min="1" max="10" value="10"></div>
-              <button class="btn solid" id="batchSaveSettings">บันทึกการตั้งค่า</button><span class="save-state" id="batchSaveState"></span>
+        <div class="batch-schedule-card">
+          <span>รอบอัตโนมัติ</span>
+          <strong id="batchNext">กำลังตรวจ…</strong>
+          <button class="btn small" id="batchRefresh" type="button">อัปเดต</button>
+        </div>
+      </div>
+
+      <div class="batch-flow" aria-label="ขั้นตอนการเบิกจ่าย">
+        <button class="batch-flow-step active" data-batch-stage="queue"><span>1</span><b>รอเข้ารอบ</b><small id="batchFlowQueue">0 รายการ</small></button>
+        <button class="batch-flow-step" data-batch-stage="approval"><span>2</span><b>รออนุมัติ</b><small id="batchFlowApproval">0 รอบ</small></button>
+        <button class="batch-flow-step" data-batch-stage="payment"><span>3</span><b>พร้อมจ่าย</b><small id="batchFlowPayment">0 รอบ</small></button>
+        <button class="batch-flow-step" data-batch-stage="paid"><span>4</span><b>จ่ายแล้ว</b><small id="batchFlowPaid">0 รอบ</small></button>
+      </div>
+
+      <div class="batch-kpis">
+        <div class="batch-kpi"><span>รอเข้ารอบ</span><strong id="batchKItems">0</strong><small>รายการที่ยังไม่สร้างใบขอเบิกรวม</small></div>
+        <div class="batch-kpi"><span>ยอดรอเข้ารอบ</span><strong id="batchKTotal">฿0</strong><small>ยังไม่รวมเป็นรอบ</small></div>
+        <div class="batch-kpi"><span>ผู้เบิก</span><strong id="batchKPeople">0</strong><small>คนที่มีรายการค้าง</small></div>
+        <div class="batch-kpi"><span>คำขอด่วน</span><strong id="batchKUrgent">0</strong><small>รายการที่ขอให้ดำเนินการทันที</small></div>
+      </div>
+
+      <div class="batch-stage-panel show" id="batchStageQueue">
+        <div class="batch-section">
+          <div class="batch-section-head">
+            <div><h3>คิวรอเข้ารอบ</h3><p>เลือกเฉพาะรายการที่ต้องการ หรือสร้างรอบของผู้เบิกคนนั้นทั้งหมด</p></div>
+            <div class="actions">
+              <button class="btn" id="batchSelectAll" type="button">เลือกทั้งหมด</button>
+              <button class="btn solid" id="batchCreateSelected" type="button" disabled>สร้างรอบจากที่เลือก</button>
+              <button class="btn" id="batchCloseAll" type="button">สร้างรอบทั้งหมด</button>
             </div>
           </div>
-          <div class="batch-help"><b>วิธีทำงาน</b><br>1. พนักงานส่งหลายรายการได้ตลอดสัปดาห์<br>2. เมื่อถึงเวลาปิดรอบ ระบบรวมตามผู้เบิก<br>3. สร้างเลขรอบและใบขอเบิกรวม PDF<br>4. บัญชีกดอนุมัติและจ่ายจากหน้านี้<br><br><b>กรณีด่วน</b> เลือกรายการของคนนั้นแล้วกด “สร้างรอบด่วน” ระบบจะออกเอกสารทันทีโดยไม่รอวันจันทร์</div>
+          <div class="batch-selection-note" id="batchSelectedCount">ยังไม่ได้เลือกรายการ</div>
+          <div id="batchPendingGroups"><div class="batch-empty">กำลังโหลดรายการรอเข้ารอบ…</div></div>
         </div>
       </div>
+
+      <div class="batch-stage-panel" id="batchStageRounds">
+        <div class="batch-section">
+          <div class="batch-section-head"><div><h3 id="batchRoundsTitle">รออนุมัติ</h3><p id="batchRoundsDesc">รอบที่สร้างเอกสารแล้วและรอผู้มีอำนาจอนุมัติ</p></div></div>
+          <div class="batch-round-list" id="batchHistory"></div>
+        </div>
+      </div>
+
+      <details class="batch-settings-wrap">
+        <summary><span><b>ตั้งค่ารอบอัตโนมัติ</b><small>ค่าเริ่มต้นทุกวันจันทร์ 11:00 น. เวลาไทย</small></span><span>เปิดการตั้งค่า</span></summary>
+        <div class="batch-settings-grid">
+          <div class="batch-toggle"><div><strong>เปิดรอบอัตโนมัติ</strong><div>Cloudflare Cron จะปิดรอบครั้งแรกหลังเวลาที่กำหนด</div></div><input type="checkbox" id="batchEnabled"></div>
+          <div class="field-row"><div><label>วันปิดรอบ</label><select id="batchWeekday"><option value="1">วันจันทร์</option><option value="2">วันอังคาร</option><option value="3">วันพุธ</option><option value="4">วันพฤหัสบดี</option><option value="5">วันศุกร์</option></select></div><div><label>เวลา</label><input id="batchTime" type="time" value="11:00"></div></div>
+          <div><label>จำนวนรายการสูงสุดต่อ PDF</label><input id="batchMaxItems" type="number" min="1" max="10" value="10"></div>
+          <button class="btn solid" id="batchSaveSettings">บันทึกการตั้งค่า</button><span class="save-state" id="batchSaveState"></span>
+        </div>
+      </details>
+
+      <div class="batch-help"><b>ใช้งานจริงแบบสั้น ๆ</b><br>พนักงานส่งบิลได้เรื่อย ๆ → รายการอยู่ใน “รอเข้ารอบ” → ระบบหรือบัญชีสร้างรอบ → ผู้อนุมัติกดอนุมัติ → บัญชีกด “จ่ายแล้ว” หลังโอนเงินจริง<br><br><b>กรณีด่วน</b> เลือกรายการของคนเดียวกันแล้วกด “สร้างรอบด่วน” ระบบจะสร้างใบขอเบิกรวมทันที</div>
     </section>
 
     <!-- REPORTS -->
@@ -938,6 +972,7 @@ let EMAIL_LOADING = false;
 let EMAIL_SYNCING = false;
 let BATCH_DATA = {pending:{groups:[],itemCount:0,total:0,urgentCount:0,people:0},batches:[],settings:{}};
 let BATCH_LOADING = false;
+let BATCH_STAGE = "queue";
 let BATCH_POLL_TICK = 0;
 
 // Realtime แบบ polling: Google Sheet ไม่มี event stream โดยตรง จึงตรวจข้อมูลใหม่ทุก 5 วินาที
@@ -1276,6 +1311,7 @@ function setBusinessTab(tab){
   renderBusiness();
 }
 function openPage(p,source=null){
+  if(p==="reimburse")p="batches";
   document.querySelectorAll(".navlink,.subnavlink").forEach(x=>x.classList.remove("active"));
   if(source)source.classList.add("active");
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
@@ -1541,47 +1577,51 @@ function batchSettingsText(){
   const hh=String(Number(s.hour??11)).padStart(2,"0"),mm=String(Number(s.minute??0)).padStart(2,"0");
   return `${BATCH_WEEKDAYS[Number(s.weekday??1)]||"จันทร์"} ${hh}:${mm} น.`;
 }
+function batchRoundStateClass(status){return status==="จ่ายแล้ว"?"paid":status==="อนุมัติแล้ว"?"approved":"";}
+function batchSummaryOf(key){return (BATCH_DATA.summary||{})[key]||{count:0,itemCount:0,total:0};}
+function selectedBatchIds(groupIndex=null){
+  const selector=groupIndex===null?'[data-batch-item]:checked':`[data-batch-item][data-group="${groupIndex}"]:checked`;
+  return [...document.querySelectorAll(selector)].map(x=>x.dataset.batchItem).filter(Boolean);
+}
+function updateBatchSelection(){
+  const ids=selectedBatchIds();
+  const count=el("batchSelectedCount"),btn=el("batchCreateSelected");
+  if(count)count.innerHTML=ids.length?`เลือกแล้ว <strong>${ids.length}</strong> รายการ`:'ยังไม่ได้เลือกรายการ';
+  if(btn)btn.disabled=!ids.length;
+}
+function setBatchStage(stage){
+  BATCH_STAGE=stage;
+  document.querySelectorAll('[data-batch-stage]').forEach(b=>b.classList.toggle('active',b.dataset.batchStage===stage));
+  el('batchStageQueue').classList.toggle('show',stage==='queue');
+  el('batchStageRounds').classList.toggle('show',stage!=='queue');
+  if(stage!=='queue')renderBatchRounds();
+}
+function renderBatchRounds(){
+  const map={approval:{status:'รออนุมัติ',title:'รออนุมัติ',desc:'ตรวจ PDF แล้วกดอนุมัติรอบ'},payment:{status:'อนุมัติแล้ว',title:'พร้อมจ่าย',desc:'โอนเงินจริงแล้วค่อยกด “จ่ายแล้ว”'},paid:{status:'จ่ายแล้ว',title:'จ่ายแล้ว',desc:'ประวัติรอบที่ชำระคืนผู้เบิกเรียบร้อย'}};
+  const cfg=map[BATCH_STAGE]||map.approval;
+  el('batchRoundsTitle').textContent=cfg.title;el('batchRoundsDesc').textContent=cfg.desc;
+  const rows=(BATCH_DATA.batches||[]).filter(b=>b.status===cfg.status);
+  el('batchHistory').innerHTML=rows.length?rows.map(b=>{
+    const next=BATCH_STAGE==='approval'?'<button class="btn solid" data-round-action="approve">อนุมัติรอบ</button>':BATCH_STAGE==='payment'?'<button class="btn solid" data-round-action="paid">ทำเครื่องหมายจ่ายแล้ว</button>':'';
+    const cancel=BATCH_STAGE!=='paid'?'<button class="btn" data-round-action="cancel">ยกเลิกรอบ</button>':'';
+    return `<div class="batch-round-card" data-batch-id="${escAttr(b.id||b.docId)}"><div class="batch-round-head"><div><h4>${esc(b.docId||b.runNo||'—')}</h4><div class="batch-round-meta">${esc(b.payerName||'—')} · ${Number(b.itemCount||0)} รายการ · ${batchDate(b.createdAt)}</div><div style="margin-top:7px"><span class="batch-round-state ${batchRoundStateClass(b.status)}">${esc(b.status||'—')}</span>${b.type==='ด่วน'?'<span class="batch-round-state urgent">ด่วน</span>':''}</div></div><div class="sum">${baht(b.total||0)}</div></div><div class="batch-round-actions">${b.pdfUrl?`<a class="btn" href="${escAttr(b.pdfUrl)}" target="_blank" rel="noopener">เปิดใบขอเบิก PDF</a>`:''}${next}${cancel}</div></div>`;
+  }).join(''):'<div class="batch-empty">ไม่มีรายการในขั้นตอนนี้</div>';
+}
 function renderBatches(){
   if(!el("batchPendingGroups"))return;
-  const p=BATCH_DATA.pending||{groups:[]};
-  const st=BATCH_DATA.settings||{};
-  el("batchKItems").textContent=Number(p.itemCount||0).toLocaleString("th-TH");
-  el("batchKTotal").textContent=baht(p.total||0);
-  el("batchKPeople").textContent=Number(p.people||0).toLocaleString("th-TH");
-  el("batchKUrgent").textContent=Number(p.urgentCount||0).toLocaleString("th-TH");
-  el("batchNext").textContent=(st.enabled?batchSettingsText():"ยังไม่เปิดรอบอัตโนมัติ");
-  el("batchEnabled").checked=st.enabled===true;
-  el("batchWeekday").value=String(Number(st.weekday??1));
-  el("batchTime").value=`${String(Number(st.hour??11)).padStart(2,"0")}:${String(Number(st.minute??0)).padStart(2,"0")}`;
-  el("batchMaxItems").value=String(Number(st.maxItems||10));
-
+  const p=BATCH_DATA.pending||{groups:[]};const st=BATCH_DATA.settings||{};
+  const approval=batchSummaryOf('awaitingApproval'),payment=batchSummaryOf('approved'),paid=batchSummaryOf('paid');
+  el("batchKItems").textContent=Number(p.itemCount||0).toLocaleString("th-TH");el("batchKTotal").textContent=baht(p.total||0);el("batchKPeople").textContent=Number(p.people||0).toLocaleString("th-TH");el("batchKUrgent").textContent=Number(p.urgentCount||0).toLocaleString("th-TH");
+  el('batchFlowQueue').textContent=`${Number(p.itemCount||0)} รายการ`;el('batchFlowApproval').textContent=`${Number(approval.count||0)} รอบ`;el('batchFlowPayment').textContent=`${Number(payment.count||0)} รอบ`;el('batchFlowPaid').textContent=`${Number(paid.count||0)} รอบ`;
+  el("batchNext").textContent=st.enabled?batchSettingsText():"ปิดอยู่ — กดตั้งค่าด้านล่าง";
+  el("batchEnabled").checked=st.enabled===true;el("batchWeekday").value=String(Number(st.weekday??1));el("batchTime").value=`${String(Number(st.hour??11)).padStart(2,"0")}:${String(Number(st.minute??0)).padStart(2,"0")}`;el("batchMaxItems").value=String(Number(st.maxItems||10));
   const groups=Array.isArray(p.groups)?p.groups:[];
   el("batchPendingGroups").innerHTML=groups.length?groups.map((g,gi)=>{
-    const items=(g.items||[]).map(r=>`<div class="batch-item">
-      <input type="checkbox" data-batch-item="${escAttr(r.id)}" data-group="${gi}" checked aria-label="เลือกรายการ">
-      <div class="batch-item-date">${batchDate(r.dateISO||r.createdAt)}</div>
-      <div class="batch-item-main"><strong>${esc(r.vendor||r.note||"ไม่ระบุรายการ")}</strong><span>${esc(r.note||r.category||"—")}${r.batchType==="ด่วน"||r.batchStatus==="ขอเบิกด่วน"?' · <b style="color:#8a5a00">ด่วน</b>':""}</span></div>
-      <div class="batch-item-amount">${baht(r.amount)}</div>
-    </div>`).join("");
-    return `<div class="batch-group" data-batch-group="${gi}">
-      <div class="batch-group-head">
-        <div><div class="batch-person">${esc(g.payerName||"ไม่ระบุผู้เบิก")}</div><div class="batch-person-sub">${Number(g.itemCount||0)} รายการ${g.urgentCount?` · <span style="color:#8a5a00">ด่วน ${g.urgentCount}</span>`:""}</div></div>
-        <div class="batch-group-total"><strong>${baht(g.total||0)}</strong><span>ยอดรอเข้ารอบ</span></div>
-        <div class="batch-group-actions"><button class="btn" data-batch-action="urgent" data-group="${gi}">สร้างรอบด่วน</button><button class="btn solid" data-batch-action="close" data-payer="${escAttr(g.payerKey||"")}">ปิดรอบคนนี้</button></div>
-      </div><div class="batch-item-list">${items}</div>
-    </div>`;
-  }).join(""):'<div class="batch-empty"><b>ไม่มีรายการรอเข้ารอบ</b><br>รายการใหม่ที่ยังไม่จ่ายจะมาอยู่ตรงนี้อัตโนมัติ</div>';
-
-  const batches=Array.isArray(BATCH_DATA.batches)?BATCH_DATA.batches:[];
-  el("batchHistory").innerHTML=batches.length?batches.map(b=>`<tr>
-    <td><strong>${esc(b.docId||b.runNo||"—")}</strong><div style="font-size:10px;color:var(--muted)">${esc(b.runNo||"")} ${b.part&&b.part!=="1/1"?`· ${esc(b.part)}`:""}</div></td>
-    <td>${esc(b.payerName||"—")}</td>
-    <td><span class="batch-status ${b.type==="ด่วน"?"urgent":""}">${esc(b.type||"ปกติ")}</span></td>
-    <td class="num">${Number(b.itemCount||0).toLocaleString("th-TH")}</td>
-    <td class="num"><strong>${baht(b.total||0)}</strong></td>
-    <td>${b.pdfUrl?`<a class="batch-doc-link" href="${escAttr(b.pdfUrl)}" target="_blank" rel="noopener">เปิด PDF ↗</a>`:"—"}</td>
-    <td><select class="batch-status-select" data-batch-status="${escAttr(b.id||b.docId)}"><option ${b.status==="รออนุมัติ"?"selected":""}>รออนุมัติ</option><option ${b.status==="อนุมัติแล้ว"?"selected":""}>อนุมัติแล้ว</option><option ${b.status==="จ่ายแล้ว"?"selected":""}>จ่ายแล้ว</option><option ${b.status==="ยกเลิก"?"selected":""}>ยกเลิก</option></select></td>
-  </tr>`).join(""):'<tr><td colspan="7" class="batch-empty">ยังไม่มีรอบเบิกที่สร้างแล้ว</td></tr>';
+    const blocked=g.profileComplete===false;const missing=(g.missingProfileFields||[]).join(', ');
+    const items=(g.items||[]).map(r=>`<div class="batch-item"><input type="checkbox" data-batch-item="${escAttr(r.id)}" data-group="${gi}" ${blocked?'disabled':''} aria-label="เลือกรายการ"><div class="batch-item-date">${batchDate(r.dateISO||r.createdAt)}</div><div class="batch-item-main"><strong>${esc(r.vendor||r.note||"ไม่ระบุรายการ")}</strong><span>${esc(r.note||r.category||"—")}${r.batchType==="ด่วน"||r.batchStatus==="ขอเบิกด่วน"?' · ด่วน':''}</span></div><div class="batch-item-amount">${baht(r.amount)}</div></div>`).join('');
+    return `<div class="batch-group ${blocked?'blocked':''}" data-batch-group="${gi}"><div class="batch-group-head"><div><div class="batch-person">${esc(g.payerName||"ไม่ระบุผู้เบิก")}</div><div class="batch-person-sub">${Number(g.itemCount||0)} รายการ${g.urgentCount?` · ด่วน ${g.urgentCount}`:''}</div><div class="batch-profile">${blocked?`<span class="bad">ข้อมูลบัญชีไม่ครบ: ${esc(missing||'โปรดไปที่ทีมของฉัน')}</span>`:`<span>${esc(g.bank||'ธนาคาร')} ${esc(g.accountMasked||'')}</span>`}</div></div><div class="batch-group-total"><strong>${baht(g.total||0)}</strong><span>ยอดรอเข้ารอบ</span></div><div class="batch-group-actions">${blocked?'<button class="btn" data-open-team>ไปเพิ่มบัญชีผู้เบิก</button>':`<button class="btn" data-batch-action="urgent" data-group="${gi}">ด่วนจากที่เลือก</button><button class="btn solid" data-batch-action="close" data-payer="${escAttr(g.payerKey||'')}">สร้างรอบคนนี้ทั้งหมด</button>`}</div></div><div class="batch-item-list">${items}</div></div>`;
+  }).join(''):'<div class="batch-empty"><b>ไม่มีรายการรอเข้ารอบ</b><br>รายการใหม่ที่ยังไม่จ่ายจะมาอยู่ตรงนี้อัตโนมัติ</div>';
+  updateBatchSelection();renderBatchRounds();setBatchStage(BATCH_STAGE);
 }
 async function batchPost(path,body={}){
   const res=await fetch(apiUrl(path),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
@@ -1601,27 +1641,24 @@ async function refreshBatchData({quiet=false}={}){
   }catch(err){console.error("batch refresh failed",err);if(!quiet)alert("โหลดรอบเบิกไม่สำเร็จ: "+err.message);return false;}
   finally{BATCH_LOADING=false;if(el("batchRefresh")){el("batchRefresh").disabled=false;el("batchRefresh").textContent="อัปเดต";}}
 }
-function selectedBatchIds(groupIndex){
-  return [...document.querySelectorAll(`[data-batch-item][data-group="${groupIndex}"]:checked`)].map(x=>x.dataset.batchItem).filter(Boolean);
-}
 async function runBatchAction(button){
-  const action=button.dataset.batchAction;
-  const old=button.textContent;button.disabled=true;button.textContent="กำลังสร้าง…";
+  const action=button.dataset.batchAction;const old=button.textContent;button.disabled=true;button.textContent="กำลังสร้าง…";
   try{
     let out;
     if(action==="urgent"){
-      const ids=selectedBatchIds(button.dataset.group);
-      if(!ids.length)throw new Error("เลือกรายการอย่างน้อย 1 รายการ");
+      const ids=selectedBatchIds(button.dataset.group);if(!ids.length)throw new Error("เลือกรายการอย่างน้อย 1 รายการของผู้เบิกคนนี้");
       if(!confirm(`สร้างรอบด่วนจาก ${ids.length} รายการตอนนี้?`))return;
       out=await batchPost("/api/batch-urgent",{expenseIds:ids});
     }else{
-      if(!confirm("ปิดรอบของผู้เบิกคนนี้และสร้างใบขอเบิกรวมตอนนี้?"))return;
+      if(!confirm("สร้างรอบปกติจากรายการทั้งหมดของผู้เบิกคนนี้ตอนนี้?"))return;
       out=await batchPost("/api/batch-close",{payerKey:button.dataset.payer});
     }
-    alert(out.itemCount?`สร้างรอบ ${out.runNo} สำเร็จ\n${out.itemCount} รายการ · ${baht(out.total)}`:(out.message||"ไม่มีรายการที่ต้องสร้าง"));
+    const blocked=(out.blocked||[]).length?`
+ยังไม่รวม ${(out.blocked||[]).length} คน เพราะข้อมูลบัญชีไม่ครบ`:'';
+    alert(out.itemCount?`สร้างรอบ ${out.runNo} สำเร็จ
+${out.itemCount} รายการ · ${baht(out.total)}${blocked}`:(out.message||"ไม่มีรายการที่ต้องสร้าง"));
     await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);
-  }catch(err){alert("สร้างรอบไม่สำเร็จ: "+err.message);}
-  finally{button.disabled=false;button.textContent=old;}
+  }catch(err){alert("สร้างรอบไม่สำเร็จ: "+err.message);}finally{button.disabled=false;button.textContent=old;}
 }
 
 /* ---------- SETTINGS ---------- */
@@ -1654,7 +1691,7 @@ function download(name,text){
 }
 
 /* ---------- NAV / DRAW ---------- */
-const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"รอเบิก",batches:"รอบเบิก",reports:"รายงานและภาษี",bills:"ศูนย์เอกสารบัญชี",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",settings:"ตั้งค่า",business:"จัดการธุรกิจ"};
+const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"เบิกจ่าย",batches:"เบิกจ่าย",reports:"รายงานและภาษี",bills:"ศูนย์เอกสารบัญชี",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",settings:"ตั้งค่า",business:"จัดการธุรกิจ"};
 document.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>openPage(b.dataset.p,b)));
 document.querySelectorAll("[data-biz]").forEach(b=>b.addEventListener("click",()=>openBusiness(b.dataset.biz,b)));
 el("businessToggle").addEventListener("click",()=>el("businessGroup").classList.toggle("closed"));
@@ -1677,13 +1714,16 @@ el("teamList").addEventListener("click",async e=>{const edit=e.target.closest("[
 
 
 if(el("batchRefresh"))el("batchRefresh").onclick=()=>refreshBatchData();
-if(el("batchCloseAll"))el("batchCloseAll").onclick=async()=>{
-  if(!confirm("ปิดรอบรายการที่ค้างทั้งหมดและสร้างใบขอเบิกรวมแยกตามผู้เบิกตอนนี้?"))return;
-  const b=el("batchCloseAll"),old=b.textContent;b.disabled=true;b.textContent="กำลังปิดรอบ…";
-  try{const out=await batchPost("/api/batch-close",{});alert(out.itemCount?`สร้างรอบ ${out.runNo} สำเร็จ\n${out.people||0} คน · ${out.itemCount} รายการ · ${baht(out.total)}`:(out.message||"ไม่มีรายการรอเข้ารอบ"));await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert("ปิดรอบไม่สำเร็จ: "+err.message);}finally{b.disabled=false;b.textContent=old;}
-};
-if(el("batchPendingGroups"))el("batchPendingGroups").addEventListener("click",e=>{const b=e.target.closest("[data-batch-action]");if(b)runBatchAction(b);});
-if(el("batchHistory"))el("batchHistory").addEventListener("change",async e=>{const s=e.target.closest("[data-batch-status]");if(!s)return;const before=s.dataset.previous||"";s.disabled=true;try{await batchPost("/api/batch-status",{batchId:s.dataset.batchStatus,status:s.value});await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert("อัปเดตสถานะไม่สำเร็จ: "+err.message);if(before)s.value=before;}finally{s.disabled=false;}});
+document.querySelectorAll('[data-batch-stage]').forEach(b=>b.onclick=()=>setBatchStage(b.dataset.batchStage));
+if(el("batchPendingGroups"))el("batchPendingGroups").addEventListener("click",e=>{const team=e.target.closest('[data-open-team]');if(team)return openBusiness('team');const b=e.target.closest("[data-batch-action]");if(b)runBatchAction(b);});
+if(el("batchPendingGroups"))el("batchPendingGroups").addEventListener("change",e=>{if(e.target.matches('[data-batch-item]'))updateBatchSelection();});
+if(el('batchSelectAll'))el('batchSelectAll').onclick=()=>{const boxes=[...document.querySelectorAll('[data-batch-item]:not(:disabled)')];const should=boxes.some(x=>!x.checked);boxes.forEach(x=>x.checked=should);el('batchSelectAll').textContent=should?'ยกเลิกทั้งหมด':'เลือกทั้งหมด';updateBatchSelection();};
+if(el('batchCreateSelected'))el('batchCreateSelected').onclick=async()=>{const ids=selectedBatchIds();if(!ids.length)return;const b=el('batchCreateSelected'),old=b.textContent;if(!confirm(`สร้างรอบปกติจาก ${ids.length} รายการที่เลือก?`))return;b.disabled=true;b.textContent='กำลังสร้าง…';try{const out=await batchPost('/api/batch-close',{expenseIds:ids});alert(`สร้างรอบ ${out.runNo} สำเร็จ
+${out.itemCount} รายการ · ${baht(out.total)}`);await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert('สร้างรอบไม่สำเร็จ: '+err.message);}finally{b.disabled=false;b.textContent=old;}};
+if(el("batchCloseAll"))el("batchCloseAll").onclick=async()=>{if(!confirm("สร้างรอบปกติจากรายการที่พร้อมทั้งหมด แยกตามผู้เบิกตอนนี้?"))return;const b=el("batchCloseAll"),old=b.textContent;b.disabled=true;b.textContent="กำลังสร้าง…";try{const out=await batchPost("/api/batch-close",{});const blocked=(out.blocked||[]).length?`
+ข้าม ${(out.blocked||[]).length} คนที่ข้อมูลบัญชีไม่ครบ`:'';alert(out.itemCount?`สร้างรอบ ${out.runNo} สำเร็จ
+${out.people||0} คน · ${out.itemCount} รายการ · ${baht(out.total)}${blocked}`:(out.message||"ไม่มีรายการรอเข้ารอบ"));await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert("ปิดรอบไม่สำเร็จ: "+err.message);}finally{b.disabled=false;b.textContent=old;}};
+if(el('batchHistory'))el('batchHistory').addEventListener('click',async e=>{const btn=e.target.closest('[data-round-action]');if(!btn)return;const card=btn.closest('[data-batch-id]');const id=card?.dataset.batchId;if(!id)return;const action=btn.dataset.roundAction;const status=action==='approve'?'อนุมัติแล้ว':action==='paid'?'จ่ายแล้ว':'ยกเลิก';const msg=status==='จ่ายแล้ว'?'ยืนยันว่าโอนเงินจริงให้ผู้เบิกแล้ว?':status==='ยกเลิก'?'ยกเลิกรอบนี้และคืนรายการกลับเข้าคิว?':'อนุมัติรอบนี้?';if(!confirm(msg))return;btn.disabled=true;try{await batchPost('/api/batch-status',{batchId:id,status});await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert('อัปเดตสถานะไม่สำเร็จ: '+err.message);}finally{btn.disabled=false;}});
 if(el("batchSaveSettings"))el("batchSaveSettings").onclick=async()=>{const [h,m]=String(el("batchTime").value||"11:00").split(":").map(Number);const ok=await saveSettings({batch_enabled:el("batchEnabled").checked?"TRUE":"FALSE",batch_weekday:String(el("batchWeekday").value||1),batch_hour:String(Number.isFinite(h)?h:11),batch_minute:String(Number.isFinite(m)?m:0),batch_max_items:String(Math.max(1,Math.min(10,Number(el("batchMaxItems").value||10)))),batch_timezone:"Asia/Bangkok"},"batchSaveState");if(ok)await refreshBatchData({quiet:true});};
 
 if(el("emailQ"))el("emailQ").addEventListener("input",renderEmailInbox);
@@ -1817,7 +1857,7 @@ async function load(){
   if(ok){await refreshSettings();await Promise.all([refreshEmailData(),refreshBatchData({quiet:true})]);
     const last=Date.parse(EMAIL_INFO.lastSyncAt||"");
     if(EMAIL_INFO.connected&&(!Number.isFinite(last)||Date.now()-last>10*60*1000))syncGmail({manual:false});
-    startRealtime();const target=QS.get("page");if(target&&el("page-"+target)){const b=document.querySelector(`[data-p="${target}"]`);openPage(target,b);}}
+    startRealtime();let target=QS.get("page");if(target==="reimburse")target="batches";if(target&&el("page-"+target)){const b=document.querySelector(`[data-p="${target}"]`);openPage(target,b);}}
 }
 
 el("syncBtn").addEventListener("click",async()=>{await Promise.all([refreshData({manual:true}),refreshSettings(),refreshBatchData({quiet:true})]);});
