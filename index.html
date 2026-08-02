@@ -974,6 +974,7 @@ let BATCH_DATA = {pending:{groups:[],itemCount:0,total:0,urgentCount:0,people:0}
 let BATCH_LOADING = false;
 let BATCH_STAGE = "queue";
 let BATCH_POLL_TICK = 0;
+const BATCH_SELECTED = new Set();
 
 // Realtime แบบ polling: Google Sheet ไม่มี event stream โดยตรง จึงตรวจข้อมูลใหม่ทุก 5 วินาที
 const REFRESH_MS = 5000;
@@ -1581,10 +1582,23 @@ function batchRoundStateClass(status){return status==="จ่ายแล้ว"
 function batchSummaryOf(key){return (BATCH_DATA.summary||{})[key]||{count:0,itemCount:0,total:0};}
 function selectedBatchIds(groupIndex=null){
   const selector=groupIndex===null?'[data-batch-item]:checked':`[data-batch-item][data-group="${groupIndex}"]:checked`;
-  return [...document.querySelectorAll(selector)].map(x=>x.dataset.batchItem).filter(Boolean);
+  return [...document.querySelectorAll(selector)].map(x=>String(x.dataset.batchItem||"")).filter(Boolean);
 }
-function updateBatchSelection(){
-  const ids=selectedBatchIds();
+function syncBatchSelectionFromDom(){
+  document.querySelectorAll('[data-batch-item]').forEach(box=>{
+    const id=String(box.dataset.batchItem||"");
+    if(!id)return;
+    if(box.checked)BATCH_SELECTED.add(id);else BATCH_SELECTED.delete(id);
+  });
+}
+function clearBatchSelection(){
+  BATCH_SELECTED.clear();
+  document.querySelectorAll('[data-batch-item]').forEach(x=>x.checked=false);
+  updateBatchSelection(false);
+}
+function updateBatchSelection(sync=true){
+  if(sync)syncBatchSelectionFromDom();
+  const ids=[...BATCH_SELECTED];
   const count=el("batchSelectedCount"),btn=el("batchCreateSelected");
   if(count)count.innerHTML=ids.length?`เลือกแล้ว <strong>${ids.length}</strong> รายการ`:'ยังไม่ได้เลือกรายการ';
   if(btn)btn.disabled=!ids.length;
@@ -1616,12 +1630,14 @@ function renderBatches(){
   el("batchNext").textContent=st.enabled?batchSettingsText():"ปิดอยู่ — กดตั้งค่าด้านล่าง";
   el("batchEnabled").checked=st.enabled===true;el("batchWeekday").value=String(Number(st.weekday??1));el("batchTime").value=`${String(Number(st.hour??11)).padStart(2,"0")}:${String(Number(st.minute??0)).padStart(2,"0")}`;el("batchMaxItems").value=String(Number(st.maxItems||10));
   const groups=Array.isArray(p.groups)?p.groups:[];
+  const validBatchIds=new Set(groups.flatMap(g=>(g.items||[]).map(r=>String(r.id||"")).filter(Boolean)));
+  [...BATCH_SELECTED].forEach(id=>{if(!validBatchIds.has(id))BATCH_SELECTED.delete(id);});
   el("batchPendingGroups").innerHTML=groups.length?groups.map((g,gi)=>{
     const blocked=g.profileComplete===false;const missing=(g.missingProfileFields||[]).join(', ');
-    const items=(g.items||[]).map(r=>`<div class="batch-item"><input type="checkbox" data-batch-item="${escAttr(r.id)}" data-group="${gi}" ${blocked?'disabled':''} aria-label="เลือกรายการ"><div class="batch-item-date">${batchDate(r.dateISO||r.createdAt)}</div><div class="batch-item-main"><strong>${esc(r.vendor||r.note||"ไม่ระบุรายการ")}</strong><span>${esc(r.note||r.category||"—")}${r.batchType==="ด่วน"||r.batchStatus==="ขอเบิกด่วน"?' · ด่วน':''}</span></div><div class="batch-item-amount">${baht(r.amount)}</div></div>`).join('');
+    const items=(g.items||[]).map(r=>`<div class="batch-item"><input type="checkbox" data-batch-item="${escAttr(r.id)}" data-group="${gi}" ${BATCH_SELECTED.has(String(r.id||""))?'checked':''} ${blocked?'disabled':''} aria-label="เลือกรายการ"><div class="batch-item-date">${batchDate(r.dateISO||r.createdAt)}</div><div class="batch-item-main"><strong>${esc(r.vendor||r.note||"ไม่ระบุรายการ")}</strong><span>${esc(r.note||r.category||"—")}${r.batchType==="ด่วน"||r.batchStatus==="ขอเบิกด่วน"?' · ด่วน':''}</span></div><div class="batch-item-amount">${baht(r.amount)}</div></div>`).join('');
     return `<div class="batch-group ${blocked?'blocked':''}" data-batch-group="${gi}"><div class="batch-group-head"><div><div class="batch-person">${esc(g.payerName||"ไม่ระบุผู้เบิก")}</div><div class="batch-person-sub">${Number(g.itemCount||0)} รายการ${g.urgentCount?` · ด่วน ${g.urgentCount}`:''}</div><div class="batch-profile">${blocked?`<span class="bad">ข้อมูลบัญชีไม่ครบ: ${esc(missing||'โปรดไปที่ทีมของฉัน')}</span>`:`<span>${esc(g.bank||'ธนาคาร')} ${esc(g.accountMasked||'')}</span>`}</div></div><div class="batch-group-total"><strong>${baht(g.total||0)}</strong><span>ยอดรอเข้ารอบ</span></div><div class="batch-group-actions">${blocked?'<button class="btn" data-open-team>ไปเพิ่มบัญชีผู้เบิก</button>':`<button class="btn" data-batch-action="urgent" data-group="${gi}">ด่วนจากที่เลือก</button><button class="btn solid" data-batch-action="close" data-payer="${escAttr(g.payerKey||'')}">สร้างรอบคนนี้ทั้งหมด</button>`}</div></div><div class="batch-item-list">${items}</div></div>`;
   }).join(''):'<div class="batch-empty"><b>ไม่มีรายการรอเข้ารอบ</b><br>รายการใหม่ที่ยังไม่จ่ายจะมาอยู่ตรงนี้อัตโนมัติ</div>';
-  updateBatchSelection();renderBatchRounds();setBatchStage(BATCH_STAGE);
+  updateBatchSelection(false);renderBatchRounds();setBatchStage(BATCH_STAGE);
 }
 async function batchPost(path,body={}){
   const res=await fetch(apiUrl(path),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
@@ -1657,6 +1673,7 @@ async function runBatchAction(button){
 ยังไม่รวม ${(out.blocked||[]).length} คน เพราะข้อมูลบัญชีไม่ครบ`:'';
     alert(out.itemCount?`สร้างรอบ ${out.runNo} สำเร็จ
 ${out.itemCount} รายการ · ${baht(out.total)}${blocked}`:(out.message||"ไม่มีรายการที่ต้องสร้าง"));
+    clearBatchSelection();
     await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);
   }catch(err){alert("สร้างรอบไม่สำเร็จ: "+err.message);}finally{button.disabled=false;button.textContent=old;}
 }
@@ -1719,10 +1736,10 @@ if(el("batchPendingGroups"))el("batchPendingGroups").addEventListener("click",e=
 if(el("batchPendingGroups"))el("batchPendingGroups").addEventListener("change",e=>{if(e.target.matches('[data-batch-item]'))updateBatchSelection();});
 if(el('batchSelectAll'))el('batchSelectAll').onclick=()=>{const boxes=[...document.querySelectorAll('[data-batch-item]:not(:disabled)')];const should=boxes.some(x=>!x.checked);boxes.forEach(x=>x.checked=should);el('batchSelectAll').textContent=should?'ยกเลิกทั้งหมด':'เลือกทั้งหมด';updateBatchSelection();};
 if(el('batchCreateSelected'))el('batchCreateSelected').onclick=async()=>{const ids=selectedBatchIds();if(!ids.length)return;const b=el('batchCreateSelected'),old=b.textContent;if(!confirm(`สร้างรอบปกติจาก ${ids.length} รายการที่เลือก?`))return;b.disabled=true;b.textContent='กำลังสร้าง…';try{const out=await batchPost('/api/batch-close',{expenseIds:ids});alert(`สร้างรอบ ${out.runNo} สำเร็จ
-${out.itemCount} รายการ · ${baht(out.total)}`);await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert('สร้างรอบไม่สำเร็จ: '+err.message);}finally{b.disabled=false;b.textContent=old;}};
+${out.itemCount} รายการ · ${baht(out.total)}`);clearBatchSelection();await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert('สร้างรอบไม่สำเร็จ: '+err.message);}finally{b.disabled=false;b.textContent=old;}};
 if(el("batchCloseAll"))el("batchCloseAll").onclick=async()=>{if(!confirm("สร้างรอบปกติจากรายการที่พร้อมทั้งหมด แยกตามผู้เบิกตอนนี้?"))return;const b=el("batchCloseAll"),old=b.textContent;b.disabled=true;b.textContent="กำลังสร้าง…";try{const out=await batchPost("/api/batch-close",{});const blocked=(out.blocked||[]).length?`
 ข้าม ${(out.blocked||[]).length} คนที่ข้อมูลบัญชีไม่ครบ`:'';alert(out.itemCount?`สร้างรอบ ${out.runNo} สำเร็จ
-${out.people||0} คน · ${out.itemCount} รายการ · ${baht(out.total)}${blocked}`:(out.message||"ไม่มีรายการรอเข้ารอบ"));await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert("ปิดรอบไม่สำเร็จ: "+err.message);}finally{b.disabled=false;b.textContent=old;}};
+${out.people||0} คน · ${out.itemCount} รายการ · ${baht(out.total)}${blocked}`:(out.message||"ไม่มีรายการรอเข้ารอบ"));clearBatchSelection();await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert("ปิดรอบไม่สำเร็จ: "+err.message);}finally{b.disabled=false;b.textContent=old;}};
 if(el('batchHistory'))el('batchHistory').addEventListener('click',async e=>{const btn=e.target.closest('[data-round-action]');if(!btn)return;const card=btn.closest('[data-batch-id]');const id=card?.dataset.batchId;if(!id)return;const action=btn.dataset.roundAction;const status=action==='approve'?'อนุมัติแล้ว':action==='paid'?'จ่ายแล้ว':'ยกเลิก';const msg=status==='จ่ายแล้ว'?'ยืนยันว่าโอนเงินจริงให้ผู้เบิกแล้ว?':status==='ยกเลิก'?'ยกเลิกรอบนี้และคืนรายการกลับเข้าคิว?':'อนุมัติรอบนี้?';if(!confirm(msg))return;btn.disabled=true;try{await batchPost('/api/batch-status',{batchId:id,status});await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert('อัปเดตสถานะไม่สำเร็จ: '+err.message);}finally{btn.disabled=false;}});
 if(el("batchSaveSettings"))el("batchSaveSettings").onclick=async()=>{const [h,m]=String(el("batchTime").value||"11:00").split(":").map(Number);const ok=await saveSettings({batch_enabled:el("batchEnabled").checked?"TRUE":"FALSE",batch_weekday:String(el("batchWeekday").value||1),batch_hour:String(Number.isFinite(h)?h:11),batch_minute:String(Number.isFinite(m)?m:0),batch_max_items:String(Math.max(1,Math.min(10,Number(el("batchMaxItems").value||10)))),batch_timezone:"Asia/Bangkok"},"batchSaveState");if(ok)await refreshBatchData({quiet:true});};
 
@@ -1844,7 +1861,7 @@ async function refreshData({initial=false,manual=false}={}){
 function startRealtime(){
   if(REFRESH_TIMER) clearInterval(REFRESH_TIMER);
   REFRESH_TIMER=setInterval(()=>{
-    if(!document.hidden){refreshData();EMAIL_POLL_TICK++;BATCH_POLL_TICK++;if(EMAIL_POLL_TICK%3===0&&(el("page-email")?.classList.contains("show")||el("page-subscriptions")?.classList.contains("show")))refreshEmailData();if(BATCH_POLL_TICK%3===0&&el("page-batches")?.classList.contains("show"))refreshBatchData({quiet:true});}
+    if(!document.hidden){refreshData();EMAIL_POLL_TICK++;BATCH_POLL_TICK++;if(EMAIL_POLL_TICK%3===0&&(el("page-email")?.classList.contains("show")||el("page-subscriptions")?.classList.contains("show")))refreshEmailData();if(BATCH_POLL_TICK%3===0&&el("page-batches")?.classList.contains("show")&&BATCH_SELECTED.size===0)refreshBatchData({quiet:true});}
   },REFRESH_MS);
 }
 
