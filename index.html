@@ -331,6 +331,7 @@
     padding:7px 9px;border-radius:9px;cursor:pointer;text-align:left;font-size:12px;margin:1px 0;
   }
   .subnavlink:hover{background:rgba(0,0,0,.035);color:var(--ink)}
+  a.subnavlink{text-decoration:none}
   .subnavlink.active{background:#ededf0;color:var(--ink);font-weight:600}
   .subnavlink .new-badge{margin-left:auto;font-size:8.5px;line-height:1;padding:3px 6px;border-radius:999px;background:#e8f7eb;color:var(--green);font-weight:700}
   .onboarding{margin:12px 12px 6px;border:1px solid var(--line);border-radius:15px;background:#fff;overflow:hidden}
@@ -487,6 +488,40 @@
   .batch-settings-wrap{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}.batch-settings-wrap summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;justify-content:space-between;align-items:center}.batch-settings-wrap summary::-webkit-details-marker{display:none}.batch-settings-wrap summary b{display:block;font-size:13px}.batch-settings-wrap summary small{display:block;color:var(--muted);font-size:10.5px;margin-top:3px}.batch-settings-grid{border-top:1px solid var(--line);padding:16px 18px;display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:12px;align-items:end}.batch-settings-grid .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.batch-settings-grid label{font-size:10.5px;color:var(--muted);display:block;margin-bottom:5px}.batch-settings-grid input,.batch-settings-grid select{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;padding:9px 10px}.batch-toggle{height:100%}.batch-toggle div div{font-size:10px;color:var(--muted);margin-top:3px}.batch-help{margin-bottom:10px}
   @media(max-width:720px){.batch-topline{align-items:stretch;flex-direction:column}.batch-schedule-card{min-width:0}.batch-flow{grid-template-columns:1fr 1fr}.batch-kpis{grid-template-columns:1fr 1fr}.batch-section{padding:15px}.batch-section-head{display:block}.batch-section-head .actions{margin:12px 0 0}.batch-section-head .actions .btn{flex:1}.batch-group-head{grid-template-columns:1fr}.batch-group-total{text-align:left}.batch-group-actions{grid-column:auto}.batch-item{grid-template-columns:28px minmax(0,1fr) auto}.batch-round-head{align-items:flex-start}.batch-settings-grid{grid-template-columns:1fr}.batch-settings-grid .field-row{grid-template-columns:1fr 1fr}}
 
+  /* ── Accounting transfer desk ─────────────────────── */
+  .acct-desk{display:grid;gap:12px}
+  .acct-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:12px 13px;border:1px solid var(--line);border-radius:15px;background:#fafafa}
+  .acct-toolbar .acct-summary{margin-right:auto;font-size:11.5px;color:var(--muted)}
+  .acct-toolbar .acct-summary strong{color:var(--ink);font-size:13px}
+  .acct-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:16px;background:#fff}
+  .acct-table{width:100%;border-collapse:separate;border-spacing:0;min-width:940px}
+  .acct-table th{position:sticky;top:0;z-index:1;padding:10px 11px;background:#f7f7f8;border-bottom:1px solid var(--line);font-size:10.5px;color:var(--muted);font-weight:700;text-align:left;white-space:nowrap}
+  .acct-table td{padding:12px 11px;border-bottom:1px solid var(--line);font-size:11.5px;vertical-align:middle}
+  .acct-table tbody tr:last-child td{border-bottom:0}
+  .acct-table tbody tr:hover{background:#fbfbfc}
+  .acct-table .select-cell{width:34px;text-align:center}.acct-table .select-cell input{width:17px;height:17px}
+  .acct-table .money{text-align:right;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .acct-table .muted{display:block;color:var(--muted);font-size:10.5px;margin-top:3px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .acct-table .doc-main,.acct-table .payee-main{font-weight:750;font-size:12px}
+  .acct-table .bank-line{font-weight:700;white-space:nowrap}.acct-table .account-line{display:flex;align-items:center;gap:6px;margin-top:3px;white-space:nowrap}
+  .acct-table .copy-mini{appearance:none;border:0;background:transparent;color:var(--muted);font-size:10px;padding:2px 4px;cursor:pointer;text-decoration:underline}
+  .acct-table .row-actions{display:flex;gap:6px;justify-content:flex-end;align-items:center;white-space:nowrap}
+  .acct-table .row-actions .btn{min-height:32px;padding:6px 9px;font-size:10.5px}
+  .acct-step{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 8px;background:#f2f2f7;font-size:10px;font-weight:750;white-space:nowrap}
+  .acct-step.ready{background:#eaf7ee;color:#1e6f37}.acct-step.wait{background:#fff6e5;color:#8b5900}.acct-step.done{background:#1d1d1f;color:#fff}
+  .acct-warning{display:inline-flex;border-radius:999px;padding:4px 7px;background:#fff1ec;color:#a23d1d;font-size:9.8px;font-weight:700;margin-top:4px}
+  .acct-empty{padding:42px 18px;text-align:center;color:var(--muted);font-size:12px}
+  .acct-note{padding:11px 13px;border-radius:13px;background:#f2f2f7;color:var(--muted);font-size:11px;line-height:1.55}
+  @media(max-width:720px){
+    .acct-table-wrap{overflow:visible;border:0;background:transparent}
+    .acct-table{min-width:0;display:block}.acct-table thead{display:none}.acct-table tbody{display:grid;gap:10px}
+    .acct-table tr{display:grid;border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden;padding:7px 12px}
+    .acct-table td{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px;align-items:start;padding:9px 0;border-bottom:1px solid var(--line)}
+    .acct-table td:last-child{border-bottom:0}.acct-table td:before{content:attr(data-label);font-size:10px;color:var(--muted);font-weight:650}
+    .acct-table .select-cell{width:auto;text-align:left;display:flex;gap:8px}.acct-table .select-cell:before{content:"เลือก"}
+    .acct-table .money{text-align:left}.acct-table .row-actions{justify-content:flex-start;flex-wrap:wrap}.acct-table .muted{white-space:normal}
+  }
+
 </style>
 </head>
 <body>
@@ -519,6 +554,7 @@
           <button class="subnavlink" data-biz="finance">ช่องทางการเงิน <span class="new-badge">ใหม่</span></button>
           <button class="subnavlink" data-biz="team">ทีมของฉัน</button>
           <button class="subnavlink" data-p="settings">ตั้งค่า</button>
+          <a class="subnavlink" id="saleChecklistNav" href="checklist.html">ความพร้อมขาย <span class="new-badge">ใหม่</span></a>
         </div>
       </div>
       <button class="navlink compact-only" data-biz="profile"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 21v-9l8-6 8 6v9"/><path d="M9 21v-6h6v6"/></svg></span><span>จัดการธุรกิจ</span></button>
@@ -543,6 +579,7 @@
       <div class="quick-title">Quick actions</div>
       <a class="sidelink" id="filesLink" href="#"><span>จับคู่หลักฐาน</span></a>
       <a class="sidelink" id="receiptLink" href="#"><span>เอกสารอัตโนมัติ</span></a>
+      <a class="sidelink" id="saleChecklistLink" href="checklist.html"><span>ความพร้อมขาย</span></a>
       <a class="connbtn" id="connBtn" href="#"><span>เชื่อมต่อ Google</span></a>
       <div class="who"><div class="av">D</div><div><div id="whoName">เจ้าของธุรกิจ</div></div></div>
     </div>
@@ -629,8 +666,8 @@
       <div class="batch-topline">
         <div>
           <div class="head-kicker">REIMBURSEMENT WORKFLOW</div>
-          <h3>เบิกจ่าย</h3>
-          <p>รายการทุกใบเดินตามขั้นตอนเดียว: สร้างรอบ → อนุมัติ → บันทึก PEAK → ตั้งโอน → แนบสลิป</p>
+          <h3>โต๊ะทำงานเบิกจ่าย</h3>
+          <p>บัญชีทำงานจากซ้ายไปขวา: รวมรอบ → ตรวจและลง PEAK → ตั้งโอนจากตาราง → แนบสลิป → ปิดงาน</p>
         </div>
         <div class="batch-schedule-card">
           <span>รอบอัตโนมัติ</span>
@@ -639,17 +676,19 @@
         </div>
       </div>
 
-      <div class="batch-flow" aria-label="ขั้นตอนการเบิกจ่าย" style="grid-template-columns:repeat(3,1fr)">
+      <div class="batch-flow" aria-label="ขั้นตอนการเบิกจ่าย" style="grid-template-columns:repeat(5,1fr)">
         <button class="batch-flow-step active" data-batch-stage="queue"><span>1</span><b>รอเข้ารอบ</b><small id="batchFlowQueue">0 รายการ</small></button>
-        <button class="batch-flow-step" data-batch-stage="process"><span>2</span><b>กำลังดำเนินการ</b><small id="batchFlowProcess">0 รอบ</small></button>
-        <button class="batch-flow-step" data-batch-stage="paid"><span>3</span><b>จ่ายแล้ว</b><small id="batchFlowPaid">0 รอบ</small></button>
+        <button class="batch-flow-step" data-batch-stage="review"><span>2</span><b>ตรวจและลงบัญชี</b><small id="batchFlowReview">0 รอบ</small></button>
+        <button class="batch-flow-step" data-batch-stage="transfer"><span>3</span><b>ตั้งโอน</b><small id="batchFlowTransfer">0 รอบ</small></button>
+        <button class="batch-flow-step" data-batch-stage="slip"><span>4</span><b>รอแนบสลิป</b><small id="batchFlowSlip">0 รอบ</small></button>
+        <button class="batch-flow-step" data-batch-stage="paid"><span>5</span><b>จ่ายแล้ว</b><small id="batchFlowPaid">0 รอบ</small></button>
       </div>
 
       <div class="batch-kpis">
-        <div class="batch-kpi"><span>รอเข้ารอบ</span><strong id="batchKItems">0</strong><small>รายการที่ยังไม่สร้างใบขอเบิกรวม</small></div>
-        <div class="batch-kpi"><span>ยอดรอเข้ารอบ</span><strong id="batchKTotal">฿0</strong><small>ยังไม่รวมเป็นรอบ</small></div>
-        <div class="batch-kpi"><span>ผู้เบิก</span><strong id="batchKPeople">0</strong><small>คนที่มีรายการค้าง</small></div>
-        <div class="batch-kpi"><span>คำขอด่วน</span><strong id="batchKUrgent">0</strong><small>รายการที่ขอให้ดำเนินการทันที</small></div>
+        <div class="batch-kpi"><span>รอเข้ารอบ</span><strong id="batchKItems">0</strong><small>รายการที่พนักงานส่งเข้ามา</small></div>
+        <div class="batch-kpi"><span>รอตรวจ / ลง PEAK</span><strong id="batchKReview">0</strong><small>รอบที่บัญชีต้องจัดการก่อนโอน</small></div>
+        <div class="batch-kpi"><span>ยอดพร้อมตั้งโอน</span><strong id="batchKTransfer">฿0</strong><small>ผ่านการอนุมัติและบันทึก PEAK แล้ว</small></div>
+        <div class="batch-kpi"><span>รอแนบสลิป</span><strong id="batchKSlip">0</strong><small>ตั้งโอนแล้ว แต่ยังไม่ปิดงาน</small></div>
       </div>
 
       <div class="batch-stage-panel show" id="batchStageQueue">
@@ -669,7 +708,7 @@
 
       <div class="batch-stage-panel" id="batchStageRounds">
         <div class="batch-section">
-          <div class="batch-section-head"><div><h3 id="batchRoundsTitle">กำลังดำเนินการ</h3><p id="batchRoundsDesc">ทำตามปุ่มขั้นถัดไปของแต่ละรอบจนแนบสลิปสำเร็จ</p></div></div>
+          <div class="batch-section-head"><div><h3 id="batchRoundsTitle">งานของฝ่ายบัญชี</h3><p id="batchRoundsDesc">เลือกขั้นตอนด้านบน ระบบจะแสดงเฉพาะงานที่ต้องทำตอนนี้</p></div></div>
           <div class="batch-round-list" id="batchHistory"></div>
         </div>
       </div>
@@ -684,7 +723,7 @@
         </div>
       </details>
 
-      <div class="batch-help"><b>ใช้งานจริงแบบสั้น ๆ</b><br>พนักงานส่งบิลได้เรื่อย ๆ → สร้างรอบ → อนุมัติ → บันทึกเลขอ้างอิง PEAK → ตั้งโอน → แนบสลิปการจ่ายคืน ระบบจึงเปลี่ยนเป็น “จ่ายแล้ว” และแจ้งผู้เบิกใน LINE<br><br><b>กรณีด่วน</b> เลือกรายการของคนเดียวกันแล้วกด “สร้างรอบด่วน” ระบบจะสร้างใบขอเบิกรวมทันที</div>
+      <div class="batch-help"><b>วิธีทำงานของบัญชี</b><br>เปิดแท็บที่มีตัวเลขค้าง → ทำเฉพาะปุ่มในขั้นตอนนั้น → งานจะย้ายไปแท็บถัดไปอัตโนมัติ<br><br><b>แท็บตั้งโอน</b> เป็นตารางรวมชื่อผู้รับ ธนาคาร เลขบัญชี ยอด และเลข PEAK สามารถเลือกหลายรอบ ส่งออก CSV เพื่อตรวจ และทำเครื่องหมายตั้งโอนพร้อมกันได้</div>
     </section>
 
     <!-- REPORTS -->
@@ -923,6 +962,11 @@
           <div class="integration-state" id="setGoogleState"><span class="state-dot"></span><span>กำลังตรวจสถานะ</span></div>
           <div class="integration-actions"><a class="btn solid" id="setGoogleAction" href="#">เชื่อมต่อ Google</a></div>
         </div>
+        <div class="integration-card">
+          <div class="integration-top"><div class="integration-icon" style="background:#1d1d1f;color:#fff">✓</div><div class="integration-copy"><div class="integration-name">ความพร้อมขาย</div><div class="integration-desc">เช็กสิ่งที่ทำเสร็จแล้ว งานที่เพิ่งเพิ่ม และรายการ P0/P1 ก่อนรับเงินจริงจากลูกค้า</div></div></div>
+          <div class="integration-state warn"><span class="state-dot"></span><span>ต้องทดสอบและปิดงานก่อนเปิดขาย</span></div>
+          <div class="integration-actions"><a class="btn solid" id="saleChecklistSettings" href="checklist.html">เปิดเช็กลิสต์</a></div>
+        </div>
         <div class="integration-card" id="settingsGmailCard">
           <div class="integration-top"><div class="integration-icon gmail">M</div><div class="integration-copy"><div class="integration-name">Gmail</div><div class="integration-desc">ค้นหาใบเสร็จ ใบกำกับภาษี และ Subscription จากอีเมลธุรกิจ</div></div></div>
           <div class="integration-state" id="setGmailState"><span class="state-dot"></span><span>กำลังตรวจสถานะ</span></div>
@@ -975,6 +1019,7 @@ let BATCH_LOADING = false;
 let BATCH_STAGE = "queue";
 let BATCH_POLL_TICK = 0;
 const BATCH_SELECTED = new Set();
+const TRANSFER_SELECTED = new Set();
 
 // Realtime แบบ polling: Google Sheet ไม่มี event stream โดยตรง จึงตรวจข้อมูลใหม่ทุก 5 วินาที
 const REFRESH_MS = 5000;
@@ -984,6 +1029,11 @@ let REFRESH_TIMER = null;
 let REFRESHING = false;
 let HAS_LOADED = false;
 let EMAIL_POLL_TICK = 0;
+
+
+if(el("saleChecklistNav"))el("saleChecklistNav").href="checklist.html"+location.search;
+if(el("saleChecklistLink"))el("saleChecklistLink").href="checklist.html"+location.search;
+if(el("saleChecklistSettings"))el("saleChecklistSettings").href="checklist.html"+location.search;
 
 const THMON=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const baht=n=>"฿"+Number(n||0).toLocaleString("th-TH",{minimumFractionDigits:0,maximumFractionDigits:2});
@@ -1610,42 +1660,144 @@ function setBatchStage(stage){
   el('batchStageRounds').classList.toggle('show',stage!=='queue');
   if(stage!=='queue')renderBatchRounds();
 }
-function workflowChecks(b){
-  const approved=b.status==='อนุมัติแล้ว'||b.status==='จ่ายแล้ว';
-  const peak=b.peakStatus==='บันทึกแล้ว';
-  const transfer=b.transferStatus==='ตั้งโอนแล้ว';
-  const slip=!!b.paymentSlipUrl;
-  return [
-    [approved,'อนุมัติรอบ'],[peak,`บันทึก PEAK${b.peakRef?` · ${b.peakRef}`:''}`],
-    [transfer,`ตั้งโอน${b.transferRef?` · ${b.transferRef}`:''}`],[slip,'แนบสลิปและแจ้งผู้เบิก'],
-  ];
+function batchActive(b){return !["จ่ายแล้ว","ยกเลิก","ตีกลับ"].includes(b.status);}
+function batchRowsForStage(stage){
+  const rows=BATCH_DATA.batches||[];
+  if(stage==='review')return rows.filter(b=>batchActive(b)&&(b.status==='รออนุมัติ'||(b.status==='อนุมัติแล้ว'&&b.peakStatus!=='บันทึกแล้ว')));
+  if(stage==='transfer')return rows.filter(b=>batchActive(b)&&b.peakStatus==='บันทึกแล้ว'&&b.transferStatus!=='ตั้งโอนแล้ว');
+  if(stage==='slip')return rows.filter(b=>batchActive(b)&&b.transferStatus==='ตั้งโอนแล้ว'&&!b.paymentSlipUrl);
+  if(stage==='paid')return rows.filter(b=>b.status==='จ่ายแล้ว');
+  return rows.filter(batchActive);
+}
+function batchStepLabel(b){
+  if(b.status==='รออนุมัติ')return ['รออนุมัติ','wait'];
+  if(b.peakStatus!=='บันทึกแล้ว')return ['รอลง PEAK','wait'];
+  if(b.transferStatus!=='ตั้งโอนแล้ว')return ['พร้อมตั้งโอน','ready'];
+  if(!b.paymentSlipUrl)return ['รอแนบสลิป','wait'];
+  return ['จ่ายแล้ว','done'];
+}
+function batchPrimaryAction(b){
+  if(b.status==='รออนุมัติ')return '<button class="btn solid" data-workflow-action="approve">อนุมัติ</button>';
+  if(b.peakStatus!=='บันทึกแล้ว')return '<button class="btn solid" data-workflow-action="peak_recorded">บันทึก PEAK</button>';
+  if(b.transferStatus!=='ตั้งโอนแล้ว')return '<button class="btn solid" data-workflow-action="transfer_set">ตั้งโอนแล้ว</button>';
+  if(!b.paymentSlipUrl)return '<label class="btn solid" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">แนบสลิป<input class="batch-slip-input" type="file" accept="image/*,application/pdf" data-batch-slip></label>';
+  return '';
+}
+function transferSelectedRows(){
+  const map=new Map(batchRowsForStage('transfer').map(b=>[String(b.id||b.docId),b]));
+  return [...TRANSFER_SELECTED].map(id=>map.get(id)).filter(Boolean);
+}
+function updateTransferSelection(){
+  const rows=transferSelectedRows();
+  const total=rows.reduce((sum,b)=>sum+(Number(b.total)||0),0);
+  const summary=el('transferSelectedSummary'),button=el('transferMarkSelected');
+  if(summary)summary.innerHTML=rows.length?`เลือก <strong>${rows.length}</strong> รอบ · รวม <strong>${baht(total)}</strong>`:'ยังไม่ได้เลือกรอบ';
+  if(button)button.disabled=!rows.length;
+}
+function transferCsv(rows){
+  const cell=v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`;
+  const head=['ลำดับ','เลขรอบ','เลขเอกสาร','ผู้รับเงิน','ธนาคาร','เลขบัญชี','ชื่อบัญชี','จำนวนรายการ','ยอดโอน','เลขอ้างอิง PEAK'];
+  const body=rows.map((b,i)=>[
+    i+1,b.runNo||'',b.docId||'',b.payerName||'',b.bank||'',b.accountNo||'',b.accountName||'',
+    Number(b.itemCount||0),Number(b.total||0).toFixed(2),b.peakRef||''
+  ].map(cell).join(','));
+  return '\ufeff'+[head.map(cell).join(','),...body].join('\n');
+}
+function renderReviewDesk(rows){
+  const body=rows.map(b=>{
+    const [step,klass]=batchStepLabel(b);
+    const ref=b.peakRef?`PEAK: ${esc(b.peakRef)}`:'ยังไม่มีเลข PEAK';
+    return `<tr data-batch-id="${escAttr(b.id||b.docId)}">
+      <td data-label="เอกสาร"><span class="doc-main">${esc(b.docId||b.runNo||'—')}</span><span class="muted">${batchDate(b.createdAt)}${b.type==='ด่วน'?' · ด่วน':''}</span></td>
+      <td data-label="ผู้เบิก"><span class="payee-main">${esc(b.payerName||'—')}</span><span class="muted">${Number(b.itemCount||0)} รายการ</span></td>
+      <td data-label="ยอด" class="money">${baht(b.total||0)}</td>
+      <td data-label="ขั้นตอน"><span class="acct-step ${klass}">${step}</span><span class="muted">${ref}</span></td>
+      <td data-label="จัดการ"><div class="row-actions">${b.pdfUrl?`<a class="btn" href="${escAttr(b.pdfUrl)}" target="_blank" rel="noopener">PDF</a>`:''}${batchPrimaryAction(b)}<button class="btn" data-workflow-action="reject">ตีกลับ</button></div></td>
+    </tr>`;
+  }).join('');
+  return `<div class="acct-desk"><div class="acct-note">ตรวจใบขอเบิกให้ครบก่อนอนุมัติ จากนั้นบันทึกรายการใน PEAK แล้วใส่เลขอ้างอิง งานจะย้ายไปโต๊ะ “ตั้งโอน” อัตโนมัติ</div><div class="acct-table-wrap"><table class="acct-table"><thead><tr><th>เอกสาร</th><th>ผู้เบิก</th><th style="text-align:right">ยอด</th><th>งานที่ต้องทำ</th><th style="text-align:right">จัดการ</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
+}
+function renderTransferDesk(rows){
+  const valid=new Set(rows.map(b=>String(b.id||b.docId)));
+  [...TRANSFER_SELECTED].forEach(id=>{if(!valid.has(id))TRANSFER_SELECTED.delete(id);});
+  const body=rows.map(b=>{
+    const id=String(b.id||b.docId||'');
+    const missing=b.profileComplete===false||!String(b.accountNo||'').trim();
+    const account=String(b.accountNo||'');
+    return `<tr data-batch-id="${escAttr(id)}">
+      <td class="select-cell" data-label="เลือก"><input type="checkbox" data-transfer-item="${escAttr(id)}" ${TRANSFER_SELECTED.has(id)?'checked':''} ${missing?'disabled':''} aria-label="เลือกตั้งโอน"></td>
+      <td data-label="ผู้รับเงิน"><span class="payee-main">${esc(b.payerName||'—')}</span><span class="muted">${esc(b.accountName||'ชื่อบัญชียังไม่ครบ')}</span>${missing?'<span class="acct-warning">ข้อมูลบัญชีไม่ครบ</span>':''}</td>
+      <td data-label="บัญชีธนาคาร"><span class="bank-line">${esc(b.bank||'—')}</span><span class="account-line">${esc(account||'—')}${account?`<button class="copy-mini" data-copy-account="${escAttr(account)}">คัดลอก</button>`:''}</span></td>
+      <td data-label="เอกสาร"><span class="doc-main">${esc(b.docId||b.runNo||'—')}</span><span class="muted">${Number(b.itemCount||0)} รายการ${b.type==='ด่วน'?' · ด่วน':''}</span></td>
+      <td data-label="PEAK"><span>${esc(b.peakRef||'—')}</span><span class="muted">${batchDate(b.peakAt)}</span></td>
+      <td data-label="ยอดโอน" class="money">${baht(b.total||0)}</td>
+      <td data-label="จัดการ"><div class="row-actions">${b.pdfUrl?`<a class="btn" href="${escAttr(b.pdfUrl)}" target="_blank" rel="noopener">PDF</a>`:''}${missing?'<button class="btn" data-open-team>แก้บัญชี</button>':'<button class="btn solid" data-workflow-action="transfer_set">ตั้งโอนแล้ว</button>'}</div></td>
+    </tr>`;
+  }).join('');
+  const total=rows.reduce((sum,b)=>sum+(Number(b.total)||0),0);
+  return `<div class="acct-desk">
+    <div class="acct-toolbar">
+      <div class="acct-summary" id="transferSelectedSummary">ยังไม่ได้เลือกรอบ</div>
+      <button class="btn" id="transferSelectAll" data-transfer-command="select-all">เลือกทั้งหมด</button>
+      <button class="btn" data-transfer-command="export">ส่งออก CSV ตรวจโอน</button>
+      <button class="btn solid" id="transferMarkSelected" data-transfer-command="mark" disabled>ตั้งโอนรายการที่เลือก</button>
+    </div>
+    <div class="acct-note">พร้อมตั้งโอน <b>${rows.length}</b> รอบ · ยอดรวม <b>${baht(total)}</b> ตรวจชื่อบัญชีและเลขบัญชีก่อนส่งออก CSV ทุกครั้ง ไฟล์นี้เป็นไฟล์ตรวจงานทั่วไป ไม่ใช่ไฟล์อัปโหลดเฉพาะธนาคาร</div>
+    <div class="acct-table-wrap"><table class="acct-table"><thead><tr><th></th><th>ผู้รับเงิน</th><th>บัญชีธนาคาร</th><th>เอกสาร</th><th>PEAK</th><th style="text-align:right">ยอดโอน</th><th style="text-align:right">จัดการ</th></tr></thead><tbody>${body}</tbody></table></div>
+  </div>`;
+}
+function renderSlipDesk(rows){
+  const body=rows.map(b=>`<tr data-batch-id="${escAttr(b.id||b.docId)}">
+    <td data-label="ตั้งโอนเมื่อ"><span class="doc-main">${batchDate(b.transferAt)}</span><span class="muted">${esc(b.transferRef||'ไม่มีเลขอ้างอิง')}</span></td>
+    <td data-label="ผู้รับเงิน"><span class="payee-main">${esc(b.payerName||'—')}</span><span class="muted">${esc(b.bank||'')} ${esc(b.accountMasked||'')}</span></td>
+    <td data-label="เอกสาร"><span class="doc-main">${esc(b.docId||b.runNo||'—')}</span><span class="muted">${Number(b.itemCount||0)} รายการ</span></td>
+    <td data-label="ยอด" class="money">${baht(b.total||0)}</td>
+    <td data-label="จัดการ"><div class="row-actions">${b.pdfUrl?`<a class="btn" href="${escAttr(b.pdfUrl)}" target="_blank" rel="noopener">PDF</a>`:''}<label class="btn solid" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">แนบสลิปและปิดงาน<input class="batch-slip-input" type="file" accept="image/*,application/pdf" data-batch-slip></label></div></td>
+  </tr>`).join('');
+  return `<div class="acct-desk"><div class="acct-note">รายการในหน้านี้ถูกตั้งโอนแล้ว แต่ยังไม่ถือว่าจ่ายสำเร็จ จนกว่าจะมีสลิปการจ่ายคืน ระบบจะเก็บสลิปใน Drive เปลี่ยนสถานะเป็นจ่ายแล้ว และแจ้งผู้เบิกใน LINE</div><div class="acct-table-wrap"><table class="acct-table"><thead><tr><th>ตั้งโอนเมื่อ</th><th>ผู้รับเงิน</th><th>เอกสาร</th><th style="text-align:right">ยอด</th><th style="text-align:right">จัดการ</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
+}
+function renderPaidDesk(rows){
+  const body=rows.map(b=>`<tr data-batch-id="${escAttr(b.id||b.docId)}">
+    <td data-label="วันที่จ่าย"><span class="doc-main">${batchDate(b.paidAt||b.paymentSlipAt)}</span><span class="muted">${esc(b.transferRef||'')}</span></td>
+    <td data-label="ผู้รับเงิน"><span class="payee-main">${esc(b.payerName||'—')}</span><span class="muted">${esc(b.bank||'')} ${esc(b.accountMasked||'')}</span></td>
+    <td data-label="เอกสาร"><span class="doc-main">${esc(b.docId||b.runNo||'—')}</span><span class="muted">${Number(b.itemCount||0)} รายการ</span></td>
+    <td data-label="ยอด" class="money">${baht(b.total||0)}</td>
+    <td data-label="สถานะ"><span class="acct-step done">จ่ายแล้ว</span><span class="muted">LINE: ${esc(b.lineNotifyStatus||'—')}</span></td>
+    <td data-label="เอกสาร"><div class="row-actions">${b.pdfUrl?`<a class="btn" href="${escAttr(b.pdfUrl)}" target="_blank" rel="noopener">ใบขอเบิก</a>`:''}${b.paymentSlipUrl?`<a class="btn" href="${escAttr(b.paymentSlipUrl)}" target="_blank" rel="noopener">สลิป</a>`:''}</div></td>
+  </tr>`).join('');
+  return `<div class="acct-table-wrap"><table class="acct-table"><thead><tr><th>วันที่จ่าย</th><th>ผู้รับเงิน</th><th>เอกสาร</th><th style="text-align:right">ยอด</th><th>สถานะ</th><th style="text-align:right">เอกสาร</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
 function renderBatchRounds(){
-  const paid=BATCH_STAGE==='paid';
-  el('batchRoundsTitle').textContent=paid?'จ่ายแล้ว':'กำลังดำเนินการ';
-  el('batchRoundsDesc').textContent=paid?'ประวัติรอบที่แนบสลิปและชำระคืนสำเร็จ':'แต่ละรอบมีปุ่มขั้นถัดไปเพียงปุ่มเดียว ทำตามลำดับจนจบ';
-  const rows=(BATCH_DATA.batches||[]).filter(b=>paid?b.status==='จ่ายแล้ว':!["จ่ายแล้ว","ยกเลิก","ตีกลับ"].includes(b.status));
-  el('batchHistory').innerHTML=rows.length?rows.map(b=>{
-    const checks=workflowChecks(b).map(([done,label])=>`<div class="batch-check ${done?'done':''}"><i>${done?'✓':'·'}</i><span>${esc(label)}</span></div>`).join('');
-    let next='';
-    if(!paid){
-      if(b.status==='รออนุมัติ')next='<button class="btn solid" data-workflow-action="approve">อนุมัติรอบ</button>';
-      else if(b.peakStatus!=='บันทึกแล้ว')next='<button class="btn solid" data-workflow-action="peak_recorded">บันทึกเข้า PEAK แล้ว</button>';
-      else if(b.transferStatus!=='ตั้งโอนแล้ว')next='<button class="btn solid" data-workflow-action="transfer_set">ตั้งโอนแล้ว</button>';
-      else if(!b.paymentSlipUrl)next='<label class="btn solid" style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer">แนบสลิปและจ่ายแล้ว<input class="batch-slip-input" type="file" accept="image/*,application/pdf" data-batch-slip></label>';
-    }
-    const slip=b.paymentSlipUrl?`<a class="batch-slip-link" href="${escAttr(b.paymentSlipUrl)}" target="_blank" rel="noopener">เปิดสลิปการจ่ายคืน</a>`:'';
-    const notify=b.status==='จ่ายแล้ว'?`<span class="batch-status">LINE: ${esc(b.lineNotifyStatus||'ยังไม่แจ้ง')}</span>`:'';
-    const reject=!paid?'<button class="btn" data-workflow-action="reject">ตีกลับ</button>':'';
-    return `<div class="batch-round-card" data-batch-id="${escAttr(b.id||b.docId)}"><div class="batch-round-head"><div><h4>${esc(b.docId||b.runNo||'—')}</h4><div class="batch-round-meta">${esc(b.payerName||'—')} · ${Number(b.itemCount||0)} รายการ · ${batchDate(b.createdAt)}</div><div style="margin-top:7px"><span class="batch-round-state ${batchRoundStateClass(b.status)}">${esc(b.status||'—')}</span>${b.type==='ด่วน'?'<span class="batch-round-state urgent">ด่วน</span>':''}</div></div><div class="sum">${baht(b.total||0)}</div></div><div class="batch-checklist">${checks}</div><div class="batch-next-action"><b>${paid?'ดำเนินการครบแล้ว':'ขั้นถัดไป'}</b><br>${paid?'สลิปถูกเก็บใน Drive และรายการย่อยถูกทำเครื่องหมายจ่ายแล้ว':'กดปุ่มด้านล่าง ระบบจะไม่ข้ามลำดับงาน'}</div><div class="batch-round-actions">${b.pdfUrl?`<a class="btn" href="${escAttr(b.pdfUrl)}" target="_blank" rel="noopener">เปิดใบขอเบิก PDF</a>`:''}${slip}${notify}${next}${reject}</div></div>`;
-  }).join(''):'<div class="batch-empty">ไม่มีรายการในขั้นตอนนี้</div>';
+  const rows=batchRowsForStage(BATCH_STAGE);
+  const titles={
+    review:['ตรวจและลงบัญชี','อนุมัติรอบและบันทึกเลขเอกสาร PEAK ก่อนส่งไปตั้งโอน'],
+    transfer:['โต๊ะตั้งโอน','ตารางสำหรับบัญชี ตรวจข้อมูลธนาคาร ส่งออก CSV และตั้งโอนหลายรอบพร้อมกัน'],
+    slip:['รอแนบสลิป','แนบหลักฐานการโอนเพื่อปิดงานและแจ้งผู้เบิก'],
+    paid:['จ่ายแล้ว','ประวัติรอบที่แนบสลิปและชำระคืนสำเร็จ'],
+  };
+  const info=titles[BATCH_STAGE]||['กำลังดำเนินการ','งานเบิกจ่ายที่ยังไม่เสร็จ'];
+  el('batchRoundsTitle').textContent=info[0];el('batchRoundsDesc').textContent=info[1];
+  if(!rows.length){el('batchHistory').innerHTML='<div class="batch-empty">ไม่มีงานค้างในขั้นตอนนี้</div>';return;}
+  if(BATCH_STAGE==='review')el('batchHistory').innerHTML=renderReviewDesk(rows);
+  else if(BATCH_STAGE==='transfer'){el('batchHistory').innerHTML=renderTransferDesk(rows);updateTransferSelection();}
+  else if(BATCH_STAGE==='slip')el('batchHistory').innerHTML=renderSlipDesk(rows);
+  else if(BATCH_STAGE==='paid')el('batchHistory').innerHTML=renderPaidDesk(rows);
+  else el('batchHistory').innerHTML=renderReviewDesk(rows);
 }
 function renderBatches(){
   if(!el("batchPendingGroups"))return;
   const p=BATCH_DATA.pending||{groups:[]};const st=BATCH_DATA.settings||{};
-  const processing=batchSummaryOf('processing'),paid=batchSummaryOf('paid');
-  el("batchKItems").textContent=Number(p.itemCount||0).toLocaleString("th-TH");el("batchKTotal").textContent=baht(p.total||0);el("batchKPeople").textContent=Number(p.people||0).toLocaleString("th-TH");el("batchKUrgent").textContent=Number(p.urgentCount||0).toLocaleString("th-TH");
-  el('batchFlowQueue').textContent=`${Number(p.itemCount||0)} รายการ`;el('batchFlowProcess').textContent=`${Number(processing.count||0)} รอบ`;el('batchFlowPaid').textContent=`${Number(paid.count||0)} รอบ`;
+  const approval=batchSummaryOf('awaitingApproval'),peak=batchSummaryOf('peakPending'),transfer=batchSummaryOf('transferPending'),slip=batchSummaryOf('slipPending'),paid=batchSummaryOf('paid');
+  const reviewCount=Number(approval.count||0)+Number(peak.count||0);
+  el("batchKItems").textContent=Number(p.itemCount||0).toLocaleString("th-TH");
+  el("batchKReview").textContent=reviewCount.toLocaleString("th-TH");
+  el("batchKTransfer").textContent=baht(transfer.total||0);
+  el("batchKSlip").textContent=Number(slip.count||0).toLocaleString("th-TH");
+  el('batchFlowQueue').textContent=`${Number(p.itemCount||0)} รายการ`;
+  el('batchFlowReview').textContent=`${reviewCount} รอบ`;
+  el('batchFlowTransfer').textContent=`${Number(transfer.count||0)} รอบ`;
+  el('batchFlowSlip').textContent=`${Number(slip.count||0)} รอบ`;
+  el('batchFlowPaid').textContent=`${Number(paid.count||0)} รอบ`;
   el("batchNext").textContent=st.enabled?batchSettingsText():"ปิดอยู่ — กดตั้งค่าด้านล่าง";
   el("batchEnabled").checked=st.enabled===true;el("batchWeekday").value=String(Number(st.weekday??1));el("batchTime").value=`${String(Number(st.hour??11)).padStart(2,"0")}:${String(Number(st.minute??0)).padStart(2,"0")}`;el("batchMaxItems").value=String(Number(st.maxItems||10));
   const groups=Array.isArray(p.groups)?p.groups:[];
@@ -1707,6 +1859,42 @@ async function runBatchWorkflowAction(button){
   const old=button.textContent;button.disabled=true;button.textContent='กำลังบันทึก…';
   try{await batchPost('/api/batch-workflow',{batchId,action,payload});await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}
   catch(err){alert('ดำเนินการไม่สำเร็จ: '+err.message);}finally{button.disabled=false;button.textContent=old;}
+}
+async function runTransferCommand(command){
+  const rows=batchRowsForStage('transfer');
+  if(command==='select-all'){
+    const selectable=rows.filter(b=>b.profileComplete!==false&&String(b.accountNo||'').trim());
+    const allSelected=selectable.length&&selectable.every(b=>TRANSFER_SELECTED.has(String(b.id||b.docId)));
+    selectable.forEach(b=>{const id=String(b.id||b.docId);if(allSelected)TRANSFER_SELECTED.delete(id);else TRANSFER_SELECTED.add(id);});
+    renderBatchRounds();return;
+  }
+  if(command==='export'){
+    const selected=transferSelectedRows();const out=selected.length?selected:rows;
+    if(!out.length)return alert('ไม่มีรายการพร้อมตั้งโอน');
+    download(`transfer-check-${new Date().toISOString().slice(0,10)}.csv`,transferCsv(out));return;
+  }
+  if(command==='mark'){
+    const selected=transferSelectedRows();
+    if(!selected.length)return alert('เลือกรอบที่ตั้งโอนแล้วอย่างน้อย 1 รอบ');
+    const reference=prompt(`ใส่เลขอ้างอิงการตั้งโอนสำหรับ ${selected.length} รอบ (เว้นว่างได้)`);
+    if(reference===null)return;
+    if(!confirm(`ยืนยันว่าตั้งโอนแล้ว ${selected.length} รอบ รวม ${baht(selected.reduce((s,b)=>s+(Number(b.total)||0),0))}?`))return;
+    const button=el('transferMarkSelected'),old=button?.textContent;
+    if(button){button.disabled=true;button.textContent='กำลังบันทึก…';}
+    let success=0;const failed=[];
+    for(const b of selected){
+      try{await batchPost('/api/batch-workflow',{batchId:b.id||b.docId,action:'transfer_set',payload:{reference:String(reference||'').trim()}});success++;}
+      catch(err){failed.push(`${b.docId||b.runNo||b.payerName}: ${err.message}`);}
+    }
+    TRANSFER_SELECTED.clear();
+    await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);
+    alert(`บันทึกตั้งโอนแล้ว ${success} รอบ${failed.length?`\nไม่สำเร็จ ${failed.length} รอบ\n${failed.slice(0,3).join('\n')}`:''}`);
+    if(button){button.disabled=false;button.textContent=old||'ตั้งโอนรายการที่เลือก';}
+  }
+}
+async function copyAccountNumber(value){
+  try{await navigator.clipboard.writeText(String(value||''));}
+  catch(_){const ta=document.createElement('textarea');ta.value=String(value||'');document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
 }
 async function uploadBatchPaymentSlip(input){
   const card=input.closest('[data-batch-id]');const batchId=card?.dataset.batchId;const file=input.files?.[0];if(!batchId||!file)return;
@@ -1783,8 +1971,16 @@ ${out.itemCount} รายการ · ${baht(out.total)}`);clearBatchSelection(
 if(el("batchCloseAll"))el("batchCloseAll").onclick=async()=>{if(!confirm("สร้างรอบปกติจากรายการที่พร้อมทั้งหมด แยกตามผู้เบิกตอนนี้?"))return;const b=el("batchCloseAll"),old=b.textContent;b.disabled=true;b.textContent="กำลังสร้าง…";try{const out=await batchPost("/api/batch-close",{});const blocked=(out.blocked||[]).length?`
 ข้าม ${(out.blocked||[]).length} คนที่ข้อมูลบัญชีไม่ครบ`:'';alert(out.itemCount?`สร้างรอบ ${out.runNo} สำเร็จ
 ${out.people||0} คน · ${out.itemCount} รายการ · ${baht(out.total)}${blocked}`:(out.message||"ไม่มีรายการรอเข้ารอบ"));clearBatchSelection();await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}catch(err){alert("ปิดรอบไม่สำเร็จ: "+err.message);}finally{b.disabled=false;b.textContent=old;}};
-if(el('batchHistory'))el('batchHistory').addEventListener('click',e=>{const btn=e.target.closest('[data-workflow-action]');if(btn)runBatchWorkflowAction(btn);});
-if(el('batchHistory'))el('batchHistory').addEventListener('change',e=>{if(e.target.matches('[data-batch-slip]'))uploadBatchPaymentSlip(e.target);});
+if(el('batchHistory'))el('batchHistory').addEventListener('click',e=>{
+  const team=e.target.closest('[data-open-team]');if(team)return openBusiness('team');
+  const copy=e.target.closest('[data-copy-account]');if(copy)return copyAccountNumber(copy.dataset.copyAccount).then(()=>{copy.textContent='คัดลอกแล้ว';setTimeout(()=>copy.textContent='คัดลอก',900);});
+  const command=e.target.closest('[data-transfer-command]');if(command)return runTransferCommand(command.dataset.transferCommand);
+  const btn=e.target.closest('[data-workflow-action]');if(btn)runBatchWorkflowAction(btn);
+});
+if(el('batchHistory'))el('batchHistory').addEventListener('change',e=>{
+  if(e.target.matches('[data-transfer-item]')){const id=String(e.target.dataset.transferItem||'');if(e.target.checked)TRANSFER_SELECTED.add(id);else TRANSFER_SELECTED.delete(id);return updateTransferSelection();}
+  if(e.target.matches('[data-batch-slip]'))uploadBatchPaymentSlip(e.target);
+});
 if(el("batchSaveSettings"))el("batchSaveSettings").onclick=async()=>{const [h,m]=String(el("batchTime").value||"11:00").split(":").map(Number);const ok=await saveSettings({batch_enabled:el("batchEnabled").checked?"TRUE":"FALSE",batch_weekday:String(el("batchWeekday").value||1),batch_hour:String(Number.isFinite(h)?h:11),batch_minute:String(Number.isFinite(m)?m:0),batch_max_items:String(Math.max(1,Math.min(10,Number(el("batchMaxItems").value||10)))),batch_timezone:"Asia/Bangkok"},"batchSaveState");if(ok)await refreshBatchData({quiet:true});};
 
 if(el("emailQ"))el("emailQ").addEventListener("input",renderEmailInbox);
