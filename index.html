@@ -374,6 +374,7 @@
   .list-card-row{display:grid;grid-template-columns:1.2fr .8fr auto;gap:10px;align-items:center;padding:12px 13px;border-top:1px solid #f0f0f3;font-size:12px}
   .list-card-row:first-child{border-top:0}
   .list-card-row .sub{font-size:10.5px;color:var(--muted);margin-top:2px}
+.team-row-actions{display:flex;gap:6px;justify-content:flex-end;align-items:center;flex-wrap:wrap}.member-state{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:750;background:#f2f2f7;color:#6e6e73}.member-state.ready{background:#edf7ef;color:#24783b}.member-state.missing{background:#fff5e8;color:#9a5a00}
   .icon-btn{width:29px;height:29px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--muted)}
   .icon-btn:hover{color:var(--red);border-color:#e7c3bf}
   .empty-compact{padding:28px 15px;text-align:center;color:var(--muted);font-size:12px}
@@ -855,7 +856,8 @@
 
       <div class="business-tab" id="biz-team">
         <div class="biz-grid">
-          <div class="card"><h3>ทีมของฉัน</h3><div class="cs">รายชื่อผู้ใช้งานและบทบาทภายในธุรกิจ</div>
+          <div class="card"><h3>ทีมของฉัน</h3><div class="cs">พนักงานกรอกบัญชีรับเงินครั้งแรกผ่าน LINE และผู้ดูแลแก้ไขข้อมูลตรงนี้ได้ทุกเมื่อ</div>
+            <div class="accounting-note" style="margin:14px 0 4px"><span>ครั้งเดียว</span><span>เมื่อข้อมูลครบ ระบบจะจำธนาคารและเลขบัญชีให้ ไม่ต้องกรอกใหม่ทุกครั้งที่ตั้งเบิก</span></div>
             <div class="biz-form">
               <div class="field"><label>ชื่อสมาชิก</label><input id="teamName" placeholder="ชื่อ–นามสกุล"></div>
               <div class="field"><label>บทบาท</label><input id="teamRole" placeholder="เช่น บัญชี, ผู้อนุมัติ, พนักงาน"></div>
@@ -865,7 +867,7 @@
                 <div class="field"><label>เลขบัญชี</label><input id="teamAccountNo" placeholder="เลขบัญชีรับเงิน"></div>
               </div>
               <div class="field"><label>ชื่อบัญชี</label><input id="teamAccountName" placeholder="ชื่อบัญชีของผู้เบิก"></div>
-              <div class="form-actions"><button class="btn solid" id="addTeam">เพิ่มสมาชิก</button><span class="save-state" id="teamSaveState"></span></div>
+              <div class="form-actions"><button class="btn solid" id="addTeam">บันทึกสมาชิก</button><button class="btn" id="cancelTeamEdit" type="button" hidden>ยกเลิกแก้ไข</button><span class="save-state" id="teamSaveState"></span></div>
             </div>
           </div>
           <div class="card"><h3>สมาชิก</h3><div class="cs">ผู้ส่งรายการที่พบจาก LINE จะแสดงเป็นข้อมูลประกอบ</div><div class="list-card" id="teamList"></div></div>
@@ -926,6 +928,8 @@ const K = QS.get("k") || "";
 const CONAME = QS.get("name") || "บริษัทของคุณ";
 let CONNECTED = false;
 let SETTINGS = {};
+let TEAM_EDIT_INDEX = -1;
+let TEAM_RENDERED = [];
 let BUSINESS_TAB = "profile";
 let EMAIL_DOCS = [];
 let SUBSCRIPTIONS = [];
@@ -1321,12 +1325,27 @@ function renderBusiness(){
   el("financeList").innerHTML=channels.length?channels.map((x,i)=>`<div class="list-card-row"><div><strong>${esc(x.label||x.bank||"ช่องทางการเงิน")}</strong><div class="sub">${esc(x.name||"")}</div></div><div>${esc(x.bank||"—")}<div class="sub">${esc(x.number||"—")}</div></div><button class="icon-btn" data-remove-finance="${i}" aria-label="ลบ">×</button></div>`).join(""):'<div class="empty-compact">ยังไม่ได้เพิ่มช่องทางการเงิน</div>';
 
   const members=parseSettingList("team_members");
-  const detectedSenders=[...new Set(ALL.map(r=>r.sender||r.payerName).filter(Boolean))];
-  const combined=[...members.map(x=>({...x,source:"saved"})),...detectedSenders.filter(n=>!members.some(x=>x.name===n)).map(n=>({name:n,role:"ผู้ส่งรายการจาก LINE",source:"detected"}))];
+  const detectedMap=new Map();
+  ALL.forEach(r=>{
+    const name=String(r.payerName||r.sender||"").trim();
+    const lineUserId=String(r.payerId||"").trim();
+    if(!name&&!lineUserId)return;
+    const key=lineUserId||name.toLowerCase();
+    if(!detectedMap.has(key))detectedMap.set(key,{name:name||"สมาชิกจาก LINE",lineUserId,role:"ผู้ส่งรายการจาก LINE",source:"detected"});
+  });
+  const matched=(x)=>members.some(m=>(x.lineUserId&&String(m.lineUserId||"")===x.lineUserId)||String(m.name||"").trim().toLowerCase()===String(x.name||"").trim().toLowerCase());
+  const combined=[...members.map((x,i)=>({...x,source:"saved",savedIndex:i})),...[...detectedMap.values()].filter(x=>!matched(x))];
+  TEAM_RENDERED=combined;
   el("teamList").innerHTML=combined.length?combined.map((x,i)=>{
     const bank=[x.bank,x.accountNo].filter(Boolean).join(" · ");
     const owner=x.accountName?`ชื่อบัญชี ${esc(x.accountName)}`:"";
-    return `<div class="list-card-row"><div><strong>${esc(x.name||"—")}</strong><div class="sub">${esc(x.role||"สมาชิก")}${bank?` · ${esc(bank)}`:""}${owner?`<br>${owner}`:""}</div></div><div>${x.source==="detected"?"ตรวจพบอัตโนมัติ":"บันทึกไว้"}</div>${x.source==="saved"?`<button class="icon-btn" data-remove-team="${i}" aria-label="ลบ">×</button>`:"<span></span>"}</div>`;
+    const complete=Boolean(x.name&&x.bank&&x.accountNo&&x.accountName);
+    const lineMeta=x.lineUserId?`LINE ···${esc(String(x.lineUserId).slice(-6))}`:"ยังไม่ผูก LINE";
+    const state=`<span class="member-state ${complete?"ready":"missing"}">${complete?"พร้อมรับเงิน":"ข้อมูลบัญชีไม่ครบ"}</span>`;
+    const actions=x.source==="saved"
+      ?`<div class="team-row-actions"><button class="btn small" data-edit-team="${x.savedIndex}">แก้ไข</button><button class="icon-btn" data-remove-team="${x.savedIndex}" aria-label="ลบ">×</button></div>`
+      :`<div class="team-row-actions"><button class="btn small solid" data-prefill-team="${i}">เพิ่มข้อมูล</button></div>`;
+    return `<div class="list-card-row"><div><strong>${esc(x.name||"—")}</strong><div class="sub">${esc(x.role||"สมาชิก")}${bank?` · ${esc(bank)}`:""}${owner?`<br>${owner}`:""}<br>${lineMeta}</div></div><div>${state}</div>${actions}</div>`;
   }).join(""):'<div class="empty-compact">ยังไม่มีข้อมูลสมาชิก</div>';
 }
 function onboardingState(){
@@ -1649,8 +1668,11 @@ el("addCategory").onclick=async()=>{const name=el("newCategory").value.trim();if
 el("customCategoryTags").addEventListener("click",async e=>{const b=e.target.closest("[data-remove-category]");if(!b)return;const a=parseSettingList("custom_categories");a.splice(+b.dataset.removeCategory,1);await saveSettings({custom_categories:JSON.stringify(a)});});
 el("addFinance").onclick=async()=>{const x={label:el("finLabel").value.trim(),bank:el("finBank").value.trim(),number:el("finNumber").value.trim(),name:el("finName").value.trim()};if(!x.label&&!x.bank&&!x.number)return;const a=parseSettingList("payment_channels");a.push(x);if(await saveSettings({payment_channels:JSON.stringify(a)},"financeSaveState")){["finLabel","finBank","finNumber","finName"].forEach(id=>el(id).value="");}};
 el("financeList").addEventListener("click",async e=>{const b=e.target.closest("[data-remove-finance]");if(!b)return;const a=parseSettingList("payment_channels");a.splice(+b.dataset.removeFinance,1);await saveSettings({payment_channels:JSON.stringify(a)},"financeSaveState");});
-el("addTeam").onclick=async()=>{const x={name:el("teamName").value.trim(),role:el("teamRole").value.trim(),lineUserId:el("teamLineId").value.trim(),bank:el("teamBank").value.trim(),accountNo:el("teamAccountNo").value.trim(),accountName:el("teamAccountName").value.trim()};if(!x.name)return;const a=parseSettingList("team_members");a.push(x);if(await saveSettings({team_members:JSON.stringify(a)},"teamSaveState")){["teamName","teamRole","teamLineId","teamBank","teamAccountNo","teamAccountName"].forEach(id=>el(id).value="");}};
-el("teamList").addEventListener("click",async e=>{const b=e.target.closest("[data-remove-team]");if(!b)return;const a=parseSettingList("team_members");a.splice(+b.dataset.removeTeam,1);await saveSettings({team_members:JSON.stringify(a)},"teamSaveState");});
+function resetTeamForm(){TEAM_EDIT_INDEX=-1;["teamName","teamRole","teamLineId","teamBank","teamAccountNo","teamAccountName"].forEach(id=>el(id).value="");el("addTeam").textContent="บันทึกสมาชิก";el("cancelTeamEdit").hidden=true;el("teamSaveState").textContent="";}
+function fillTeamForm(x={},editIndex=-1){TEAM_EDIT_INDEX=editIndex;el("teamName").value=x.name||"";el("teamRole").value=x.role||"พนักงาน";el("teamLineId").value=x.lineUserId||x.payerId||"";el("teamBank").value=x.bank||"";el("teamAccountNo").value=x.accountNo||"";el("teamAccountName").value=x.accountName||x.name||"";el("addTeam").textContent=editIndex>=0?"บันทึกการแก้ไข":"เพิ่มสมาชิก";el("cancelTeamEdit").hidden=false;el("teamName").focus();window.scrollTo({top:Math.max(0,el("biz-team").offsetTop-20),behavior:"smooth"});}
+el("cancelTeamEdit").onclick=resetTeamForm;
+el("addTeam").onclick=async()=>{const x={name:el("teamName").value.trim(),role:el("teamRole").value.trim()||"พนักงาน",lineUserId:el("teamLineId").value.trim(),bank:el("teamBank").value.trim(),accountNo:el("teamAccountNo").value.trim(),accountName:el("teamAccountName").value.trim(),updatedAt:new Date().toISOString()};if(!x.name)return alert("กรอกชื่อสมาชิกก่อน");const a=parseSettingList("team_members");if(TEAM_EDIT_INDEX>=0&&a[TEAM_EDIT_INDEX])a[TEAM_EDIT_INDEX]={...a[TEAM_EDIT_INDEX],...x};else{const found=a.findIndex(m=>(x.lineUserId&&String(m.lineUserId||"")===x.lineUserId)||String(m.name||"").trim().toLowerCase()===x.name.toLowerCase());if(found>=0)a[found]={...a[found],...x};else a.push(x);}if(await saveSettings({team_members:JSON.stringify(a)},"teamSaveState"))resetTeamForm();};
+el("teamList").addEventListener("click",async e=>{const edit=e.target.closest("[data-edit-team]");if(edit){const a=parseSettingList("team_members");return fillTeamForm(a[+edit.dataset.editTeam]||{},+edit.dataset.editTeam);}const pre=e.target.closest("[data-prefill-team]");if(pre)return fillTeamForm(TEAM_RENDERED[+pre.dataset.prefillTeam]||{},-1);const b=e.target.closest("[data-remove-team]");if(!b)return;const a=parseSettingList("team_members");if(!confirm(`ลบ ${a[+b.dataset.removeTeam]?.name||"สมาชิกนี้"} ออกจากทีม?`))return;a.splice(+b.dataset.removeTeam,1);if(await saveSettings({team_members:JSON.stringify(a)},"teamSaveState"))resetTeamForm();});
 
 
 
