@@ -813,12 +813,7 @@
             <span id="batchBulkHint">เลือกเฉพาะรายการที่ต้องทำงานขั้นเดียวกัน</span>
           </div>
           <div class="acct-bulk-actions">
-            <button class="btn" id="batchMasterSelectAll" type="button">เลือกงานที่ทำได้</button>
-            <button class="btn" id="batchMasterExport" type="button">ส่งออกไฟล์โอน</button>
-            <button class="btn" id="batchMasterUrgent" type="button" disabled>สร้างใบเบิกด่วน</button>
             <button class="btn solid" id="batchMasterCreate" type="button" disabled>รวมเป็นใบเบิก</button>
-            <button class="btn solid" id="batchMasterMarkTransfer" type="button" disabled>บันทึกว่าโอนแล้ว</button>
-            <input id="batchMasterPaymentInput" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple hidden>
           </div>
         </div>
 
@@ -1854,15 +1849,13 @@ function updateStatusCounts(){
   Object.entries(map).forEach(([id,n])=>{if(el(id))el(id).textContent=Number(n||0).toLocaleString("th-TH");});
 }
 function updateMasterSelection(){
-  const qn=BATCH_SELECTED.size,pay=selectedPaymentRows(),pn=pay.length,total=pay.reduce((s,b)=>s+Number(b.total||0),0);
-  const text=qn?`เลือก ${qn} รายการย่อย`:pn?`เลือก ${pn} ใบเบิก · ${baht(total)}`:"ยังไม่ได้เลือกรายการ";
+  const qn=BATCH_SELECTED.size;
+  const text=qn?`เลือก ${qn} รายการย่อย`:"ยังไม่ได้เลือกรายการ";
   if(el("batchMasterSelected"))el("batchMasterSelected").textContent=text;
-  if(el("batchBulkHint"))el("batchBulkHint").textContent=qn?"รวมเป็นใบเบิกปกติหรือใบเบิกด่วน":pn?"ส่งออกไฟล์โอนหรือบันทึกว่าโอนแล้ว":"เลือกเฉพาะรายการที่อยู่ขั้นตอนเดียวกัน";
+  if(el("batchBulkHint"))el("batchBulkHint").textContent=qn?"รวมรายการที่เลือกเป็นใบเบิกหลัก 1 ใบ":"เลือกรายการย่อยที่ต้องการรวมเป็นใบเบิก";
   if(el("batchMasterCreate"))el("batchMasterCreate").disabled=!qn;
-  if(el("batchMasterUrgent"))el("batchMasterUrgent").disabled=!qn;
-  if(el("batchMasterMarkTransfer"))el("batchMasterMarkTransfer").disabled=!pn;
-  const visible=masterFilteredRows().filter(r=>(r.kind==="queue"&&r.statusKey==="queue")||(r.kind==="batch"&&r.workflowStep==="payment"&&r.statusKey!=="missing"));
-  const checked=visible.filter(r=>r.kind==="queue"?BATCH_SELECTED.has(r.id):TRANSFER_SELECTED.has(r.id)).length;
+  const visible=masterFilteredRows().filter(r=>r.kind==="queue"&&r.statusKey==="queue");
+  const checked=visible.filter(r=>BATCH_SELECTED.has(r.id)).length;
   const head=el("batchMasterHeaderCheck");if(head){head.checked=visible.length>0&&checked===visible.length;head.indeterminate=checked>0&&checked<visible.length;}
 }
 function documentCell(row){
@@ -1897,7 +1890,7 @@ function nextActionCell(row){
   if(row.statusKey==="missing")return `<button class="btn" data-open-team>เพิ่มข้อมูลบัญชี</button>`;
   if(row.kind==="queue")return `<button class="btn primary-next" data-queue-single="${escAttr(row.id)}">รวมเป็นใบเบิก</button>`;
   const step=row.workflowStep;
-  if(step==="payment")return `<label class="btn primary-next proof-upload">บันทึกว่าโอนแล้ว<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" data-batch-slip data-batch-id="${escAttr(row.id)}"></label>`;
+  if(step==="payment")return `<span class="master-secondary">คลิกที่แถวเพื่อดูรายละเอียด</span>`;
   const label=step==="review"?"ตรวจเอกสาร":step==="correction"?"ดูรายการแก้ไข":step==="rejected"?"ดูรายละเอียด":step==="paid"?"ดูรายละเอียด":"เปิด";
   return `<button class="btn ${step==="review"?"primary-next":""}" data-open-batch-button="${escAttr(row.id)}">${label}</button>`;
 }
@@ -1909,8 +1902,8 @@ function renderMasterTable(){
   const validPayment=new Set(batches.filter(r=>r.workflowStep==="payment"&&r.statusKey!=="missing").map(r=>r.id));[...TRANSFER_SELECTED].forEach(id=>{if(!validPayment.has(id))TRANSFER_SELECTED.delete(id);});
   const rows=masterFilteredRows();
   body.innerHTML=rows.length?rows.map(row=>{
-    const b=row.raw||{},isQueue=row.kind==="queue",selectable=(isQueue&&row.statusKey==="queue")||(!isQueue&&row.workflowStep==="payment"&&row.statusKey!=="missing"),checked=isQueue?BATCH_SELECTED.has(row.id):TRANSFER_SELECTED.has(row.id);
-    const checkbox=selectable?`<input class="master-checkbox" type="checkbox" ${isQueue?"data-master-queue":"data-master-transfer"}="${escAttr(row.id)}" ${checked?"checked":""}>`:"";
+    const b=row.raw||{},isQueue=row.kind==="queue",selectable=isQueue&&row.statusKey==="queue",checked=BATCH_SELECTED.has(row.id);
+    const checkbox=selectable?`<input class="master-checkbox" type="checkbox" data-master-queue="${escAttr(row.id)}" ${checked?"checked":""}>`:"";
     const accountNo=row.accountNo||"";
     const rowClass=row.statusKey==="paid"?"row-paid":["correction","rejected"].includes(row.statusKey)?"row-correction":"";
     return `<tr class="${rowClass}" ${isQueue?"":`data-open-batch="${escAttr(row.id)}"`}>
@@ -2024,7 +2017,7 @@ function renderBatchDrawer(batchId){
   if(b.profileComplete===false)footer.push(`<button class="btn solid" data-open-team>เพิ่มข้อมูลบัญชี</button>`);
   else if(step==="review"){footer.push(`<button class="btn danger" data-drawer-action="reject">ตีกลับ</button><button class="btn solid" data-drawer-action="approve">เอกสารผ่าน</button>`);}
   else if(step==="correction"){footer.push(`<button class="btn solid" data-drawer-action="resubmit">รับกลับมาตรวจอีกครั้ง</button>`);}
-  else if(step==="payment"){footer.push(`<label class="btn solid proof-upload">บันทึกว่าโอนแล้ว<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" data-batch-slip data-batch-id="${escAttr(ACTIVE_BATCH_ID)}"></label>`);}
+  else if(step==="payment"){footer.push(`<label class="btn solid proof-upload">แนบหลักฐานการโอน<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" data-batch-slip data-batch-id="${escAttr(ACTIVE_BATCH_ID)}"></label>`);}
   else if(step==="paid"&&String(b.lineNotifyStatus||"").includes("ไม่สำเร็จ")){footer.push(`<button class="btn solid" data-drawer-action="retry-line">ส่ง LINE ซ้ำ</button>`);}
   el("batchDrawerFooter").innerHTML=footer.join("");
 }
@@ -2122,15 +2115,12 @@ if(el("batchMasterExport"))el("batchMasterExport").onclick=exportMasterTransfers
 function masterToggleVisible(should){
   masterFilteredRows().forEach(row=>{
     if(row.kind==="queue"&&row.statusKey==="queue"){if(should)BATCH_SELECTED.add(row.id);else BATCH_SELECTED.delete(row.id);}
-    if(row.kind==="batch"&&row.workflowStep==="payment"&&row.statusKey!=="missing"){if(should)TRANSFER_SELECTED.add(row.id);else TRANSFER_SELECTED.delete(row.id);}
   });
   renderMasterTable();
 }
-if(el("batchMasterSelectAll"))el("batchMasterSelectAll").onclick=()=>{const rows=masterFilteredRows().filter(r=>(r.kind==="queue"&&r.statusKey==="queue")||(r.kind==="batch"&&r.workflowStep==="payment"&&r.statusKey!=="missing"));const all=rows.length&&rows.every(r=>r.kind==="queue"?BATCH_SELECTED.has(r.id):TRANSFER_SELECTED.has(r.id));masterToggleVisible(!all);};
 if(el("batchMasterHeaderCheck"))el("batchMasterHeaderCheck").onchange=e=>masterToggleVisible(e.target.checked);
 if(el("batchMasterBody"))el("batchMasterBody").addEventListener("change",e=>{
   if(e.target.matches("[data-master-queue]")){const id=String(e.target.dataset.masterQueue||"");if(e.target.checked){TRANSFER_SELECTED.clear();BATCH_SELECTED.add(id);}else BATCH_SELECTED.delete(id);return renderMasterTable();}
-  if(e.target.matches("[data-master-transfer]")){const id=String(e.target.dataset.masterTransfer||"");if(e.target.checked){BATCH_SELECTED.clear();TRANSFER_SELECTED.add(id);}else TRANSFER_SELECTED.delete(id);return renderMasterTable();}
   if(e.target.matches("[data-batch-slip]"))uploadBatchPaymentSlip(e.target);
 });
 if(el("batchMasterBody"))el("batchMasterBody").addEventListener("click",e=>{
