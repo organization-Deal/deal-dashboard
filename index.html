@@ -1172,14 +1172,17 @@ let BATCH_POLL_TICK = 0;
 const BATCH_SELECTED = new Set();
 const TRANSFER_SELECTED = new Set();
 
-// Realtime แบบ polling: Google Sheet ไม่มี event stream โดยตรง จึงตรวจข้อมูลใหม่ทุก 5 วินาที
-const REFRESH_MS = 5000;
+// ลดการอ่าน Google Sheets: ซิงก์อัตโนมัติทุก 30 วินาที และอ่านเฉพาะหน้าที่กำลังเปิด
+// ปุ่ม “อัปเดต” ยังสั่งซิงก์ทันทีได้
+const REFRESH_MS = 30000;
+const FOREGROUND_DEBOUNCE_MS = 5000;
 let ALL = [];
 let LAST_SIGNATURE = "";
 let REFRESH_TIMER = null;
 let REFRESHING = false;
 let HAS_LOADED = false;
 let EMAIL_POLL_TICK = 0;
+let LAST_FOREGROUND_REFRESH = 0;
 
 
 const el=id=>document.getElementById(id);
@@ -1938,16 +1941,28 @@ function renderBatches(){
   if(el("batchMaxItems")){el("batchMaxItems").value=String(Number(st.maxItems||10));el("batchMaxItems").disabled=!mergeItems;}
   renderMasterTable();if(ACTIVE_BATCH_ID)renderBatchDrawer(ACTIVE_BATCH_ID);
 }
-async function batchPost(path,body={}){const res=await fetch(apiUrl(path),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});const data=await res.json().catch(()=>({}));if(!res.ok||data.ok===false)throw new Error(data.message||data.reason||data.error||`HTTP ${res.status}`);return data;}
+function accountingApiError(data={},res=null){
+  const raw=String(data.message||data.hint||data.reason||data.error||"");
+  if(res?.status===429||data.error==="sheets_rate_limited"||/Sheets 429|RESOURCE_EXHAUSTED|Quota exceeded/i.test(raw)){
+    return "Google Sheets ถูกเรียกถี่เกินไป ระบบหยุดยิงซ้ำแล้ว กรุณารอประมาณ 1 นาทีแล้วกดอัปเดตอีกครั้ง";
+  }
+  return raw||`HTTP ${res?.status||"error"}`;
+}
+async function batchPost(path,body={}){
+  const res=await fetch(apiUrl(path),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok||data.ok===false)throw new Error(accountingApiError(data,res));
+  return data;
+}
 async function refreshBatchData({quiet=false}={}){
   if(BATCH_LOADING)return false;BATCH_LOADING=true;const b=el("batchMasterRefresh"),old=b?.textContent;if(!quiet&&b){b.disabled=true;b.textContent="กำลังอัปเดต…";}
-  try{const res=await fetch(apiUrl("/api/batches")+`&_=${Date.now()}`,{cache:"no-store",headers:{"cache-control":"no-cache"}}),data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.message||data.hint||`HTTP ${res.status}`);if(data.ok!==true||!data.pending||!Array.isArray(data.batches))throw new Error("รูปแบบข้อมูลใบเบิกไม่ถูกต้อง");if(!String(data.version||"").startsWith(EXPECTED_BATCH_CONTRACT))console.warn("batch contract mismatch",data.version);BATCH_DATA=data;renderBatches();return true;}catch(err){console.error("batch refresh failed",err);if(!quiet)alert("โหลดตารางเบิกจ่ายไม่สำเร็จ: "+err.message);return false;}finally{BATCH_LOADING=false;if(b){b.disabled=false;b.textContent=old||"อัปเดต";}}
+  try{const res=await fetch(apiUrl("/api/batches"),{cache:"no-store",headers:{"cache-control":"no-cache"}}),data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(accountingApiError(data,res));if(data.ok!==true||!data.pending||!Array.isArray(data.batches))throw new Error("รูปแบบข้อมูลใบเบิกไม่ถูกต้อง");if(!String(data.version||"").startsWith(EXPECTED_BATCH_CONTRACT))console.warn("batch contract mismatch",data.version);BATCH_DATA=data;renderBatches();return true;}catch(err){console.error("batch refresh failed",err);if(!quiet)alert("โหลดตารางเบิกจ่ายไม่สำเร็จ: "+err.message);return false;}finally{BATCH_LOADING=false;if(b){b.disabled=false;b.textContent=old||"อัปเดต";}}
 }
 function clearAccountingSelection(){BATCH_SELECTED.clear();TRANSFER_SELECTED.clear();renderMasterTable();}
 async function createBatchFromSelection(type="ปกติ"){
   const ids=[...BATCH_SELECTED];if(!ids.length)return;const urgent=type==="ด่วน";if(!confirm(`${urgent?"สร้างใบเบิกด่วน":"รวมเป็นใบเบิก"}จาก ${ids.length} รายการย่อยที่เลือก?`))return;
   const button=urgent?el("batchMasterUrgent"):el("batchMasterCreate"),old=button?.textContent;if(button){button.disabled=true;button.textContent="กำลังสร้าง…";}
-  try{const out=urgent?await batchPost("/api/batch-urgent",{expenseIds:ids}):await batchPost("/api/batch-close",{expenseIds:ids});alert(out.itemCount?`สร้างใบเบิก ${out.batches?.[0]?.docId||out.runNo} สำเร็จ\n${out.itemCount} รายการย่อย · ${baht(out.total)}`:(out.message||"ไม่มีรายการ"));BATCH_SELECTED.clear();await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);setStatusFilter("review");}catch(err){alert("สร้างใบเบิกไม่สำเร็จ: "+err.message);}finally{if(button){button.disabled=false;button.textContent=old||"รวมเป็นใบเบิก";}}
+  try{const out=urgent?await batchPost("/api/batch-urgent",{expenseIds:ids}):await batchPost("/api/batch-close",{expenseIds:ids});alert(out.itemCount?`สร้างใบเบิก ${out.batches?.[0]?.docId||out.runNo} สำเร็จ\n${out.itemCount} รายการย่อย · ${baht(out.total)}`:(out.message||"ไม่มีรายการ"));BATCH_SELECTED.clear();await refreshBatchData({quiet:true});setStatusFilter("review");}catch(err){alert("สร้างใบเบิกไม่สำเร็จ: "+err.message);}finally{if(button){button.disabled=false;button.textContent=old||"รวมเป็นใบเบิก";}}
 }
 function markSelectedTransfers(){
   const rows=selectedPaymentRows();
@@ -1980,7 +1995,7 @@ async function uploadSelectedPaymentSlips(input){
       catch(e){failed.push(`${b.docId||b.id}: ${e.message}`);}
     }
     TRANSFER_SELECTED.clear();
-    await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);
+    await refreshBatchData({quiet:true});
     alert(`บันทึกจ่ายแล้ว ${success} ใบเบิก${failed.length?`\nไม่สำเร็จ ${failed.length} ใบ`:""}`);
   }finally{
     input.value="";
@@ -2018,7 +2033,7 @@ function closeBatchDrawer(){ACTIVE_BATCH_ID="";if(el("batchDrawerBackdrop"))el("
 function openRejectDialog(batchId){const b=(BATCH_DATA.batches||[]).find(x=>String(x.id||x.docId)===String(batchId));if(!b)return;REJECT_BATCH_ID=String(b.id||b.docId);el("batchRejectDetail").value="";el("batchRejectReason").value="เอกสารไม่ครบ";el("batchRejectItems").innerHTML=(b.items||[]).map((item,i)=>`<label><input type="checkbox" data-reject-item="${escAttr(item.id)}" checked><span>${i+1}. ${esc(item.vendor||item.note||"รายการ")}</span><small>${baht(item.amount)}</small></label>`).join("")||"<span class='master-secondary'>ตีกลับทั้งใบเบิก</span>";el("batchRejectBackdrop").hidden=false;document.body.style.overflow="hidden";}
 function closeRejectDialog(){REJECT_BATCH_ID="";el("batchRejectBackdrop").hidden=true;if(el("batchDrawerBackdrop")?.hidden!==false)document.body.style.overflow="";}
 async function submitBatchReject(){if(!REJECT_BATCH_ID)return;const base=el("batchRejectReason").value,detail=el("batchRejectDetail").value.trim(),reason=detail?`${base}: ${detail}`:base,itemIds=[...document.querySelectorAll("[data-reject-item]:checked")].map(x=>x.dataset.rejectItem);const btn=el("batchRejectSubmit"),old=btn.textContent;btn.disabled=true;btn.textContent="กำลังแจ้ง LINE…";try{const out=await batchPost("/api/batch-workflow",{batchId:REJECT_BATCH_ID,action:"reject",payload:{reason,itemIds}});closeRejectDialog();await refreshBatchData({quiet:true});alert(`ตีกลับแล้ว\nLINE: ${out.notificationStatus||"ตรวจสอบในระบบ"}`);}catch(e){alert("ตีกลับไม่สำเร็จ: "+e.message);}finally{btn.disabled=false;btn.textContent=old;}}
-async function runDrawerAction(action){const b=(BATCH_DATA.batches||[]).find(x=>String(x.id||x.docId)===String(ACTIVE_BATCH_ID));if(!b)return;if(action==="close")return closeBatchDrawer();if(action==="reject")return openRejectDialog(ACTIVE_BATCH_ID);if(action==="approve"){if(!confirm("ยืนยันว่าเอกสารทั้งหมดผ่านและพร้อมโอนเงิน?"))return;await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"approve"});}if(action==="resubmit"){if(!confirm("รับรายการกลับเข้าสถานะรอตรวจเอกสารอีกครั้ง?"))return;await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"resubmit"});}if(action==="retry-line"){await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"retry_payment_notification"});}await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);}
+async function runDrawerAction(action){const b=(BATCH_DATA.batches||[]).find(x=>String(x.id||x.docId)===String(ACTIVE_BATCH_ID));if(!b)return;if(action==="close")return closeBatchDrawer();if(action==="reject")return openRejectDialog(ACTIVE_BATCH_ID);if(action==="approve"){if(!confirm("ยืนยันว่าเอกสารทั้งหมดผ่านและพร้อมโอนเงิน?"))return;await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"approve"});}if(action==="resubmit"){if(!confirm("รับรายการกลับเข้าสถานะรอตรวจเอกสารอีกครั้ง?"))return;await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"resubmit"});}if(action==="retry-line"){await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"retry_payment_notification"});}await refreshBatchData({quiet:true});}
 async function uploadBatchPaymentSlipFile(batchId,file,{confirmBefore=true,refresh=true,quiet=false}={}){
   if(!batchId||!file)throw new Error("กรุณาเลือกไฟล์หลักฐานการโอน");
   const allowed=["image/jpeg","image/png","image/webp","application/pdf"];
@@ -2027,8 +2042,8 @@ async function uploadBatchPaymentSlipFile(batchId,file,{confirmBefore=true,refre
   if(confirmBefore&&!confirm("ยืนยันแนบหลักฐานนี้ บันทึกว่าจ่ายแล้ว และส่ง LINE ให้ผู้เบิก?"))return {cancelled:true};
   const form=new FormData();form.append("batchId",batchId);form.append("file",file,file.name);
   const res=await fetch(apiUrl("/api/batch-payment-slip"),{method:"POST",body:form}),data=await res.json().catch(()=>({}));
-  if(!res.ok||data.ok===false)throw new Error(data.message||data.reason||`HTTP ${res.status}`);
-  if(refresh)await Promise.all([refreshData({manual:true}),refreshBatchData({quiet:true})]);
+  if(!res.ok||data.ok===false)throw new Error(accountingApiError(data,res));
+  if(refresh)await refreshBatchData({quiet:true});
   if(!quiet)alert(`ปิดงานเรียบร้อย\nLINE: ${data.lineNotifyStatus||"ตรวจสอบในระบบ"}`);
   return data;
 }
@@ -2253,11 +2268,29 @@ async function refreshData({initial=false,manual=false}={}){
   }
 }
 
+function refreshVisiblePage({manual=false}={}){
+  if(document.hidden||!HAS_LOADED)return;
+  const now=Date.now();
+  if(!manual&&now-LAST_FOREGROUND_REFRESH<FOREGROUND_DEBOUNCE_MS)return;
+  LAST_FOREGROUND_REFRESH=now;
+
+  const batchOpen=el("page-batches")?.classList.contains("show");
+  const emailOpen=el("page-email")?.classList.contains("show")||el("page-subscriptions")?.classList.contains("show");
+
+  // หน้าเบิกจ่ายใช้ /api/batches ชุดเดียว ไม่ยิง /api/expenses ซ้ำ
+  if(batchOpen){
+    if(BATCH_SELECTED.size===0&&TRANSFER_SELECTED.size===0)refreshBatchData({quiet:true});
+  }else{
+    refreshData({manual});
+  }
+
+  EMAIL_POLL_TICK++;
+  if(emailOpen&&(manual||EMAIL_POLL_TICK%4===0))refreshEmailData();
+}
+
 function startRealtime(){
   if(REFRESH_TIMER) clearInterval(REFRESH_TIMER);
-  REFRESH_TIMER=setInterval(()=>{
-    if(!document.hidden){refreshData();EMAIL_POLL_TICK++;BATCH_POLL_TICK++;if(EMAIL_POLL_TICK%3===0&&(el("page-email")?.classList.contains("show")||el("page-subscriptions")?.classList.contains("show")))refreshEmailData();if(BATCH_POLL_TICK%3===0&&el("page-batches")?.classList.contains("show")&&BATCH_SELECTED.size===0&&TRANSFER_SELECTED.size===0)refreshBatchData({quiet:true});}
-  },REFRESH_MS);
+  REFRESH_TIMER=setInterval(()=>refreshVisiblePage(),REFRESH_MS);
 }
 
 async function load(){
@@ -2274,10 +2307,10 @@ async function load(){
 
 el("syncBtn").addEventListener("click",async()=>{await Promise.all([refreshData({manual:true}),refreshSettings(),refreshBatchData({quiet:true})]);});
 document.addEventListener("visibilitychange",()=>{
-  if(!document.hidden&&HAS_LOADED){refreshData();refreshSettings();if(el("page-batches")?.classList.contains("show"))refreshBatchData({quiet:true});}
+  if(!document.hidden&&HAS_LOADED)refreshVisiblePage();
 });
-window.addEventListener("focus",()=>{if(HAS_LOADED){refreshData();refreshSettings();if(el("page-batches")?.classList.contains("show"))refreshBatchData({quiet:true});}});
-window.addEventListener("online",()=>{syncStatus("syncing","กลับมาออนไลน์ — กำลังซิงก์…");refreshData({manual:true});});
+window.addEventListener("focus",()=>{if(HAS_LOADED)refreshVisiblePage();});
+window.addEventListener("online",()=>{syncStatus("syncing","กลับมาออนไลน์ — กำลังซิงก์…");refreshVisiblePage({manual:true});});
 window.addEventListener("offline",()=>syncStatus("error","ออฟไลน์ — รอเชื่อมต่อ"));
 
 load();
