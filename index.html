@@ -1,7 +1,7 @@
 <!-- REIMBURSEMENT_DASHBOARD_v2.7_REVIEW_DIRECT_20260805 -->
 <!-- REIMBURSEMENT_ACCOUNTING_TABLE_V3_2026-08-03 -->
 <!DOCTYPE html>
-<!-- DASHBOARD_UI_VERSION: REVIEW_ITEMS_CLICKABLE_V3_2_20260805 -->
+<!-- DASHBOARD_UI_VERSION: UNIFIED_ITEM_DRAWER_V3_3_20260805 -->
 <html lang="th">
 <head>
 <meta charset="UTF-8" />
@@ -1925,7 +1925,7 @@ function openEmailEditor(id){
 
 /* ---------- REIMBURSEMENT BATCHES: ONE ACCOUNTING TABLE V4 ---------- */
 const BATCH_WEEKDAYS=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
-const DASHBOARD_UI_VERSION="REVIEW_ITEMS_CLICKABLE_V3_2_20260805";
+const DASHBOARD_UI_VERSION="UNIFIED_ITEM_DRAWER_V3_3_20260805";
 console.info("Dashboard UI",DASHBOARD_UI_VERSION);
 const EXPECTED_BATCH_CONTRACT="REIMBURSEMENT_ACCOUNTING_TABLE_V6";
 const BATCH_STATUS_META={
@@ -2106,56 +2106,63 @@ function renderMasterTable(){
   }).join(""):`<tr><td colspan="14"><div class="master-empty"><b>ไม่มีงานในสถานะนี้</b>ลองเลือก “ทุกสถานะ” หรือเปลี่ยนคำค้นหา</div></td></tr>`;
   updateMasterSelection();
 }
-function openQueueReview(id){
-  const row=masterPendingRows().find(x=>String(x.id)===String(id));
-  if(!row)return alert("ไม่พบรายการนี้ กรุณากดอัปเดตแล้วลองใหม่");
+function renderQueueDrawer(queueId){
+  const row=masterPendingRows().find(x=>String(x.id)===String(queueId));
+  if(!row){closeBatchDrawer();return;}
   const item=row.raw||{};
   const links=itemLinks(item);
-  const docButtons=[
-    item.claimPdfUrl?`<a class="btn solid" href="${escAttr(item.claimPdfUrl)}" target="_blank" rel="noopener">เปิดใบเบิกรายการ</a>`:"",
-    item.receiptPdfUrl?`<a class="btn" href="${escAttr(item.receiptPdfUrl)}" target="_blank" rel="noopener">เปิดใบแทนใบเสร็จ</a>`:"",
-  ].filter(Boolean).join("");
-  const evidence=links.length?links.map((x,i)=>{
-    const isImage=/\.(png|jpe?g|webp|gif)(?:$|[?#])/i.test(String(x.url||""))||/googleusercontent|drive\.google\.com/i.test(String(x.url||""));
-    return `<div style="border:1px solid #e5e5e8;border-radius:14px;padding:10px;margin-top:10px">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px"><b>${esc(x.label||`หลักฐาน ${i+1}`)}</b><a class="btn small" href="${escAttr(x.url)}" target="_blank" rel="noopener">เปิดไฟล์</a></div>
-      ${isImage?`<img src="${escAttr(x.url)}" alt="${escAttr(x.label||"หลักฐาน")}" style="display:block;width:100%;max-height:520px;object-fit:contain;background:#f6f6f8">`:""}
+  ACTIVE_BATCH_ID=`queue:${row.id}`;
+  const meta=BATCH_STATUS_META.review;
+  el("batchDrawerKicker").textContent=meta.label;
+  el("batchDrawerTitle").textContent=`รายการย่อย ${item.id||row.id||""}`;
+
+  const claimLinks=[];
+  if(item.claimPdfUrl)claimLinks.push(`<a class="main-claim-link" href="${escAttr(item.claimPdfUrl)}" target="_blank" rel="noopener">เปิดใบเบิกรายการ PDF</a>`);
+  if(item.receiptPdfUrl)claimLinks.push(`<a href="${escAttr(item.receiptPdfUrl)}" target="_blank" rel="noopener">เปิดใบแทนใบเสร็จ</a>`);
+  links.forEach(x=>claimLinks.push(`<a href="${escAttr(x.url)}" target="_blank" rel="noopener">${esc(x.label||"เปิดหลักฐาน")}</a>`));
+
+  const itemLinksHtml=links.length?links.map(x=>`<a href="${escAttr(x.url)}" target="_blank" rel="noopener">${esc(x.label||"หลักฐาน")}</a>`).join(""):"ไม่มีเอกสารแนบ";
+  const auditDate=batchDate(row.claimDate);
+  const selected=BATCH_SELECTED.has(String(row.id));
+
+  el("batchDrawerBody").innerHTML=`
+    <div class="drawer-summary">
+      <div class="cell"><span>ผู้เบิก / ผู้รับเงิน</span><strong>${esc(row.payerName||"—")}</strong></div>
+      <div class="cell"><span>ยอดรวม</span><strong>${baht(row.amount)}</strong></div>
+      <div class="cell"><span>บัญชีรับเงิน</span><strong>${esc(row.bank||"—")} ${esc(row.accountNo||"—")}</strong></div>
+      <div class="cell"><span>บัญชีที่ใช้จ่าย</span><strong>เลือกหลังเอกสารผ่าน</strong><small>ยังไม่เข้าสู่ขั้นตอนโอนเงิน</small></div>
+      <div class="cell"><span>จำนวนรายการ</span><strong>1 รายการ · ${row.priority==="urgent"?"ด่วน":"ปกติ"}</strong></div>
+      <div class="cell"><span>สถานะ</span><strong>รอตรวจเอกสาร</strong><small>รวมเป็นใบเบิกภายหลังได้</small></div>
+    </div>
+    <div class="drawer-section main-claim-card">
+      <h4>เอกสารหลัก</h4>
+      <p class="master-secondary">รายการนี้เข้าสู่กระบวนการตรวจเอกสารแล้ว การรวมเป็นใบเบิกหลักเป็นฟีเจอร์เสริมและไม่ขวางการเปิดดูเอกสาร</p>
+      <div class="drawer-links">${claimLinks.length?claimLinks.join(""):"ยังไม่มีไฟล์ใบเบิกหรือใบแทน แต่สามารถดูหลักฐานจากรายการด้านล่างได้"}</div>
+    </div>
+    <div class="drawer-section">
+      <h4>รายการย่อยในรายการนี้</h4>
+      <div class="drawer-items">
+        <div class="drawer-item">
+          <div class="drawer-item-top"><b>1. ${esc(item.vendor||item.note||item.category||"ไม่ระบุรายการ")}</b><strong>${baht(row.amount)}</strong></div>
+          <div class="drawer-item-meta">${batchReceiptDate(row)} · ${esc(item.category||"ไม่ระบุหมวด")}${item.transferor?` · ผู้โอน ${esc(item.transferor)}`:""}</div>
+          <div class="drawer-links">${itemLinksHtml}</div>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-section">
+      <h4>ประวัติ Workflow</h4>
+      <div class="audit-list">
+        <div class="audit-entry"><i></i><div><b>ผู้เบิกยืนยันรายการ</b><span>${auditDate}</span></div></div>
+        <div class="audit-entry"><i></i><div><b>เข้าสู่รอตรวจเอกสาร</b><span>${auditDate} · สามารถรวมเป็นใบเบิกหลักภายหลังได้</span></div></div>
+      </div>
     </div>`;
-  }).join(""):`<div style="border:1px dashed #c9c9ce;border-radius:14px;padding:28px;text-align:center;color:#777">รายการนี้ยังไม่มีหลักฐานแนบ</div>`;
-  el("modalBody").innerHTML=`
-    <div style="padding-right:38px">
-      <div class="eyebrow">รายการเบิกรอตรวจเอกสาร</div>
-      <h3 style="font-size:24px;margin:5px 0 6px">${esc(item.vendor||item.category||"รายการเบิก")}</h3>
-      <div style="color:#6e6e73">รายการนี้อยู่ในขั้นตอนรอตรวจเอกสารแล้ว เปิดดูเอกสารได้ทันที ส่วนการรวมเป็นใบเบิกหลักเป็นฟีเจอร์เสริมและทำภายหลังได้</div>
-    </div>
-    <div class="drawer-summary" style="margin-top:18px">
-      <div class="cell"><span>ผู้เบิก</span><strong>${esc(row.payerName||"—")}</strong></div>
-      <div class="cell"><span>วันที่ตั้งเบิก</span><strong>${batchDate(row.claimDate)}</strong></div>
-      <div class="cell"><span>วันที่ตามใบเสร็จ</span><strong>${batchReceiptDate(row)}</strong></div>
-      <div class="cell"><span>ยอดเงิน</span><strong>${baht(row.amount)}</strong></div>
-    </div>
-    <div style="margin-top:14px;border:1px solid #e5e5e8;border-radius:14px;padding:13px">
-      <div style="font-size:11px;color:#777">รายละเอียด</div>
-      <div style="font-weight:700;margin-top:4px">${esc(item.note||item.category||"—")}</div>
-    </div>
-    <div style="margin-top:18px;border:1px solid #e5e5e8;border-radius:14px;padding:14px">
-      <h4 style="margin:0 0 10px">เอกสารของรายการนี้</h4>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">${docButtons||`<span style="color:#777">ระบบยังไม่พบไฟล์ใบเบิก/ใบแทนของรายการนี้ แต่ยังเปิดหลักฐานด้านล่างได้</span>`}</div>
-    </div>
-    <div style="margin-top:18px"><h4 style="margin:0 0 8px">หลักฐานที่แนบ</h4>${evidence}</div>
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap">
-      <button class="btn" id="queueReviewClose" type="button">ปิด</button>
-      <button class="btn solid" id="queueReviewSelect" type="button">เลือกไว้รวมใบเบิก</button>
-    </div>`;
-  el("modal").classList.add("show");
-  el("queueReviewClose").onclick=()=>el("modal").classList.remove("show");
-  el("queueReviewSelect").onclick=()=>{
-    TRANSFER_SELECTED.clear();
-    BATCH_SELECTED.add(String(row.id));
-    el("modal").classList.remove("show");
-    renderMasterTable();
-  };
+
+  el("batchDrawerFooter").innerHTML=`
+    <button class="btn" data-drawer-action="close">ปิด</button>
+    <button class="btn ${selected?"":"solid"}" data-drawer-action="queue-toggle-merge">${selected?"ยกเลิกเลือกไว้รวมใบเบิก":"เลือกไว้รวมใบเบิก"}</button>`;
 }
+
+function openQueueReview(id){openBatchDrawer(`queue:${String(id||"")}`);}
 
 function renderBatches(){
   const st=BATCH_DATA.settings||{};
@@ -2247,7 +2254,9 @@ function exportMasterTransfers(){const selected=selectedPaymentRows();const visi
 async function copyAccountNumber(value){try{await navigator.clipboard.writeText(String(value||""));}catch(_){const ta=document.createElement("textarea");ta.value=String(value||"");document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();}}
 function auditLabel(action){return ({created:"สร้างใบเบิกหลัก",documents_approved:"เอกสารผ่าน",documents_rejected:"ตีกลับให้แก้ไข",correction_notified:"แจ้ง LINE ให้แก้ไข",correction_resubmitted:"ผู้เบิกส่งกลับตรวจ",payment_channel_assigned:"เลือกบัญชีที่ใช้จ่าย",transfer_set:"เริ่มบันทึกการจ่าย",payment_slip_uploaded:"แนบหลักฐานและบันทึกว่าจ่ายแล้ว",line_notified:"แจ้ง LINE ว่าจ่ายแล้ว",payment_notification_retried:"ส่ง LINE ซ้ำ",bank_reconciled:"กระทบยอดธนาคารแล้ว",bank_reconciliation_unlinked:"ยกเลิกการกระทบยอด",status_changed:"เปลี่ยนสถานะ"})[action]||String(action||"อัปเดต");}
 function renderBatchDrawer(batchId){
-  const b=(BATCH_DATA.batches||[]).find(x=>String(x.id||x.docId)===String(batchId));if(!b){closeBatchDrawer();return;}ACTIVE_BATCH_ID=String(b.id||b.docId);const step=batchStep(b),meta=BATCH_STATUS_META[b.profileComplete===false&&step!=="paid"?"missing":step]||BATCH_STATUS_META.review;
+  const requestedId=String(batchId||"");
+  if(requestedId.startsWith("queue:"))return renderQueueDrawer(requestedId.slice(6));
+  const b=(BATCH_DATA.batches||[]).find(x=>String(x.id||x.docId)===requestedId);if(!b){closeBatchDrawer();return;}ACTIVE_BATCH_ID=String(b.id||b.docId);const step=batchStep(b),meta=BATCH_STATUS_META[b.profileComplete===false&&step!=="paid"?"missing":step]||BATCH_STATUS_META.review;
   el("batchDrawerKicker").textContent=meta.label;el("batchDrawerTitle").textContent=b.docId||b.runNo||"ใบเบิก";
   const items=Array.isArray(b.items)?b.items:[];
   const itemHtml=items.length?items.map((item,i)=>{const links=itemLinks(item);return `<div class="drawer-item"><div class="drawer-item-top"><b>${i+1}. ${esc(item.vendor||item.note||"ไม่ระบุรายการ")}</b><strong>${baht(item.amount)}</strong></div><div class="drawer-item-meta">${batchDate(item.dateISO||item.createdAt)} · ${esc(item.category||"ไม่ระบุหมวด")}${item.transferor?` · ผู้โอน ${esc(item.transferor)}`:""}</div><div class="drawer-links">${links.length?links.map(x=>`<a href="${escAttr(x.url)}" target="_blank" rel="noopener">${esc(x.label)}</a>`).join(""):"ไม่มีเอกสารแนบ"}</div></div>`;}).join(""):"<div class='master-secondary'>ไม่พบรายการย่อยใน Contract</div>";
@@ -2276,7 +2285,27 @@ function closeBatchDrawer(){ACTIVE_BATCH_ID="";if(el("batchDrawerBackdrop"))el("
 function openRejectDialog(batchId){const b=(BATCH_DATA.batches||[]).find(x=>String(x.id||x.docId)===String(batchId));if(!b)return;REJECT_BATCH_ID=String(b.id||b.docId);el("batchRejectDetail").value="";el("batchRejectReason").value="เอกสารไม่ครบ";el("batchRejectItems").innerHTML=(b.items||[]).map((item,i)=>`<label><input type="checkbox" data-reject-item="${escAttr(item.id)}" checked><span>${i+1}. ${esc(item.vendor||item.note||"รายการ")}</span><small>${baht(item.amount)}</small></label>`).join("")||"<span class='master-secondary'>ตีกลับทั้งใบเบิก</span>";el("batchRejectBackdrop").hidden=false;document.body.style.overflow="hidden";}
 function closeRejectDialog(){REJECT_BATCH_ID="";el("batchRejectBackdrop").hidden=true;if(el("batchDrawerBackdrop")?.hidden!==false)document.body.style.overflow="";}
 async function submitBatchReject(){if(!REJECT_BATCH_ID)return;const base=el("batchRejectReason").value,detail=el("batchRejectDetail").value.trim(),reason=detail?`${base}: ${detail}`:base,itemIds=[...document.querySelectorAll("[data-reject-item]:checked")].map(x=>x.dataset.rejectItem);const btn=el("batchRejectSubmit"),old=btn.textContent;btn.disabled=true;btn.textContent="กำลังแจ้ง LINE…";try{const out=await batchPost("/api/batch-workflow",{batchId:REJECT_BATCH_ID,action:"reject",payload:{reason,itemIds}});closeRejectDialog();await refreshBatchData({quiet:true});alert(`ตีกลับแล้ว\nLINE: ${out.notificationStatus||"ตรวจสอบในระบบ"}`);}catch(e){alert("ตีกลับไม่สำเร็จ: "+e.message);}finally{btn.disabled=false;btn.textContent=old;}}
-async function runDrawerAction(action){const b=(BATCH_DATA.batches||[]).find(x=>String(x.id||x.docId)===String(ACTIVE_BATCH_ID));if(!b)return;if(action==="close")return closeBatchDrawer();if(action==="open-payment")return openPaymentDialog(ACTIVE_BATCH_ID);if(action==="open-reconciliation"){closeBatchDrawer();RECON_CHANNEL_ID=String(b.paymentChannelId||"");openPage("reconciliation");return;}if(action==="reject")return openRejectDialog(ACTIVE_BATCH_ID);if(action==="approve"){if(!confirm("ยืนยันว่าเอกสารทั้งหมดผ่านและพร้อมโอนเงิน?"))return;await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"approve"});}if(action==="resubmit"){if(!confirm("รับรายการกลับเข้าสถานะรอตรวจเอกสารอีกครั้ง?"))return;await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"resubmit"});}if(action==="retry-line"){await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"retry_payment_notification"});}await refreshBatchData({quiet:true});}
+async function runDrawerAction(action){
+  if(action==="close")return closeBatchDrawer();
+  if(String(ACTIVE_BATCH_ID).startsWith("queue:")){
+    const queueId=String(ACTIVE_BATCH_ID).slice(6);
+    if(action==="queue-toggle-merge"){
+      if(BATCH_SELECTED.has(queueId))BATCH_SELECTED.delete(queueId);else BATCH_SELECTED.add(queueId);
+      TRANSFER_SELECTED.clear();
+      renderMasterTable();
+      renderQueueDrawer(queueId);
+    }
+    return;
+  }
+  const b=(BATCH_DATA.batches||[]).find(x=>String(x.id||x.docId)===String(ACTIVE_BATCH_ID));if(!b)return;
+  if(action==="open-payment")return openPaymentDialog(ACTIVE_BATCH_ID);
+  if(action==="open-reconciliation"){closeBatchDrawer();RECON_CHANNEL_ID=String(b.paymentChannelId||"");openPage("reconciliation");return;}
+  if(action==="reject")return openRejectDialog(ACTIVE_BATCH_ID);
+  if(action==="approve"){if(!confirm("ยืนยันว่าเอกสารทั้งหมดผ่านและพร้อมโอนเงิน?"))return;await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"approve"});}
+  if(action==="resubmit"){if(!confirm("รับรายการกลับเข้าสถานะรอตรวจเอกสารอีกครั้ง?"))return;await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"resubmit"});}
+  if(action==="retry-line"){await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"retry_payment_notification"});}
+  await refreshBatchData({quiet:true});
+}
 async function uploadBatchPaymentSlipFile(batchId,file,{paymentChannelId="",confirmBefore=true,refresh=true,quiet=false}={}){
   if(!batchId||!file)throw new Error("กรุณาเลือกไฟล์หลักฐานการโอน");
   const allowed=["image/jpeg","image/png","image/webp","application/pdf"];
