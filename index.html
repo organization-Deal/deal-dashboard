@@ -258,6 +258,29 @@
   @keyframes operationSlide{0%{transform:translateX(-120%)}50%{transform:translateX(105%)}100%{transform:translateX(260%)}}
   @media(prefers-reduced-motion:reduce){.operation-spinner,.operation-bar i{animation-duration:1.8s}}
 
+  /* Mandatory company setup gate */
+  .company-setup-gate{position:fixed;inset:0;z-index:180;display:grid;place-items:center;padding:22px;background:rgba(245,245,247,.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);overflow:auto}
+  .company-setup-gate[hidden]{display:none}
+  .company-setup-shell{width:min(94vw,760px);background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:30px;padding:30px;box-shadow:0 32px 100px rgba(0,0,0,.18)}
+  .company-setup-kicker{font-size:11px;font-weight:800;letter-spacing:.07em;color:var(--muted-2);text-transform:uppercase}
+  .company-setup-shell h2{margin:7px 0 8px;font-size:30px;line-height:1.16;letter-spacing:-.04em}
+  .company-setup-intro{margin:0;color:var(--muted);font-size:13.5px;line-height:1.65;max-width:620px}
+  .company-setup-progress{display:flex;align-items:center;gap:12px;margin:22px 0 16px}
+  .company-setup-progress strong{font-size:13px;white-space:nowrap}
+  .company-setup-track{height:5px;flex:1;background:#ececf1;border-radius:999px;overflow:hidden}
+  .company-setup-track span{display:block;height:100%;width:0;background:var(--ink);border-radius:999px;transition:width .25s ease}
+  .company-setup-list{display:grid;gap:10px}
+  .company-setup-step{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:13px;border:1px solid var(--line);border-radius:18px;padding:14px;background:#fff}
+  .company-setup-step.done{background:#f7fbf8;border-color:#dcecdf}
+  .company-setup-step.current{border-color:#1d1d1f;box-shadow:0 0 0 3px rgba(29,29,31,.06)}
+  .company-setup-icon{width:42px;height:42px;border-radius:13px;background:#f2f2f7;display:grid;place-items:center;font-size:18px;font-weight:800;color:var(--ink)}
+  .company-setup-step.done .company-setup-icon{background:#dff3e4;color:#248a3d}
+  .company-setup-copy{min-width:0}.company-setup-copy strong{display:block;font-size:14px}.company-setup-copy small{display:block;margin-top:4px;color:var(--muted);font-size:11.5px;line-height:1.5}
+  .company-setup-action{min-width:128px}
+  .company-setup-foot{margin:16px 2px 0;color:var(--muted-2);font-size:11px;line-height:1.55;text-align:center}
+  body.company-setup-required{overflow:hidden!important}
+  @media(max-width:620px){.company-setup-gate{padding:12px}.company-setup-shell{padding:23px 16px;border-radius:24px}.company-setup-shell h2{font-size:25px}.company-setup-step{grid-template-columns:38px 1fr;padding:13px 12px}.company-setup-icon{width:38px;height:38px}.company-setup-action{grid-column:1/-1;width:100%}}
+
   /* modal / fatal */
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.34);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;backdrop-filter:blur(18px)}
   .modal.show{display:flex}
@@ -707,18 +730,13 @@
       <button class="navlink compact-only" data-p="settings"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21h-4v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3.1 14H3v-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3h4v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>ตั้งค่า</span></button>
       <div class="onboarding" id="onboardingCard">
         <button class="onboarding-head" id="onboardingToggle" type="button">
-          <strong>เริ่มต้นใช้งาน</strong><span class="count" id="onboardingCount">0/8</span><span class="chev">⌄</span>
+          <strong>ตั้งค่าบริษัทก่อนใช้งาน</strong><span class="count" id="onboardingCount">0/3</span><span class="chev">⌄</span>
         </button>
         <div class="onboarding-progress"><span id="onboardingBar"></span></div>
         <div class="onboarding-body" id="onboardingSteps">
-          <button class="onboard-step" data-step="line"><span class="step-dot"></span><span>เชื่อมต่อ LINE</span></button>
-          <button class="onboard-step" data-step="business"><span class="step-dot"></span><span>สร้างข้อมูลธุรกิจ</span></button>
-          <button class="onboard-step" data-step="google"><span class="step-dot"></span><span>เชื่อมต่อ Google</span></button>
-          <button class="onboard-step" data-step="finance"><span class="step-dot"></span><span>เพิ่มช่องทางการเงิน</span></button>
-          <button class="onboard-step" data-step="email"><span class="step-dot"></span><span>เปิดอีเมลรับเอกสาร</span></button>
-          <button class="onboard-step" data-step="receipt"><span class="step-dot"></span><span>อัปโหลดใบเสร็จแรก</span></button>
-          <button class="onboard-step" data-step="signature"><span class="step-dot"></span><span>ใส่ลายเซ็นรับรองใบแทน</span></button>
-          <button class="onboard-step" data-step="sheet"><span class="step-dot"></span><span>ตรวจรายการจาก Sheet</span></button>
+          <button class="onboard-step" data-step="owner_gmail"><span class="step-dot"></span><span>เชื่อม Gmail เจ้าของธุรกิจ</span></button>
+          <button class="onboard-step" data-step="company_documents"><span class="step-dot"></span><span>ข้อมูลบริษัท โลโก้ และลายเซ็น</span></button>
+          <button class="onboard-step" data-step="finance"><span class="step-dot"></span><span>เพิ่มช่องทางการโอนเงิน</span></button>
         </div>
       </div>
     </nav>
@@ -1267,6 +1285,27 @@
 </div>
 
 
+<div class="company-setup-gate" id="companySetupGate" role="dialog" aria-modal="true" aria-labelledby="companySetupTitle" hidden>
+  <div class="company-setup-shell">
+    <div class="company-setup-kicker">COMPANY SETUP</div>
+    <h2 id="companySetupTitle">ตั้งค่าบริษัทให้ครบก่อนเริ่มใช้งาน</h2>
+    <p class="company-setup-intro">ระบบต้องใช้ข้อมูล 3 ส่วนนี้เพื่อรับเอกสาร สร้างใบเบิก และระบุบัญชีที่ใช้โอนเงินอย่างถูกต้อง ข้อมูลที่บันทึกแล้วจะไม่ต้องกรอกซ้ำ</p>
+    <div class="company-setup-progress"><strong id="companySetupCount">0/3 ขั้นตอน</strong><div class="company-setup-track"><span id="companySetupBar"></span></div></div>
+    <div class="company-setup-list">
+      <div class="company-setup-step" id="companySetupGmail">
+        <div class="company-setup-icon">M</div><div class="company-setup-copy"><strong>Gmail เจ้าของธุรกิจ</strong><small id="companySetupGmailDetail">ใช้รับใบเสร็จ ใบกำกับภาษี และเอกสารจากอีเมล</small></div><button class="btn solid company-setup-action" type="button" data-company-setup="owner_gmail">เชื่อม Gmail</button>
+      </div>
+      <div class="company-setup-step" id="companySetupDocuments">
+        <div class="company-setup-icon">▣</div><div class="company-setup-copy"><strong>ข้อมูลบริษัท โลโก้ และลายเซ็น</strong><small id="companySetupDocumentsDetail">กรอกชื่อบริษัท เลขผู้เสียภาษี ผู้อนุมัติ พร้อมอัปโหลดโลโก้และลายเซ็น</small></div><button class="btn solid company-setup-action" type="button" data-company-setup="company_documents">ตั้งค่าเอกสาร</button>
+      </div>
+      <div class="company-setup-step" id="companySetupFinance">
+        <div class="company-setup-icon">฿</div><div class="company-setup-copy"><strong>ช่องทางการโอนเงิน</strong><small id="companySetupFinanceDetail">เพิ่มบัญชีธนาคาร พร้อมเพย์ หรือ e-Wallet อย่างน้อย 1 ช่องทาง</small></div><button class="btn solid company-setup-action" type="button" data-company-setup="finance">เพิ่มช่องทาง</button>
+      </div>
+    </div>
+    <div class="company-setup-foot">เมื่อครบทั้ง 3 ขั้นตอน ระบบจะปลดล็อก Dashboard และขั้นตอนเบิกจ่ายทั้งหมดโดยอัตโนมัติ</div>
+  </div>
+</div>
+
 <div class="operation-overlay" id="operationOverlay" role="status" aria-live="assertive" aria-busy="true" hidden>
   <div class="operation-card">
     <div class="operation-spinner" aria-hidden="true"></div>
@@ -1327,6 +1366,7 @@ let LAST_FOREGROUND_REFRESH = 0;
 const SETTINGS_SIGNAL_KEY=`document-settings-updated:${TENANT}`;
 const SIGNATURE_READY_KEY=`signature-ready:${TENANT}`;
 let LAST_SETTINGS_SIGNAL=localStorage.getItem(SETTINGS_SIGNAL_KEY)||"";
+let COMPANY_SETUP_ACTIVE="";
 
 
 const el=id=>document.getElementById(id);
@@ -1730,7 +1770,7 @@ function financeChannelIcon(channel={}){return String(channel.bank||channel.labe
 function financeChannelOptions(selectedId="",{placeholder=true,includeInactive=false}={}){const channels=financeChannels(false).filter(x=>includeInactive||x.active);return `${placeholder?'<option value="">เลือกบัญชีที่ใช้จ่าย</option>':""}${channels.map(x=>`<option value="${escAttr(x.id)}" ${String(x.id)===String(selectedId)?"selected":""}>${esc(financeChannelTitle(x))} · ${esc(financeChannelDetail(x))}${x.active?"":" (ปิดใช้งาน)"}</option>`).join("")}`;}
 function resetFinanceForm(){FINANCE_EDIT_INDEX=-1;if(el("financeFormTitle"))el("financeFormTitle").textContent="เพิ่มช่องทางการเงิน";["finLabel","finBank","finNumber","finName"].forEach(id=>{if(el(id))el(id).value="";});if(el("finType"))el("finType").value="bank";if(el("finDefault"))el("finDefault").checked=false;if(el("finActive"))el("finActive").checked=true;if(el("addFinance"))el("addFinance").textContent="บันทึกช่องทาง";if(el("cancelFinanceEdit"))el("cancelFinanceEdit").hidden=true;}
 function fillFinanceForm(index){const channel=financeChannels(false)[index];if(!channel)return;FINANCE_EDIT_INDEX=index;el("financeFormTitle").textContent="แก้ไขช่องทางการเงิน";el("finType").value=channel.type||"bank";el("finLabel").value=channel.label||"";el("finBank").value=channel.bank||"";el("finNumber").value=channel.number||"";el("finName").value=channel.name||"";el("finDefault").checked=channel.isDefault===true;el("finActive").checked=channel.active!==false;el("addFinance").textContent="บันทึกการแก้ไข";el("cancelFinanceEdit").hidden=false;el("finLabel").focus();}
-async function saveFinanceChannel(){const type=el("finType").value,label=el("finLabel").value.trim(),bank=el("finBank").value.trim(),number=el("finNumber").value.trim(),name=el("finName").value.trim(),isDefault=el("finDefault").checked,active=el("finActive").checked;if(!label)return alert("กรอกชื่อเรียกของช่องทางก่อน");if(type!=="cash"&&!bank)return alert("กรอกธนาคารหรือผู้ให้บริการก่อน");if(type!=="cash"&&!number)return alert("กรอกเลขบัญชีหรือหมายเลขก่อน");const now=new Date().toISOString(),channels=financeChannels(false);const previous=FINANCE_EDIT_INDEX>=0?channels[FINANCE_EDIT_INDEX]:null;const channel={id:previous?.id||`FIN_${crypto.randomUUID().replace(/-/g,"").slice(0,12)}`,label,type,bank,number,name,currency:"THB",active:isDefault?true:active,isDefault,createdAt:previous?.createdAt||now,updatedAt:now};if(isDefault)channels.forEach(x=>x.isDefault=false);if(FINANCE_EDIT_INDEX>=0)channels[FINANCE_EDIT_INDEX]=channel;else channels.push(channel);if(await saveSettings({payment_channels:JSON.stringify(channels)},"financeSaveState")){resetFinanceForm();await refreshBatchData({quiet:true}).catch(()=>{});}}
+async function saveFinanceChannel(){const type=el("finType").value,label=el("finLabel").value.trim(),bank=el("finBank").value.trim(),number=el("finNumber").value.trim(),name=el("finName").value.trim(),isDefault=el("finDefault").checked,active=el("finActive").checked;if(!label)return alert("กรอกชื่อเรียกของช่องทางก่อน");if(type!=="cash"&&!bank)return alert("กรอกธนาคารหรือผู้ให้บริการก่อน");if(type!=="cash"&&!number)return alert("กรอกเลขบัญชีหรือหมายเลขก่อน");const now=new Date().toISOString(),channels=financeChannels(false);const previous=FINANCE_EDIT_INDEX>=0?channels[FINANCE_EDIT_INDEX]:null;const channel={id:previous?.id||`FIN_${crypto.randomUUID().replace(/-/g,"").slice(0,12)}`,label,type,bank,number,name,currency:"THB",active:isDefault?true:active,isDefault,createdAt:previous?.createdAt||now,updatedAt:now};if(isDefault)channels.forEach(x=>x.isDefault=false);if(FINANCE_EDIT_INDEX>=0)channels[FINANCE_EDIT_INDEX]=channel;else channels.push(channel);if(await saveSettings({payment_channels:JSON.stringify(channels)},"financeSaveState")){resetFinanceForm();await refreshBatchData({quiet:true}).catch(()=>{});COMPANY_SETUP_ACTIVE="";renderCompanySetupGate({force:!companySetupState().ready});}}
 async function updateFinanceChannel(index,patch){const channels=financeChannels(false);if(!channels[index])return;channels[index]={...channels[index],...patch,updatedAt:new Date().toISOString()};if(patch.isDefault){channels.forEach((x,i)=>x.isDefault=i===index);channels[index].active=true;}if(await saveSettings({payment_channels:JSON.stringify(channels)},"financeSaveState")){await refreshBatchData({quiet:true}).catch(()=>{});if(el("page-reconciliation")?.classList.contains("show"))await refreshReconciliation({quiet:true}).catch(()=>{});}}
 async function saveSettings(patch,stateId=""){
   const state=stateId?el(stateId):null;
@@ -1784,6 +1824,84 @@ function approverSignatureUrl(){
 function hasApproverSignature(){
   return Boolean(approverSignatureUrl()||localStorage.getItem(SIGNATURE_READY_KEY)==="1");
 }
+function companyLogoUrl(){
+  return String(SETTINGS.logo_url||SETTINGS.company_logo_url||SETTINGS.logoUrl||"").trim();
+}
+function companySetupState(){
+  const documentChecks=[
+    ["ชื่อบริษัท",String(SETTINGS.company_name||"").trim()],
+    ["เลขผู้เสียภาษี",String(SETTINGS.tax_id||"").trim()],
+    ["ชื่อผู้อนุมัติ",String(SETTINGS.approver_name||"").trim()],
+    ["โลโก้บริษัท",companyLogoUrl()],
+    ["ลายเซ็นผู้อนุมัติ",approverSignatureUrl()],
+  ];
+  const documentMissing=documentChecks.filter(([,value])=>!value).map(([label])=>label);
+  const gmailReady=EMAIL_INFO.connected===true&&EMAIL_INFO.reconnectRequired!==true;
+  const financeCount=financeChannels(true).length;
+  return {
+    owner_gmail:gmailReady,
+    company_documents:documentMissing.length===0,
+    finance:financeCount>0,
+    gmailReady,financeCount,documentMissing,
+    ready:gmailReady&&documentMissing.length===0&&financeCount>0,
+  };
+}
+function companySetupWorkspaceOpen(){
+  const emailOpen=el("page-email")?.classList.contains("show");
+  const settingsOpen=el("page-settings")?.classList.contains("show");
+  const businessOpen=el("page-business")?.classList.contains("show")&&["profile","approver","finance"].includes(BUSINESS_TAB);
+  return Boolean(emailOpen||settingsOpen||businessOpen||COMPANY_SETUP_ACTIVE);
+}
+function setCompanySetupStep(id,ready,detail,buttonText){
+  const row=el(id);if(!row)return;
+  row.classList.toggle("done",ready);row.classList.toggle("current",!ready);
+  const icon=row.querySelector(".company-setup-icon");if(icon&&ready)icon.textContent="✓";
+  const detailNode=row.querySelector("small");if(detailNode)detailNode.textContent=detail;
+  const button=row.querySelector("[data-company-setup]");if(button){button.textContent=buttonText;button.classList.toggle("solid",!ready);}
+}
+function renderCompanySetupGate({force=false}={}){
+  const gate=el("companySetupGate");if(!gate||!HAS_LOADED)return;
+  const st=companySetupState();
+  const done=[st.owner_gmail,st.company_documents,st.finance].filter(Boolean).length;
+  if(el("companySetupCount"))el("companySetupCount").textContent=`${done}/3 ขั้นตอน`;
+  if(el("companySetupBar"))el("companySetupBar").style.width=`${done/3*100}%`;
+  const gmailDetail=st.owner_gmail?`เชื่อมแล้ว${EMAIL_INFO.email?` · ${EMAIL_INFO.email}`:""}`:(EMAIL_INFO.reconnectRequired?"สิทธิ์ Gmail หมดอายุ กรุณาเชื่อมใหม่":"ยังไม่ได้เชื่อม Gmail เจ้าของธุรกิจ");
+  const documentDetail=st.company_documents?"ข้อมูลบริษัท โลโก้ และลายเซ็นพร้อมสร้างเอกสาร":`ยังขาด ${st.documentMissing.join(" · ")}`;
+  const financeDetail=st.finance?`พร้อมใช้งาน ${st.financeCount} ช่องทาง`:"ยังไม่มีบัญชีหรือช่องทางที่ใช้โอนเงิน";
+  setCompanySetupStep("companySetupGmail",st.owner_gmail,gmailDetail,st.owner_gmail?"ตรวจสอบ":"เชื่อม Gmail");
+  setCompanySetupStep("companySetupDocuments",st.company_documents,documentDetail,st.company_documents?"ตรวจสอบ":"ตั้งค่าเอกสาร");
+  setCompanySetupStep("companySetupFinance",st.finance,financeDetail,st.finance?"ตรวจสอบ":"เพิ่มช่องทาง");
+  const show=!st.ready&&(force||!companySetupWorkspaceOpen());
+  gate.hidden=!show;
+  document.body.classList.toggle("company-setup-required",show);
+  if(st.ready){COMPANY_SETUP_ACTIVE="";localStorage.setItem(`company-setup-complete:${TENANT}`,"1");}
+}
+function openCompanySetupStep(step){
+  COMPANY_SETUP_ACTIVE=step;
+  const gate=el("companySetupGate");if(gate)gate.hidden=true;
+  document.body.classList.remove("company-setup-required");
+  if(step==="owner_gmail"){
+    if(EMAIL_INFO.connected===true&&EMAIL_INFO.reconnectRequired!==true){openPage("email",document.querySelector('[data-p="email"]'));return;}
+    beginOperation("เชื่อม Gmail เจ้าของธุรกิจ");
+    location.href=WORKER+`/gmail/connect?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(K)}`;return;
+  }
+  if(step==="company_documents"){
+    beginOperation("เปิดตั้งค่าข้อมูลบริษัท โลโก้ และลายเซ็น");
+    const qs=`?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(K)}&setup=1`;
+    location.href=location.origin+"/receipt"+qs;return;
+  }
+  if(step==="finance"){
+    openBusiness("finance",document.querySelector('[data-biz="finance"]'));return;
+  }
+}
+function requireCompanySetup(target=""){
+  if(companySetupState().ready)return false;
+  const allowedPages=new Set(["email","settings"]);
+  if(allowedPages.has(target))return false;
+  COMPANY_SETUP_ACTIVE="";
+  renderCompanySetupGate({force:true});
+  return true;
+}
 function syncSignatureReadyMarker(){
   if(approverSignatureUrl()) localStorage.setItem(SIGNATURE_READY_KEY,"1");
   LAST_SETTINGS_SIGNAL=localStorage.getItem(SETTINGS_SIGNAL_KEY)||"";
@@ -1804,6 +1922,8 @@ function setBusinessTab(tab){
 }
 function openPage(p,source=null){
   if(p==="reimburse")p="batches";
+  if(requireCompanySetup(p))return;
+  COMPANY_SETUP_ACTIVE=(p==="email"||p==="settings")?p:"";
   document.querySelectorAll(".navlink,.subnavlink").forEach(x=>x.classList.remove("active"));
   if(source)source.classList.add("active");
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
@@ -1819,6 +1939,10 @@ function openPage(p,source=null){
   if(p==="reconciliation") refreshReconciliation();
 }
 function openBusiness(tab,source=null){
+  if(!["profile","approver","finance"].includes(tab)&&requireCompanySetup("business"))return;
+  COMPANY_SETUP_ACTIVE=tab;
+  const gate=el("companySetupGate");if(gate)gate.hidden=true;
+  document.body.classList.remove("company-setup-required");
   document.querySelectorAll(".navlink,.subnavlink").forEach(x=>x.classList.remove("active"));
   if(source)source.classList.add("active");
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
@@ -1880,45 +2004,24 @@ function renderBusiness(){
   }).join(""):'<div class="empty-compact">ยังไม่มีข้อมูลสมาชิก</div>';
 }
 function onboardingState(){
-  return {
-    line:Boolean(TENANT),
-    business:Boolean(SETTINGS.company_name),
-    google:Boolean(CONNECTED),
-    finance:financeChannels(true).length>0,
-    email:Boolean(EMAIL_INFO.connected),
-    receipt:ALL.some(r=>r.img||r.amount),
-    signature:hasApproverSignature(),
-    sheet:localStorage.getItem(`sheet-checked:${TENANT}`)==="1",
-  };
+  const st=companySetupState();
+  return {owner_gmail:st.owner_gmail,company_documents:st.company_documents,finance:st.finance};
 }
 function renderOnboarding(){
-  const st=onboardingState();const order=["line","business","google","finance","email","receipt","signature","sheet"];
+  const st=onboardingState();const order=["owner_gmail","company_documents","finance"];
   const done=order.filter(k=>st[k]).length;
-  el("onboardingCount").textContent=`${done}/8`;
-  el("onboardingBar").style.width=`${done/8*100}%`;
+  el("onboardingCount").textContent=`${done}/3`;
+  el("onboardingBar").style.width=`${done/3*100}%`;
   let foundNext=false;
   document.querySelectorAll(".onboard-step").forEach(b=>{
     const yes=st[b.dataset.step];b.classList.toggle("done",yes);b.classList.remove("next");
     b.querySelector(".step-dot").textContent=yes?"✓":"";
     if(!yes&&!foundNext){b.classList.add("next");foundNext=true;}
   });
-  if(done===8)localStorage.setItem(`onboarding-complete:${TENANT}`,"1");
+  renderCompanySetupGate();
 }
 function onboardAction(step){
-  if(step==="business")return openBusiness("profile",document.querySelector('[data-biz="profile"]'));
-  if(step==="signature")return openBusiness("approver",document.querySelector('[data-biz="approver"]'));
-  if(step==="google"){location.href=WORKER+"/oauth/connect?tenant="+encodeURIComponent(TENANT);return;}
-  if(step==="finance")return openBusiness("finance",document.querySelector('[data-biz="finance"]'));
-  if(step==="email")return openPage("email",document.querySelector('[data-p="email"]'));
-  if(step==="receipt"){
-    el("modalBody").innerHTML='<h3 style="margin-top:0">อัปโหลดใบเสร็จแรก</h3><p style="color:var(--muted);font-size:13px">กลับไปที่กลุ่ม LINE แล้วส่งรูปใบเสร็จหรือสลิปให้บอท จากนั้นตรวจข้อมูลและกดบันทึก</p><button class="btn solid" onclick="document.getElementById(\'modal\').classList.remove(\'show\')">เข้าใจแล้ว</button>';
-    el("modal").classList.add("show");return;
-  }
-  if(step==="sheet")return openPage("expenses",document.querySelector('.navlink[data-p="expenses"]'));
-  if(step==="line"){
-    el("modalBody").innerHTML='<h3 style="margin-top:0">LINE เชื่อมต่อแล้ว</h3><p style="color:var(--muted);font-size:13px">ลิงก์ Dashboard นี้เปิดจากธุรกิจใน LINE ของคุณอยู่แล้ว</p>';
-    el("modal").classList.add("show");
-  }
+  openCompanySetupStep(step);
 }
 
 
@@ -2585,6 +2688,7 @@ function renderSettings(){
 
   const financeReady=financeChannels(true).length>0,financeState=el("setFinanceState");
   if(financeState){financeState.className="integration-state "+(financeReady?"ok":"warn");financeState.innerHTML=`<span class="state-dot"></span><span>${financeReady?`พร้อมใช้งาน ${financeChannels(true).length} ช่องทาง`:"ยังไม่มีช่องทางการเงิน"}</span>`;}
+  renderCompanySetupGate();
 }
 
 /* ---------- EXPORT ---------- */
@@ -2605,6 +2709,7 @@ document.querySelectorAll("[data-biz]").forEach(b=>b.addEventListener("click",()
 el("businessToggle").addEventListener("click",()=>el("businessGroup").classList.toggle("closed"));
 el("onboardingToggle").addEventListener("click",()=>el("onboardingCard").classList.toggle("closed"));
 document.querySelectorAll(".onboard-step").forEach(b=>b.addEventListener("click",()=>onboardAction(b.dataset.step)));
+document.querySelectorAll("[data-company-setup]").forEach(b=>b.addEventListener("click",()=>openCompanySetupStep(b.dataset.companySetup)));
 
 // จัดการข้อมูลธุรกิจ
 el("saveBusiness").onclick=async()=>{const ok=await saveSettings({company_name:el("bizCompany").value.trim(),company_address:el("bizAddress").value.trim().replace(/\n/g,"\\n"),tax_id:el("bizTaxId").value.trim()},"bizSaveState");if(ok){openPage("overview",document.querySelector('.navlink[data-p="overview"]'));window.scrollTo({top:0,behavior:"smooth"});}};
