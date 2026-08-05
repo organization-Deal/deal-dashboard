@@ -1299,6 +1299,9 @@ let REFRESHING = false;
 let HAS_LOADED = false;
 let EMAIL_POLL_TICK = 0;
 let LAST_FOREGROUND_REFRESH = 0;
+const SETTINGS_SIGNAL_KEY=`document-settings-updated:${TENANT}`;
+const SIGNATURE_READY_KEY=`signature-ready:${TENANT}`;
+let LAST_SETTINGS_SIGNAL=localStorage.getItem(SETTINGS_SIGNAL_KEY)||"";
 
 
 const el=id=>document.getElementById(id);
@@ -1621,6 +1624,7 @@ async function saveSettings(patch,stateId=""){
     const res=await fetch(apiUrl("/api/settings"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
     if(!res.ok) throw new Error("HTTP "+res.status);
     SETTINGS=await res.json();
+    syncSignatureReadyMarker();
     if(state) state.textContent="บันทึกแล้ว";
     renderBusiness();renderOnboarding();renderSettings();
     setTimeout(()=>{if(state)state.textContent="";},1800);
@@ -1632,6 +1636,7 @@ async function refreshSettings(){
     const res=await fetch(apiUrl("/api/settings")+`&_=${Date.now()}`,{cache:"no-store",headers:{"cache-control":"no-cache"}});
     if(!res.ok) throw new Error("HTTP "+res.status);
     SETTINGS=await res.json();
+    syncSignatureReadyMarker();
     renderBusiness();renderOnboarding();renderSettings();
     return true;
   }catch(err){console.warn("settings refresh failed",err);return false;}
@@ -1657,6 +1662,23 @@ async function refreshWorkspaceLinks(){
   }
 }
 function escAttr(v){return esc(v).replace(/`/g,"&#96;");}
+function approverSignatureUrl(){
+  return String(SETTINGS.approver_sign_url||SETTINGS.approverSignUrl||SETTINGS.approver_signature_url||SETTINGS.signature_url||"").trim();
+}
+function hasApproverSignature(){
+  return Boolean(approverSignatureUrl()||localStorage.getItem(SIGNATURE_READY_KEY)==="1");
+}
+function syncSignatureReadyMarker(){
+  if(approverSignatureUrl()) localStorage.setItem(SIGNATURE_READY_KEY,"1");
+  LAST_SETTINGS_SIGNAL=localStorage.getItem(SETTINGS_SIGNAL_KEY)||"";
+}
+async function refreshSettingsIfAssetChanged(force=false){
+  if(!HAS_LOADED&&!force)return false;
+  const signal=localStorage.getItem(SETTINGS_SIGNAL_KEY)||"";
+  if(!force&&signal===LAST_SETTINGS_SIGNAL)return false;
+  LAST_SETTINGS_SIGNAL=signal;
+  return refreshSettings();
+}
 function setBusinessTab(tab){
   BUSINESS_TAB=tab;
   document.querySelectorAll(".business-tab").forEach(x=>x.classList.remove("show"));
@@ -1702,10 +1724,12 @@ function renderBusiness(){
     ["ชื่อธุรกิจ",SETTINGS.company_name||"ยังไม่กรอก"],
     ["เลขผู้เสียภาษี",SETTINGS.tax_id||"ยังไม่กรอก"],
     ["ผู้อนุมัติ",SETTINGS.approver_name||"ยังไม่กรอก"],
-    ["ลายเซ็น",SETTINGS.approver_sign_url?"พร้อมใช้งาน":"ยังไม่อัปโหลด"],
+    ["ลายเซ็น",hasApproverSignature()?"พร้อมใช้งาน":"ยังไม่อัปโหลด"],
   ];
   el("businessReadiness").innerHTML=readiness.map(([k,v])=>`<div class="summary-item"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join("");
-  el("signatureStatus").innerHTML=`<div class="status-line ${SETTINGS.approver_sign_url?"ok":""}"><span class="light"></span><span>${SETTINGS.approver_sign_url?"มีลายเซ็นพร้อมใช้ในเอกสารใหม่":"ยังไม่มีลายเซ็นผู้อนุมัติ"}</span></div>${SETTINGS.approver_sign_url?`<div style="margin-top:14px"><img src="${escAttr(SETTINGS.approver_sign_url)}" alt="ลายเซ็น" style="max-width:220px;max-height:90px;object-fit:contain;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff"></div>`:""}`;
+  const signatureUrl=approverSignatureUrl();
+  const signatureReady=hasApproverSignature();
+  el("signatureStatus").innerHTML=`<div class="status-line ${signatureReady?"ok":""}"><span class="light"></span><span>${signatureReady?"มีลายเซ็นพร้อมใช้ในเอกสารใหม่":"ยังไม่มีลายเซ็นผู้อนุมัติ"}</span></div>${signatureUrl?`<div style="margin-top:14px"><img src="${escAttr(signatureUrl)}" alt="ลายเซ็น" style="max-width:220px;max-height:90px;object-fit:contain;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff"></div>`:""}`;
 
   const custom=parseSettingList("custom_categories");
   el("customCategoryTags").innerHTML=custom.length?custom.map((c,i)=>`<span class="manage-tag">${esc(c)}<button data-remove-category="${i}" aria-label="ลบ">×</button></span>`).join(""):'<span style="font-size:12px;color:var(--muted)">ยังไม่มีหมวดที่เพิ่มเอง</span>';
@@ -1746,7 +1770,7 @@ function onboardingState(){
     google:Boolean(CONNECTED),
     email:Boolean(EMAIL_INFO.connected),
     receipt:ALL.some(r=>r.img||r.amount),
-    signature:Boolean(SETTINGS.approver_sign_url),
+    signature:hasApproverSignature(),
     sheet:localStorage.getItem(`sheet-checked:${TENANT}`)==="1",
   };
 }
@@ -2710,10 +2734,12 @@ async function load(){
 
 el("syncBtn").addEventListener("click",async()=>{const reconOpen=el("page-reconciliation")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings(),refreshWorkspaceLinks()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings(),refreshWorkspaceLinks()]);else await Promise.all([refreshData({manual:true}),refreshSettings(),refreshWorkspaceLinks()]);});
 document.addEventListener("visibilitychange",()=>{
-  if(!document.hidden&&HAS_LOADED)refreshVisiblePage();
+  if(!document.hidden&&HAS_LOADED){refreshVisiblePage();refreshSettingsIfAssetChanged();}
 });
-window.addEventListener("focus",()=>{if(HAS_LOADED)refreshVisiblePage();});
-window.addEventListener("online",()=>{syncStatus("syncing","กลับมาออนไลน์ — กำลังซิงก์…");refreshVisiblePage({manual:true});});
+window.addEventListener("focus",()=>{if(HAS_LOADED){refreshVisiblePage();refreshSettingsIfAssetChanged();}});
+window.addEventListener("pageshow",()=>{if(HAS_LOADED)refreshSettingsIfAssetChanged(true);});
+window.addEventListener("storage",e=>{if(e.key===SETTINGS_SIGNAL_KEY||e.key===SIGNATURE_READY_KEY){renderOnboarding();refreshSettingsIfAssetChanged(true);}});
+window.addEventListener("online",()=>{syncStatus("syncing","กลับมาออนไลน์ — กำลังซิงก์…");refreshVisiblePage({manual:true});refreshSettingsIfAssetChanged(true);});
 window.addEventListener("offline",()=>syncStatus("error","ออฟไลน์ — รอเชื่อมต่อ"));
 
 load();
