@@ -2021,7 +2021,7 @@ function paymentProofCell(row){
 }
 function nextActionCell(row){
   if(row.statusKey==="missing")return `<button class="btn" data-open-team>เพิ่มข้อมูลบัญชี</button>`;
-  if(row.kind==="queue")return `<span class="payment-proof-empty">—</span>`;
+  if(row.kind==="queue")return `<button class="btn primary-next" data-open-queue-review="${escAttr(row.id)}">ตรวจเอกสาร</button>`;
   const step=row.workflowStep;
   if(step==="payment")return `<button class="btn solid primary-next" data-pay-batch="${escAttr(row.id)}">โอนและแนบหลักฐาน</button>`;
   const label=step==="review"?"ตรวจเอกสาร":step==="correction"?"ดูรายการแก้ไข":step==="rejected"?"ดูรายละเอียด":step==="paid"?"ดูรายละเอียด":"เปิด";
@@ -2058,6 +2058,49 @@ function renderMasterTable(){
   }).join(""):`<tr><td colspan="14"><div class="master-empty"><b>ไม่มีงานในสถานะนี้</b>ลองเลือก “ทุกสถานะ” หรือเปลี่ยนคำค้นหา</div></td></tr>`;
   updateMasterSelection();
 }
+function openQueueReview(id){
+  const row=masterPendingRows().find(x=>String(x.id)===String(id));
+  if(!row)return alert("ไม่พบรายการนี้ กรุณากดอัปเดตแล้วลองใหม่");
+  const item=row.raw||{};
+  const links=itemLinks(item);
+  const evidence=links.length?links.map((x,i)=>{
+    const isImage=/\.(png|jpe?g|webp|gif)(?:$|[?#])/i.test(String(x.url||""))||/googleusercontent|drive\.google\.com/i.test(String(x.url||""));
+    return `<div style="border:1px solid #e5e5e8;border-radius:14px;padding:10px;margin-top:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px"><b>${esc(x.label||`หลักฐาน ${i+1}`)}</b><a class="btn small" href="${escAttr(x.url)}" target="_blank" rel="noopener">เปิดไฟล์</a></div>
+      ${isImage?`<img src="${escAttr(x.url)}" alt="${escAttr(x.label||"หลักฐาน")}" style="display:block;width:100%;max-height:520px;object-fit:contain;background:#f6f6f8">`:""}
+    </div>`;
+  }).join(""):`<div style="border:1px dashed #c9c9ce;border-radius:14px;padding:28px;text-align:center;color:#777">รายการนี้ยังไม่มีหลักฐานแนบ</div>`;
+  el("modalBody").innerHTML=`
+    <div style="padding-right:38px">
+      <div class="eyebrow">ตรวจเอกสารรายการย่อย</div>
+      <h3 style="font-size:24px;margin:5px 0 6px">${esc(item.vendor||item.category||"รายการเบิก")}</h3>
+      <div style="color:#6e6e73">รายการนี้อยู่ในสถานะรอตรวจเอกสาร และยังเลือกไปรวมเป็นใบเบิกหลักได้</div>
+    </div>
+    <div class="drawer-summary" style="margin-top:18px">
+      <div class="cell"><span>ผู้เบิก</span><strong>${esc(row.payerName||"—")}</strong></div>
+      <div class="cell"><span>วันที่ตั้งเบิก</span><strong>${batchDate(row.claimDate)}</strong></div>
+      <div class="cell"><span>วันที่ตามใบเสร็จ</span><strong>${batchReceiptDate(row)}</strong></div>
+      <div class="cell"><span>ยอดเงิน</span><strong>${baht(row.amount)}</strong></div>
+    </div>
+    <div style="margin-top:14px;border:1px solid #e5e5e8;border-radius:14px;padding:13px">
+      <div style="font-size:11px;color:#777">รายละเอียด</div>
+      <div style="font-weight:700;margin-top:4px">${esc(item.note||item.category||"—")}</div>
+    </div>
+    <div style="margin-top:18px"><h4 style="margin:0 0 8px">หลักฐานที่แนบ</h4>${evidence}</div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;flex-wrap:wrap">
+      <button class="btn" id="queueReviewClose" type="button">ปิด</button>
+      <button class="btn solid" id="queueReviewSelect" type="button">เลือกเข้ารวมใบเบิก</button>
+    </div>`;
+  el("modal").classList.add("show");
+  el("queueReviewClose").onclick=()=>el("modal").classList.remove("show");
+  el("queueReviewSelect").onclick=()=>{
+    TRANSFER_SELECTED.clear();
+    BATCH_SELECTED.add(String(row.id));
+    el("modal").classList.remove("show");
+    renderMasterTable();
+  };
+}
+
 function renderBatches(){
   const st=BATCH_DATA.settings||{};
   if(el("batchNext"))el("batchNext").textContent=st.enabled?batchSettingsText():"ปิดอยู่";
@@ -2315,7 +2358,7 @@ if(el("batchMasterPaymentInput"))el("batchMasterPaymentInput").addEventListener(
 if(el("batchMasterExport"))el("batchMasterExport").onclick=exportMasterTransfers;
 function masterToggleVisible(should){
   masterFilteredRows().forEach(row=>{
-    if(row.kind==="queue"&&row.statusKey==="queue"){if(should)BATCH_SELECTED.add(row.id);else BATCH_SELECTED.delete(row.id);}
+    if(row.kind==="queue"&&row.statusKey==="review"){if(should)BATCH_SELECTED.add(row.id);else BATCH_SELECTED.delete(row.id);}
   });
   renderMasterTable();
 }
@@ -2330,6 +2373,7 @@ if(el("batchMasterBody"))el("batchMasterBody").addEventListener("click",e=>{
   const finance=e.target.closest("[data-open-finance]");if(finance){e.stopPropagation();return openBusiness("finance");}
   const pay=e.target.closest("[data-pay-batch]");if(pay){e.stopPropagation();return openPaymentDialog(pay.dataset.payBatch);}
   const copy=e.target.closest("[data-copy-account]");if(copy){e.stopPropagation();return copyAccountNumber(copy.dataset.copyAccount).then(()=>{const old=copy.textContent;copy.textContent="คัดลอกแล้ว";setTimeout(()=>copy.textContent=old,900);});}
+  const queueReview=e.target.closest("[data-open-queue-review]");if(queueReview){e.stopPropagation();return openQueueReview(queueReview.dataset.openQueueReview);}
   const button=e.target.closest("[data-open-batch-button]");if(button){e.stopPropagation();return openBatchDrawer(button.dataset.openBatchButton);}
   if(e.target.closest("a,button,input,label,select"))return;
   const row=e.target.closest("[data-open-batch]");if(row)openBatchDrawer(row.dataset.openBatch);
