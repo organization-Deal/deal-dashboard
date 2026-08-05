@@ -29,7 +29,7 @@
       <div class="section-label">อัตลักษณ์เอกสาร</div>
       <div class="field"><label>โลโก้บริษัท</label><div class="uploadrow"><input class="uploadfile" id="logoFile" type="file" accept="image/*"><button class="btn" id="logoUploadBtn" type="button" onclick="uploadAsset('logo')">อัปโหลด</button></div><input id="logo" placeholder="ลิงก์ไฟล์ใน Google Drive" style="margin-top:8px"><div id="logoStatus" class="status"></div><img id="logoPreview" class="asset-preview" alt="ตัวอย่างโลโก้"></div>
       <div class="field"><label>ลายเซ็นผู้อนุมัติ</label><div class="uploadrow"><input class="uploadfile" id="signFile" type="file" accept="image/*"><button class="btn" id="signUploadBtn" type="button" onclick="uploadAsset('sign')">อัปโหลด</button></div><input id="sign" placeholder="ลิงก์ไฟล์ใน Google Drive" style="margin-top:8px"><div id="signStatus" class="status"></div><img id="signPreview" class="asset-preview" alt="ตัวอย่างลายเซ็นผู้อนุมัติ"></div>
-      <div class="savebar"><button class="btn primary" type="button" onclick="saveSettings()">บันทึกและกลับหน้าแรก</button></div><div id="saveStatus" class="status"></div>
+      <div class="savebar"><button class="btn primary" id="saveBtn" type="button" onclick="saveSettings()">อัปโหลดและบันทึกทั้งหมด</button></div><div id="saveStatus" class="status"></div>
     </section>
     <section class="card"><h3>เอกสารที่สร้างแล้ว</h3><div class="sub" id="listStat">กำลังโหลด…</div><div class="rows" id="rows"></div></section>
   </main>
@@ -53,14 +53,16 @@ function signalDocumentSettingsChanged(){
   if(signatureUrl)localStorage.setItem(`signature-ready:${TENANT}`,'1');
   try{window.opener?.postMessage({type:'document-settings-updated',tenant:TENANT},location.origin)}catch{}
 }
-async function uploadAsset(kind){
-  const file=$(kind==='logo'?'logoFile':'signFile').files[0];
+async function uploadAssetFile(kind){
+  const fileInput=$(kind==='logo'?'logoFile':'signFile');
+  const file=fileInput.files[0];
   const st=$(kind==='logo'?'logoStatus':'signStatus');
   const btn=$(kind==='logo'?'logoUploadBtn':'signUploadBtn');
   const field=kind==='logo'?'logo_url':'approver_sign_url';
-  if(!file){st.textContent='เลือกไฟล์ก่อน';st.className='status bad';return}
-  if(file.size>5*1024*1024){st.textContent='ไฟล์ใหญ่เกิน 5 MB';st.className='status bad';return}
-  st.textContent='กำลังอัปโหลดและตรวจสอบการบันทึก…';st.className='status';btn.disabled=true;
+  if(!file) return {skipped:true,url:String(SETTINGS[field]||'').trim()};
+  if(file.size>5*1024*1024) throw new Error(`${kind==='logo'?'โลโก้':'ลายเซ็น'}ไฟล์ใหญ่เกิน 5 MB`);
+  st.textContent='กำลังอัปโหลดและตรวจสอบการบันทึก…';st.className='status';
+  if(btn)btn.disabled=true;
   try{
     const base64=await fileToBase64(file);
     const res=await fetch(api('/api/upload-image'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({kind,base64,mediaType:file.type||'image/png',name:`${kind}-${Date.now()}.${(file.name.split('.').pop()||'png')}`})});
@@ -70,18 +72,62 @@ async function uploadAsset(kind){
     const savedUrl=String(fresh[field]||'').trim();
     if(!savedUrl)throw new Error('อัปโหลดไฟล์แล้ว แต่ลิงก์ไม่ถูกบันทึกใน Settings');
     SETTINGS=fresh;fillSettings();signalDocumentSettingsChanged();
+    fileInput.value='';
     st.textContent='อัปโหลดและบันทึกถาวรแล้ว';st.className='status ok';
+    return {ok:true,url:savedUrl};
+  }finally{
+    if(btn)btn.disabled=false;
+  }
+}
+async function uploadAsset(kind){
+  try{
+    const out=await uploadAssetFile(kind);
+    if(out.skipped){
+      const st=$(kind==='logo'?'logoStatus':'signStatus');
+      st.textContent='เลือกไฟล์ก่อน';st.className='status bad';
+      return;
+    }
     toast(kind==='logo'?'บันทึกโลโก้ถาวรแล้ว':'บันทึกลายเซ็นถาวรแล้ว');
-  }catch(e){st.textContent='อัปโหลดไม่สำเร็จ: '+e.message;st.className='status bad';toast(e.message,true)}finally{btn.disabled=false}
+  }catch(e){
+    const st=$(kind==='logo'?'logoStatus':'signStatus');
+    st.textContent='อัปโหลดไม่สำเร็จ: '+e.message;st.className='status bad';toast(e.message,true);
+  }
 }
 async function load(){if(!TENANT||!KEY){$('rows').innerHTML='<div class="empty">เปิดหน้านี้จากลิงก์ใน LINE หรือ Dashboard</div>';return}$('back').href=HOME;try{const [rr,ss]=await Promise.all([fetch(api('/api/expenses')).then(r=>r.json()),getSettingsFresh()]);if(!Array.isArray(rr))throw new Error(rr.hint||rr.error||'โหลดรายการไม่ได้');RECORDS=FOCUS?rr.filter(r=>r.id===FOCUS):rr.filter(r=>r.type!=='รายรับ');SETTINGS=ss.error?{}:ss;fillSettings();render();if(FOCUS&&RECORDS[0]&&(!RECORDS[0].claimPdfUrl||!RECORDS[0].receiptPdfUrl)&&SETTINGS.company_name&&SETTINGS.tax_id&&SETTINGS.approver_name){await generate(FOCUS)}}catch(e){$('rows').innerHTML='<div class="empty">โหลดไม่สำเร็จ: '+esc(e.message)+'</div>';toast(e.message,true)}}
 function fillSettings(){$('company').value=SETTINGS.company_name||'';$('address').value=(SETTINGS.company_address||'').replace(/\\n/g,'\n');$('taxid').value=SETTINGS.tax_id||'';$('approver').value=SETTINGS.approver_name||'';$('logo').value=SETTINGS.logo_url||'';$('sign').value=SETTINGS.approver_sign_url||'';setAssetPreview('logo',SETTINGS.logo_url||'');setAssetPreview('sign',SETTINGS.approver_sign_url||'');$('logoStatus').textContent=SETTINGS.logo_url?'บันทึกแล้ว':'';$('logoStatus').className=SETTINGS.logo_url?'status ok':'status';$('signStatus').textContent=SETTINGS.approver_sign_url?'บันทึกแล้ว':'';$('signStatus').className=SETTINGS.approver_sign_url?'status ok':'status';if(SETTINGS.approver_sign_url)localStorage.setItem(`signature-ready:${TENANT}`,'1')}
 function render(){$('listStat').textContent=`${RECORDS.length} รายการ · เอกสารเก็บอยู่ใน Google Drive`;if(!RECORDS.length){$('rows').innerHTML='<div class="empty">ยังไม่มีเอกสารที่สร้างในระบบ</div>';return}$('rows').innerHTML=RECORDS.map(r=>{const docs=[];if(r.imageUrl||r.img)docs.push(`<a class="doc" target="_blank" rel="noopener" href="${esc(r.imageUrl||r.img)}">หลักฐานต้นฉบับ</a>`);if(r.claimPdfUrl)docs.push(`<a class="doc ready" target="_blank" rel="noopener" href="${esc(r.claimPdfUrl)}">ใบขอเบิก PDF</a>`);if(r.receiptPdfUrl)docs.push(`<a class="doc receipt" target="_blank" rel="noopener" href="${esc(r.receiptPdfUrl)}">ใบแทน PDF</a>`);const miss=(!r.claimPdfUrl||!r.receiptPdfUrl)?'<div class="missing">เอกสารกำลังสร้าง หรือข้อมูลบริษัทอาจยังไม่ครบ</div>':'';return `<article class="row"><div class="rowhead"><div><div class="vendor">${esc(r.vendor||'ไม่ระบุผู้รับ')}</div><div class="meta">ผู้โอน ${esc(r.transferor||'—')} · ผู้เบิก ${esc(r.payerName||r.sender||'—')}<br>${esc(r.dateText||r.date||'')} · ${esc(r.category||'ไม่ระบุหมวด')}</div></div><div><div class="amount">฿${money(r.amount)}</div><span class="badge">${esc(r.status||'รอเบิก')}</span></div></div><div class="docs">${docs.join('')}</div>${miss}</article>`}).join('')}
 async function generate(id,force=false){$('listStat').textContent='กำลังสร้างใบขอเบิกและใบแทน PDF…';try{const res=await fetch(api('/api/generate-docs'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id,force})});const out=await res.json();if(!out.ok)throw new Error(out.hint||out.error||'สร้างเอกสารไม่สำเร็จ');const i=RECORDS.findIndex(r=>r.id===id);if(i>=0)RECORDS[i]=out.record;render();toast('สร้างเอกสารแล้ว')}catch(e){$('listStat').textContent='สร้างเอกสารไม่สำเร็จ';toast(e.message,true)}}
 async function saveSettings(){
-  const body={...SETTINGS,company_name:$('company').value.trim(),company_address:$('address').value.trim().replace(/\n/g,'\\n'),tax_id:$('taxid').value.trim(),approver_name:$('approver').value.trim(),logo_url:$('logo').value.trim()||SETTINGS.logo_url||'',approver_sign_url:$('sign').value.trim()||SETTINGS.approver_sign_url||'',doc_prefix:SETTINGS.doc_prefix||'R'};
-  $('saveStatus').textContent='กำลังบันทึกและตรวจสอบ…';$('saveStatus').className='status';
+  const saveBtn=$('saveBtn');
+  if(saveBtn.disabled)return;
+  saveBtn.disabled=true;
+  const oldText=saveBtn.textContent;
+  $('saveStatus').textContent='กำลังตรวจไฟล์และบันทึก…';$('saveStatus').className='status';
   try{
+    // การเลือกไฟล์ยังไม่ใช่การอัปโหลด รอบนี้ปุ่มบันทึกจะอัปโหลดไฟล์ที่เลือกให้อัตโนมัติ
+    if($('logoFile').files[0]){
+      saveBtn.textContent='กำลังอัปโหลดโลโก้…';
+      $('saveStatus').textContent='กำลังอัปโหลดโลโก้บริษัท…';
+      await uploadAssetFile('logo');
+    }
+    if($('signFile').files[0]){
+      saveBtn.textContent='กำลังอัปโหลดลายเซ็น…';
+      $('saveStatus').textContent='กำลังอัปโหลดลายเซ็นผู้อนุมัติ…';
+      await uploadAssetFile('sign');
+    }
+
+    saveBtn.textContent='กำลังบันทึกข้อมูล…';
+    $('saveStatus').textContent='กำลังบันทึกและตรวจสอบข้อมูลบริษัท…';
+    const body={
+      ...SETTINGS,
+      company_name:$('company').value.trim(),
+      company_address:$('address').value.trim().replace(/\n/g,'\\n'),
+      tax_id:$('taxid').value.trim(),
+      approver_name:$('approver').value.trim(),
+      logo_url:$('logo').value.trim()||SETTINGS.logo_url||'',
+      approver_sign_url:$('sign').value.trim()||SETTINGS.approver_sign_url||'',
+      doc_prefix:SETTINGS.doc_prefix||'R'
+    };
     const res=await fetch(api('/api/settings'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
     const out=await res.json().catch(()=>({}));
     if(!res.ok||out.error)throw new Error(out.error||`บันทึกไม่สำเร็จ (${res.status})`);
@@ -90,10 +136,16 @@ async function saveSettings(){
     const failed=fields.filter(k=>!sameValue(fresh[k],body[k]));
     if(failed.length)throw new Error('ระบบอ่านค่ากลับไม่ตรง: '+failed.join(', '));
     SETTINGS=fresh;fillSettings();signalDocumentSettingsChanged();
-    $('saveStatus').textContent='บันทึกถาวรแล้ว';$('saveStatus').className='status ok';toast('บันทึกข้อมูลบริษัทถาวรแล้ว');
+    $('saveStatus').textContent='อัปโหลดและบันทึกถาวรแล้ว';$('saveStatus').className='status ok';
+    toast('อัปโหลดไฟล์และบันทึกข้อมูลเรียบร้อย');
     if(FOCUS)await generate(FOCUS,true);
-    setTimeout(()=>location.href=HOME,800);
-  }catch(e){$('saveStatus').textContent='บันทึกไม่สำเร็จ: '+e.message;$('saveStatus').className='status bad';toast(e.message,true)}
+    setTimeout(()=>location.href=HOME,900);
+  }catch(e){
+    $('saveStatus').textContent='บันทึกไม่สำเร็จ: '+e.message;$('saveStatus').className='status bad';toast(e.message,true);
+  }finally{
+    saveBtn.disabled=false;
+    saveBtn.textContent=oldText;
+  }
 }
 load();
 </script>
