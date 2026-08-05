@@ -1269,6 +1269,7 @@ let REJECT_BATCH_ID = "";
 let PAYMENT_BATCH_ID = "";
 let BATCH_POLL_TICK = 0;
 const BATCH_SELECTED = new Set();
+const REVIEW_BATCH_SELECTED = new Set();
 const TRANSFER_SELECTED = new Set();
 
 // ลดการอ่าน Google Sheets: ซิงก์อัตโนมัติทุก 30 วินาที และอ่านเฉพาะหน้าที่กำลังเปิด
@@ -1888,7 +1889,7 @@ function openEmailEditor(id){
 
 /* ---------- REIMBURSEMENT BATCHES: ONE ACCOUNTING TABLE V4 ---------- */
 const BATCH_WEEKDAYS=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
-const EXPECTED_BATCH_CONTRACT="REIMBURSEMENT_ACCOUNTING_TABLE_V5";
+const EXPECTED_BATCH_CONTRACT="REIMBURSEMENT_ACCOUNTING_TABLE_V6";
 const BATCH_STATUS_META={
   queue:{label:"รอตรวจเอกสาร",hint:"รายการย่อยที่ยืนยันแล้วและยังรวมเป็นใบเบิกหลักได้",order:2},
   review:{label:"รอตรวจเอกสาร",hint:"ตรวจหลักฐานและเอกสารก่อนอนุมัติ",order:2},
@@ -1947,7 +1948,7 @@ function masterPendingRows(){
   return out;
 }
 function masterBatchRows(){
-  return (BATCH_DATA.batches||[]).map(b=>{
+  return (BATCH_DATA.batches||[]).filter(b=>!["ถูกรวมแล้ว","merged"].includes(String(b.status||"").trim())).map(b=>{
     const step=batchStep(b),urgent=b.type==="ด่วน";
     return {kind:"batch",id:String(b.id||b.docId||""),statusKey:b.profileComplete===false&&step!=="paid"?"missing":step,workflowStep:step,priority:urgent?"urgent":"normal",claimDate:b.createdAt||b.submittedAt||b.updatedAt||"",receiptDate:b.periodStart||"",payerName:b.payerName||"—",accountName:b.accountName||"",bank:b.bank||"",accountNo:b.accountNo||"",amount:Number(b.total||0),title:b.docId||b.runNo||"—",note:`ใบเบิกหลัก · ${Number(b.itemCount||0)} รายการย่อย · ${urgent?"ด่วน":"ปกติ"}`,raw:b};
   });
@@ -1974,14 +1975,18 @@ function updateStatusCounts(){
   const map={statusAllCount:rows.length,statusQueueCount:count("queue"),statusReviewCount:count("review"),statusCorrectionCount:count("correction"),statusRejectedCount:count("rejected"),statusPaymentCount:count("payment"),statusPaidCount:count("paid")};
   Object.entries(map).forEach(([id,n])=>{if(el(id))el(id).textContent=Number(n||0).toLocaleString("th-TH");});
 }
+function reviewMergeSelectable(row){return row?.statusKey==="review"&&(row.kind==="queue"||(row.kind==="batch"&&row.workflowStep==="review"));}
+function reviewMergeSelected(row){return row.kind==="queue"?BATCH_SELECTED.has(row.id):REVIEW_BATCH_SELECTED.has(row.id);}
+function setReviewMergeSelected(row,selected){const set=row.kind==="queue"?BATCH_SELECTED:REVIEW_BATCH_SELECTED;if(selected)set.add(row.id);else set.delete(row.id);}
 function updateMasterSelection(){
-  const qn=BATCH_SELECTED.size;
-  const text=qn?`เลือก ${qn} รายการย่อย`:"ยังไม่ได้เลือกรายการ";
+  const qn=BATCH_SELECTED.size+REVIEW_BATCH_SELECTED.size;
+  const pieces=[];if(BATCH_SELECTED.size)pieces.push(`${BATCH_SELECTED.size} รายการย่อย`);if(REVIEW_BATCH_SELECTED.size)pieces.push(`${REVIEW_BATCH_SELECTED.size} ใบเบิก`);
+  const text=qn?`เลือก ${pieces.join(" + ")}`:"ยังไม่ได้เลือกรายการ";
   if(el("batchMasterSelected"))el("batchMasterSelected").textContent=text;
-  if(el("batchBulkHint"))el("batchBulkHint").textContent=qn?"รวมรายการที่เลือกเป็นใบเบิกหลัก 1 ใบ":"เลือกรายการรอตรวจที่ต้องการรวมเป็นใบเบิก";
+  if(el("batchBulkHint"))el("batchBulkHint").textContent=qn?"รวมทุกแถวที่เลือกเป็นใบเบิกหลักใหม่":"เลือกได้ทั้งรายการย่อยและใบเบิกที่อยู่ในสถานะรอตรวจเอกสาร";
   if(el("batchMasterCreate"))el("batchMasterCreate").disabled=!qn;
-  const visible=masterFilteredRows().filter(r=>r.kind==="queue"&&r.statusKey==="review");
-  const checked=visible.filter(r=>BATCH_SELECTED.has(r.id)).length;
+  const visible=masterFilteredRows().filter(reviewMergeSelectable);
+  const checked=visible.filter(reviewMergeSelected).length;
   const head=el("batchMasterHeaderCheck");if(head){head.checked=visible.length>0&&checked===visible.length;head.indeterminate=checked>0&&checked<visible.length;}
 }
 function batchPaymentChannels(){const fromApi=Array.isArray(BATCH_DATA.paymentChannels)?BATCH_DATA.paymentChannels.map(normalizeFinanceChannel):[];return (fromApi.length?fromApi:financeChannels(false));}
@@ -2032,11 +2037,12 @@ function renderMasterTable(){
   updateStatusCounts();
   const pending=masterPendingRows(),batches=masterBatchRows();
   const validQueue=new Set(pending.filter(r=>r.statusKey==="review").map(r=>r.id));[...BATCH_SELECTED].forEach(id=>{if(!validQueue.has(id))BATCH_SELECTED.delete(id);});
+  const validReviewBatches=new Set(batches.filter(r=>r.workflowStep==="review"&&r.statusKey==="review").map(r=>r.id));[...REVIEW_BATCH_SELECTED].forEach(id=>{if(!validReviewBatches.has(id))REVIEW_BATCH_SELECTED.delete(id);});
   const validPayment=new Set(batches.filter(r=>r.workflowStep==="payment"&&r.statusKey!=="missing").map(r=>r.id));[...TRANSFER_SELECTED].forEach(id=>{if(!validPayment.has(id))TRANSFER_SELECTED.delete(id);});
   const rows=masterFilteredRows();
   body.innerHTML=rows.length?rows.map(row=>{
-    const b=row.raw||{},isQueue=row.kind==="queue",selectable=isQueue&&row.statusKey==="review",checked=BATCH_SELECTED.has(row.id);
-    const checkbox=selectable?`<input class="master-checkbox" type="checkbox" data-master-queue="${escAttr(row.id)}" ${checked?"checked":""}>`:"";
+    const b=row.raw||{},isQueue=row.kind==="queue",selectable=reviewMergeSelectable(row),checked=reviewMergeSelected(row);
+    const checkbox=selectable?`<input class="master-checkbox" type="checkbox" data-master-merge-kind="${escAttr(row.kind)}" data-master-merge-id="${escAttr(row.id)}" ${checked?"checked":""}>`:"";
     const accountNo=row.accountNo||"";
     const rowClass=row.statusKey==="paid"?"row-paid":["correction","rejected"].includes(row.statusKey)?"row-correction":"";
     return `<tr class="${rowClass}" ${isQueue?"":`data-open-batch="${escAttr(row.id)}"`}>
@@ -2129,11 +2135,24 @@ async function refreshBatchData({quiet=false}={}){
   if(BATCH_LOADING)return false;BATCH_LOADING=true;const b=el("batchMasterRefresh"),old=b?.textContent;if(!quiet&&b){b.disabled=true;b.textContent="กำลังอัปเดต…";}
   try{const res=await fetch(apiUrl("/api/batches"),{cache:"no-store",headers:{"cache-control":"no-cache"}}),data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(accountingApiError(data,res));if(data.ok!==true||!data.pending||!Array.isArray(data.batches))throw new Error("รูปแบบข้อมูลใบเบิกไม่ถูกต้อง");if(!String(data.version||"").startsWith(EXPECTED_BATCH_CONTRACT))console.warn("batch contract mismatch",data.version);BATCH_DATA=data;renderBatches();return true;}catch(err){console.error("batch refresh failed",err);if(!quiet)alert("โหลดตารางเบิกจ่ายไม่สำเร็จ: "+err.message);return false;}finally{BATCH_LOADING=false;if(b){b.disabled=false;b.textContent=old||"อัปเดต";}}
 }
-function clearAccountingSelection(){BATCH_SELECTED.clear();TRANSFER_SELECTED.clear();renderMasterTable();}
+function clearAccountingSelection(){BATCH_SELECTED.clear();REVIEW_BATCH_SELECTED.clear();TRANSFER_SELECTED.clear();renderMasterTable();}
 async function createBatchFromSelection(type="ปกติ"){
-  const ids=[...BATCH_SELECTED];if(!ids.length)return;const urgent=type==="ด่วน";if(!confirm(`${urgent?"สร้างใบเบิกด่วน":"รวมเป็นใบเบิก"}จาก ${ids.length} รายการย่อยที่เลือก?`))return;
-  const button=urgent?el("batchMasterUrgent"):el("batchMasterCreate"),old=button?.textContent;if(button){button.disabled=true;button.textContent="กำลังสร้าง…";}
-  try{const out=urgent?await batchPost("/api/batch-urgent",{expenseIds:ids}):await batchPost("/api/batch-close",{expenseIds:ids});alert(out.itemCount?`สร้างใบเบิก ${out.batches?.[0]?.docId||out.runNo} สำเร็จ\n${out.itemCount} รายการย่อย · ${baht(out.total)}`:(out.message||"ไม่มีรายการ"));BATCH_SELECTED.clear();await refreshBatchData({quiet:true});setStatusFilter("review");}catch(err){alert("สร้างใบเบิกไม่สำเร็จ: "+err.message);}finally{if(button){button.disabled=false;button.textContent=old||"รวมเป็นใบเบิก";}}
+  const expenseIds=[...BATCH_SELECTED],batchIds=[...REVIEW_BATCH_SELECTED],selectedCount=expenseIds.length+batchIds.length;if(!selectedCount)return;
+  const urgent=type==="ด่วน";
+  const summary=[expenseIds.length?`${expenseIds.length} รายการย่อย`:"",batchIds.length?`${batchIds.length} ใบเบิกเดิม`:""].filter(Boolean).join(" และ ");
+  if(!confirm(`${urgent?"สร้างใบเบิกด่วน":"รวมเป็นใบเบิกหลักใหม่"}จาก ${summary}?
+
+ใบเบิกเดิมที่เลือกจะถูกเก็บประวัติว่า “ถูกรวมแล้ว”`))return;
+  const button=urgent?el("batchMasterUrgent"):el("batchMasterCreate"),old=button?.textContent;if(button){button.disabled=true;button.textContent="กำลังรวม…";}
+  try{
+    const out=urgent?await batchPost("/api/batch-urgent",{expenseIds}):await batchPost("/api/batch-close",{expenseIds,batchIds});
+    const docs=(out.batches||[]).map(x=>x.docId).filter(Boolean);
+    alert(out.itemCount?`สร้างใบเบิกสำเร็จ${docs.length?`
+${docs.join(", ")}`:""}
+${out.itemCount} รายการย่อย · ${baht(out.total)}${out.mergedBatchCount?`
+รวมใบเบิกเดิม ${out.mergedBatchCount} ใบ`:""}`:(out.message||"ไม่มีรายการ"));
+    BATCH_SELECTED.clear();REVIEW_BATCH_SELECTED.clear();await refreshBatchData({quiet:true});setStatusFilter("review");
+  }catch(err){alert("รวมใบเบิกไม่สำเร็จ: "+err.message);}finally{if(button){button.disabled=false;button.textContent=old||"รวมเป็นใบเบิก";}}
 }
 function markSelectedTransfers(){
   const rows=selectedPaymentRows();
@@ -2357,14 +2376,17 @@ if(el("batchMasterMarkTransfer"))el("batchMasterMarkTransfer").onclick=markSelec
 if(el("batchMasterPaymentInput"))el("batchMasterPaymentInput").addEventListener("change",e=>uploadSelectedPaymentSlips(e.target));
 if(el("batchMasterExport"))el("batchMasterExport").onclick=exportMasterTransfers;
 function masterToggleVisible(should){
-  masterFilteredRows().forEach(row=>{
-    if(row.kind==="queue"&&row.statusKey==="review"){if(should)BATCH_SELECTED.add(row.id);else BATCH_SELECTED.delete(row.id);}
-  });
+  masterFilteredRows().forEach(row=>{if(reviewMergeSelectable(row))setReviewMergeSelected(row,should);});
   renderMasterTable();
 }
 if(el("batchMasterHeaderCheck"))el("batchMasterHeaderCheck").onchange=e=>masterToggleVisible(e.target.checked);
 if(el("batchMasterBody"))el("batchMasterBody").addEventListener("change",async e=>{
-  if(e.target.matches("[data-master-queue]")){const id=String(e.target.dataset.masterQueue||"");if(e.target.checked){TRANSFER_SELECTED.clear();BATCH_SELECTED.add(id);}else BATCH_SELECTED.delete(id);return renderMasterTable();}
+  if(e.target.matches("[data-master-merge-id]")){
+    const id=String(e.target.dataset.masterMergeId||""),kind=String(e.target.dataset.masterMergeKind||"queue");
+    const row=allMasterRows().find(x=>x.kind===kind&&String(x.id)===id);
+    if(row){TRANSFER_SELECTED.clear();setReviewMergeSelected(row,e.target.checked);}
+    return renderMasterTable();
+  }
   if(e.target.matches("[data-payment-channel-select]")){const select=e.target,batchId=select.dataset.batchId,channelId=select.value;if(!channelId)return;select.disabled=true;try{await assignBatchPaymentChannel(batchId,channelId,{quiet:true});}catch(err){alert("เลือกบัญชีที่จ่ายไม่สำเร็จ: "+err.message);await refreshBatchData({quiet:true});}finally{select.disabled=false;}return;}
   if(e.target.matches("[data-batch-slip]"))uploadBatchPaymentSlip(e.target);
 });
@@ -2536,7 +2558,7 @@ function refreshVisiblePage({manual=false}={}){
 
   // หน้าเบิกจ่ายและกระทบยอดใช้ API ของตัวเอง ไม่ยิง /api/expenses ซ้ำ
   if(batchOpen){
-    if(BATCH_SELECTED.size===0&&TRANSFER_SELECTED.size===0)refreshBatchData({quiet:true});
+    if(BATCH_SELECTED.size===0&&REVIEW_BATCH_SELECTED.size===0&&TRANSFER_SELECTED.size===0)refreshBatchData({quiet:true});
   }else if(reconciliationOpen){
     refreshReconciliation({quiet:true});
   }else{
