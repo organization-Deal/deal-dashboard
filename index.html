@@ -1,3 +1,4 @@
+<!-- REIMBURSEMENT_DASHBOARD_v2.7_REVIEW_DIRECT_20260805 -->
 <!-- REIMBURSEMENT_ACCOUNTING_TABLE_V3_2026-08-03 -->
 <!DOCTYPE html>
 <!-- DASHBOARD_UI_VERSION: ACCOUNTING_DOCUMENT_CENTER_V7_20260802 -->
@@ -790,7 +791,7 @@
         <div>
           <div class="head-kicker">ACCOUNTING WORKSPACE</div>
           <h3>โต๊ะทำงานเบิกจ่าย</h3>
-          <p>รายการย่อยหลายบิลจะถูกรวมเป็นใบเบิกหลัก 1 ใบ ก่อนตรวจ โอนเงิน และปิดงาน</p>
+          <p>รายการที่ผู้เบิกยืนยันจะเข้าคิวตรวจเอกสารทันที และยังเลือกหลายรายการเพื่อรวมเป็นใบเบิกหลักได้</p>
         </div>
         <div class="acct-head-actions">
           <div class="batch-schedule-card"><span>สร้างใบเบิกอัตโนมัติ</span><strong id="batchNext">กำลังตรวจ…</strong></div>
@@ -800,7 +801,6 @@
 
       <div class="acct-status-strip" id="batchStatusStrip" aria-label="กรองตามสถานะ">
         <button class="active" data-batch-filter="all"><span>ทั้งหมด</span><strong id="statusAllCount">0</strong></button>
-        <button data-batch-filter="queue"><span>รอสร้างใบเบิก</span><strong id="statusQueueCount">0</strong></button>
         <button data-batch-filter="review"><span>รอตรวจ</span><strong id="statusReviewCount">0</strong></button>
         <button data-batch-filter="correction"><span>ต้องแก้ไข</span><strong id="statusCorrectionCount">0</strong></button>
         <button data-batch-filter="rejected"><span>ไม่อนุมัติ</span><strong id="statusRejectedCount">0</strong></button>
@@ -818,7 +818,6 @@
             <input id="batchMasterSearch" type="search" placeholder="ค้นหาเลขใบเบิก ผู้เบิก ร้านค้า หรือเลขบัญชี">
             <select id="batchMasterStatus" aria-label="สถานะ">
               <option value="all">ทุกสถานะ</option>
-              <option value="queue">รอสร้างใบเบิก</option>
               <option value="review">รอตรวจเอกสาร</option>
               <option value="correction">ต้องแก้ไข</option>
               <option value="rejected">ไม่อนุมัติ / ยกเลิก</option>
@@ -1891,7 +1890,7 @@ function openEmailEditor(id){
 const BATCH_WEEKDAYS=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
 const EXPECTED_BATCH_CONTRACT="REIMBURSEMENT_ACCOUNTING_TABLE_V5";
 const BATCH_STATUS_META={
-  queue:{label:"รอสร้างใบเบิก",hint:"เลือกรายการย่อยเพื่อรวมเป็นใบเบิกหลัก",order:5},
+  queue:{label:"รอตรวจเอกสาร",hint:"รายการย่อยที่ยืนยันแล้วและยังรวมเป็นใบเบิกหลักได้",order:2},
   review:{label:"รอตรวจเอกสาร",hint:"ตรวจหลักฐานและเอกสารก่อนอนุมัติ",order:2},
   correction:{label:"ต้องแก้ไข",hint:"รอพนักงานแก้ไขหรือแนบเอกสาร",order:1},
   rejected:{label:"ไม่อนุมัติ",hint:"ใบเบิกถูกปฏิเสธหรือยกเลิก",order:9},
@@ -1943,7 +1942,7 @@ function masterPendingRows(){
   const out=[];
   (BATCH_DATA.pending?.groups||[]).forEach((g,gi)=>(g.items||[]).forEach(r=>{
     const urgent=r.batchType==="ด่วน"||r.batchStatus==="ขอเบิกด่วน";
-    out.push({kind:"queue",id:String(r.id||""),groupIndex:gi,statusKey:g.profileComplete===false?"missing":"queue",priority:urgent?"urgent":"normal",claimDate:r.createdAt||r.submittedAt||r.recordedAt||r.dateISO||r.dateText||"",receiptDate:r.dateISO||r.dateText||r.date||"",payerName:g.payerName||"—",accountName:g.accountName||"",bank:g.bank||"",accountNo:g.accountNo||g.accountMasked||"",amount:Number(r.amount||0),title:`รายการย่อย ${r.id||""}`,note:`${r.vendor||"ไม่ระบุผู้รับ"} · ${r.note||r.category||"—"}`,raw:r,group:g});
+    out.push({kind:"queue",id:String(r.id||""),groupIndex:gi,statusKey:g.profileComplete===false?"missing":"review",priority:urgent?"urgent":"normal",claimDate:r.createdAt||r.submittedAt||r.recordedAt||r.dateISO||r.dateText||"",receiptDate:r.dateISO||r.dateText||r.date||"",payerName:g.payerName||"—",accountName:g.accountName||"",bank:g.bank||"",accountNo:g.accountNo||g.accountMasked||"",amount:Number(r.amount||0),title:`รายการย่อย ${r.id||""}`,note:`${r.vendor||"ไม่ระบุผู้รับ"} · ${r.note||r.category||"—"}`,raw:r,group:g});
   }));
   return out;
 }
@@ -1979,9 +1978,9 @@ function updateMasterSelection(){
   const qn=BATCH_SELECTED.size;
   const text=qn?`เลือก ${qn} รายการย่อย`:"ยังไม่ได้เลือกรายการ";
   if(el("batchMasterSelected"))el("batchMasterSelected").textContent=text;
-  if(el("batchBulkHint"))el("batchBulkHint").textContent=qn?"รวมรายการที่เลือกเป็นใบเบิกหลัก 1 ใบ":"เลือกรายการย่อยที่ต้องการรวมเป็นใบเบิก";
+  if(el("batchBulkHint"))el("batchBulkHint").textContent=qn?"รวมรายการที่เลือกเป็นใบเบิกหลัก 1 ใบ":"เลือกรายการรอตรวจที่ต้องการรวมเป็นใบเบิก";
   if(el("batchMasterCreate"))el("batchMasterCreate").disabled=!qn;
-  const visible=masterFilteredRows().filter(r=>r.kind==="queue"&&r.statusKey==="queue");
+  const visible=masterFilteredRows().filter(r=>r.kind==="queue"&&r.statusKey==="review");
   const checked=visible.filter(r=>BATCH_SELECTED.has(r.id)).length;
   const head=el("batchMasterHeaderCheck");if(head){head.checked=visible.length>0&&checked===visible.length;head.indeterminate=checked>0&&checked<visible.length;}
 }
@@ -2032,11 +2031,11 @@ function renderMasterTable(){
   const body=el("batchMasterBody");if(!body)return;
   updateStatusCounts();
   const pending=masterPendingRows(),batches=masterBatchRows();
-  const validQueue=new Set(pending.filter(r=>r.statusKey==="queue").map(r=>r.id));[...BATCH_SELECTED].forEach(id=>{if(!validQueue.has(id))BATCH_SELECTED.delete(id);});
+  const validQueue=new Set(pending.filter(r=>r.statusKey==="review").map(r=>r.id));[...BATCH_SELECTED].forEach(id=>{if(!validQueue.has(id))BATCH_SELECTED.delete(id);});
   const validPayment=new Set(batches.filter(r=>r.workflowStep==="payment"&&r.statusKey!=="missing").map(r=>r.id));[...TRANSFER_SELECTED].forEach(id=>{if(!validPayment.has(id))TRANSFER_SELECTED.delete(id);});
   const rows=masterFilteredRows();
   body.innerHTML=rows.length?rows.map(row=>{
-    const b=row.raw||{},isQueue=row.kind==="queue",selectable=isQueue&&row.statusKey==="queue",checked=BATCH_SELECTED.has(row.id);
+    const b=row.raw||{},isQueue=row.kind==="queue",selectable=isQueue&&row.statusKey==="review",checked=BATCH_SELECTED.has(row.id);
     const checkbox=selectable?`<input class="master-checkbox" type="checkbox" data-master-queue="${escAttr(row.id)}" ${checked?"checked":""}>`:"";
     const accountNo=row.accountNo||"";
     const rowClass=row.statusKey==="paid"?"row-paid":["correction","rejected"].includes(row.statusKey)?"row-correction":"";
