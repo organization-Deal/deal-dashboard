@@ -105,7 +105,7 @@
   .head-title{display:flex;flex-direction:column;gap:1px;margin-right:4px}
   .head-kicker{font-size:11px;color:var(--muted-2);font-weight:600;letter-spacing:.035em;text-transform:uppercase}
   .head h2{margin:0;font-size:28px;font-weight:700;letter-spacing:-.035em;line-height:1.2}
-  .company-menu{margin-left:auto;display:flex;align-items:center;gap:10px;padding:5px 8px 5px 5px;border-radius:999px;background:rgba(255,255,255,.78);border:1px solid rgba(0,0,0,.065);box-shadow:0 4px 18px rgba(0,0,0,.035)}
+  .company-menu{margin-left:0;display:flex;align-items:center;gap:10px;padding:5px 8px 5px 5px;border-radius:999px;background:rgba(255,255,255,.78);border:1px solid rgba(0,0,0,.065);box-shadow:0 4px 18px rgba(0,0,0,.035)}
   .company-avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#111;color:#fff;font-size:12px;font-weight:700}
   .company-copy{display:flex;flex-direction:column;line-height:1.15;padding-right:3px;max-width:180px}
   .company-eyebrow{font-size:9.5px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.06em}
@@ -124,6 +124,13 @@
   .syncstate button{width:25px;height:25px;border:0;border-radius:50%;background:rgba(118,118,128,.10);color:var(--ink);cursor:pointer;display:grid;place-items:center;padding:0;font-size:14px}
   .syncstate button:hover{background:rgba(118,118,128,.18)}
   .syncstate button:disabled{opacity:.45;cursor:wait}
+  .workspace-links{display:flex;align-items:center;gap:7px;margin-left:auto}
+  .workspace-link{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:8px 12px;border:1px solid rgba(0,0,0,.08);border-radius:12px;background:#fff;color:var(--ink);font-size:11.5px;font-weight:700;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.035);transition:.16s ease;white-space:nowrap}
+  .workspace-link svg{width:16px;height:16px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .workspace-link:hover{border-color:rgba(0,0,0,.18);box-shadow:0 7px 20px rgba(0,0,0,.07);transform:translateY(-1px)}
+  .workspace-link.is-loading{opacity:.46;pointer-events:none;box-shadow:none}
+  .workspace-link.drive{background:#1d1d1f;color:#fff;border-color:#1d1d1f}
+  .workspace-link.drive:hover{background:#000;border-color:#000}
   @keyframes syncpulse{0%,100%{opacity:.45;transform:scale(.82)}50%{opacity:1;transform:scale(1.15)}}
 
   .page{display:none;animation:pageIn .24s ease}
@@ -400,7 +407,7 @@
     .sidefoot{padding:10px}.connbtn,.sidelink{justify-content:center;padding:10px}.who{justify-content:center}
     .main{padding:24px 18px 56px}
     .company-menu{margin-left:0}.company-copy{display:none}
-    .head{gap:9px}.head h2{font-size:24px}.syncstate .label{display:none}
+    .head{gap:9px}.head h2{font-size:24px}.syncstate .label{display:none}.workspace-links{margin-left:auto}.workspace-link{padding:8px 10px}.workspace-link span{display:none}
     .log-item{display:block}.log-time{width:auto;margin-bottom:5px}.log-docs{justify-content:flex-start;margin-top:7px}
   }
   @media(max-width:600px){
@@ -411,7 +418,7 @@
     .main{padding:20px 14px 92px;width:100%}.head{align-items:flex-start}.head-title{width:100%}
     .company-menu{display:none}.kpis{grid-template-columns:1fr 1fr;gap:10px}.kpi{padding:17px;min-height:122px;border-radius:19px}.kpi .big{font-size:25px}
     .grid2{display:block}.card{padding:18px;border-radius:22px}.toolbar{align-items:stretch}.toolbar>*{width:100%}.toolbar input[type=text]{min-width:0}
-    .rangesel{order:3}.syncstate{order:4}.head{margin-bottom:18px}
+    .rangesel{order:3}.syncstate{order:4}.workspace-links{order:5;margin-left:0}.workspace-link span{display:inline}.head{margin-bottom:18px}
     .row{gap:10px}.rdate{width:42px;height:42px}.dateinfo{display:none}.ramt .n{font-size:13px}
   }
   @media print{
@@ -717,9 +724,17 @@
         <button data-r="last">เดือนก่อน</button>
         <button data-r="all">ทั้งหมด</button>
       </div>
-      <div class="syncstate syncing" id="syncState" aria-live="polite" title="ตรวจข้อมูลใหม่อัตโนมัติทุก 5 วินาที">
+      <div class="syncstate syncing" id="syncState" aria-live="polite" title="ตรวจข้อมูลใหม่อัตโนมัติทุก 30 วินาที">
         <span class="dot"></span><span class="label" id="syncText">กำลังเชื่อมข้อมูล…</span>
         <button type="button" id="syncBtn" title="อัปเดตตอนนี้" aria-label="อัปเดตข้อมูลตอนนี้">↻</button>
+      </div>
+      <div class="workspace-links" aria-label="เปิดพื้นที่จัดเก็บข้อมูล">
+        <a class="workspace-link is-loading" id="openSheetLink" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true" title="กำลังโหลดลิงก์ Google Sheet">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v4h4M9 11h6M9 15h6M9 19h6"/></svg><span>เปิด Sheet</span>
+        </a>
+        <a class="workspace-link drive is-loading" id="openDriveLink" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true" title="กำลังโหลดลิงก์ Google Drive">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 4h7l5 8.5-3.5 6h-10l-3.5-6z"/><path d="M8.5 4 12 10m3.5-6L12 10m-8.5 2.5H12m8.5 0H12m-5 6 5-8m5 8-5-8"/></svg><span>เปิด Drive</span>
+        </a>
       </div>
       <div class="company-menu">
         <div class="company-avatar">D</div>
@@ -1247,6 +1262,7 @@ const K = QS.get("k") || "";
 const CONAME = QS.get("name") || "บริษัทของคุณ";
 let CONNECTED = false;
 let SETTINGS = {};
+let WORKSPACE_LINKS = {sheetUrl:"",driveUrl:""};
 let TEAM_EDIT_INDEX = -1;
 let FINANCE_EDIT_INDEX = -1;
 let TEAM_RENDERED = [];
@@ -1619,6 +1635,26 @@ async function refreshSettings(){
     renderBusiness();renderOnboarding();renderSettings();
     return true;
   }catch(err){console.warn("settings refresh failed",err);return false;}
+}
+function setWorkspaceLink(id,url,title){
+  const link=el(id);if(!link)return;
+  if(url){link.href=url;link.classList.remove("is-loading");link.removeAttribute("aria-disabled");link.title=title;}
+  else{link.href="#";link.classList.add("is-loading");link.setAttribute("aria-disabled","true");link.title="ยังไม่มีลิงก์สำหรับบริษัทนี้";}
+}
+async function refreshWorkspaceLinks(){
+  try{
+    const res=await fetch(apiUrl("/api/workspace-links")+`&_=${Date.now()}`,{cache:"no-store",headers:{"cache-control":"no-cache"}});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok||data.ok!==true)throw new Error(data.message||data.error||("HTTP "+res.status));
+    WORKSPACE_LINKS={sheetUrl:String(data.sheetUrl||""),driveUrl:String(data.driveUrl||"")};
+    setWorkspaceLink("openSheetLink",WORKSPACE_LINKS.sheetUrl,"เปิด Google Sheet ของบริษัทในแท็บใหม่");
+    setWorkspaceLink("openDriveLink",WORKSPACE_LINKS.driveUrl,"เปิด Google Drive ที่เก็บเอกสารในแท็บใหม่");
+    return true;
+  }catch(err){
+    console.warn("workspace links refresh failed",err);
+    setWorkspaceLink("openSheetLink","","");setWorkspaceLink("openDriveLink","","");
+    return false;
+  }
 }
 function escAttr(v){return esc(v).replace(/`/g,"&#96;");}
 function setBusinessTab(tab){
@@ -2580,13 +2616,13 @@ async function load(){
     return;
   }
   const ok=await refreshData({initial:true});
-  if(ok){await refreshSettings();await Promise.all([refreshEmailData(),refreshBatchData({quiet:true})]);
+  if(ok){await refreshSettings();await Promise.all([refreshEmailData(),refreshBatchData({quiet:true}),refreshWorkspaceLinks()]);
     const last=Date.parse(EMAIL_INFO.lastSyncAt||"");
     if(EMAIL_INFO.connected&&(!Number.isFinite(last)||Date.now()-last>10*60*1000))syncGmail({manual:false});
     startRealtime();let target=QS.get("page");if(target==="reimburse")target="batches";if(target&&el("page-"+target)){const b=document.querySelector(`[data-p="${target}"]`);openPage(target,b);}}
 }
 
-el("syncBtn").addEventListener("click",async()=>{const reconOpen=el("page-reconciliation")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings()]);else await Promise.all([refreshData({manual:true}),refreshSettings()]);});
+el("syncBtn").addEventListener("click",async()=>{const reconOpen=el("page-reconciliation")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings(),refreshWorkspaceLinks()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings(),refreshWorkspaceLinks()]);else await Promise.all([refreshData({manual:true}),refreshSettings(),refreshWorkspaceLinks()]);});
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden&&HAS_LOADED)refreshVisiblePage();
 });
