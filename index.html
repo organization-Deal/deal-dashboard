@@ -1,7 +1,7 @@
 <!-- REIMBURSEMENT_DASHBOARD_v2.7_REVIEW_DIRECT_20260805 -->
 <!-- REIMBURSEMENT_ACCOUNTING_TABLE_V3_2026-08-03 -->
 <!DOCTYPE html>
-<!-- DASHBOARD_UI_VERSION: UNIFIED_ITEM_DRAWER_V3_3_20260805 -->
+<!-- DASHBOARD_UI_VERSION: ONBOARDING_FINANCE_V3_6_20260805 -->
 <html lang="th">
 <head>
 <meta charset="UTF-8" />
@@ -685,20 +685,20 @@
           <button class="subnavlink" data-biz="finance">ช่องทางการเงิน <span class="new-badge">ใหม่</span></button>
           <button class="subnavlink" data-biz="team">ทีมของฉัน</button>
           <button class="subnavlink" data-p="settings">ตั้งค่า</button>
-          <a class="subnavlink" id="saleChecklistNav" href="checklist.html">ความพร้อมขาย <span class="new-badge">ใหม่</span></a>
         </div>
       </div>
       <button class="navlink compact-only" data-biz="profile"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 21v-9l8-6 8 6v9"/><path d="M9 21v-6h6v6"/></svg></span><span>จัดการธุรกิจ</span></button>
       <button class="navlink compact-only" data-p="settings"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21h-4v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3.1 14H3v-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3h4v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>ตั้งค่า</span></button>
       <div class="onboarding" id="onboardingCard">
         <button class="onboarding-head" id="onboardingToggle" type="button">
-          <strong>เริ่มต้นใช้งาน</strong><span class="count" id="onboardingCount">0/7</span><span class="chev">⌄</span>
+          <strong>เริ่มต้นใช้งาน</strong><span class="count" id="onboardingCount">0/8</span><span class="chev">⌄</span>
         </button>
         <div class="onboarding-progress"><span id="onboardingBar"></span></div>
         <div class="onboarding-body" id="onboardingSteps">
           <button class="onboard-step" data-step="line"><span class="step-dot"></span><span>เชื่อมต่อ LINE</span></button>
           <button class="onboard-step" data-step="business"><span class="step-dot"></span><span>สร้างข้อมูลธุรกิจ</span></button>
           <button class="onboard-step" data-step="google"><span class="step-dot"></span><span>เชื่อมต่อ Google</span></button>
+          <button class="onboard-step" data-step="finance"><span class="step-dot"></span><span>เพิ่มช่องทางการเงิน</span></button>
           <button class="onboard-step" data-step="email"><span class="step-dot"></span><span>เปิดอีเมลรับเอกสาร</span></button>
           <button class="onboard-step" data-step="receipt"><span class="step-dot"></span><span>อัปโหลดใบเสร็จแรก</span></button>
           <button class="onboard-step" data-step="signature"><span class="step-dot"></span><span>ใส่ลายเซ็นรับรองใบแทน</span></button>
@@ -710,7 +710,6 @@
       <div class="quick-title">Quick actions</div>
       <a class="sidelink" id="filesLink" href="#"><span>จับคู่หลักฐาน</span></a>
       <a class="sidelink" id="receiptLink" href="#"><span>เอกสารอัตโนมัติ</span></a>
-      <a class="sidelink" id="saleChecklistLink" href="checklist.html"><span>ความพร้อมขาย</span></a>
       <a class="connbtn" id="connBtn" href="#"><span>เชื่อมต่อ Google</span></a>
       <div class="who"><div class="av">D</div><div><div id="whoName">เจ้าของธุรกิจ</div></div></div>
     </div>
@@ -1218,10 +1217,10 @@
           <div class="integration-state" id="setGoogleState"><span class="state-dot"></span><span>กำลังตรวจสถานะ</span></div>
           <div class="integration-actions"><a class="btn solid" id="setGoogleAction" href="#">เชื่อมต่อ Google</a></div>
         </div>
-        <div class="integration-card">
-          <div class="integration-top"><div class="integration-icon" style="background:#1d1d1f;color:#fff">✓</div><div class="integration-copy"><div class="integration-name">ความพร้อมขาย</div><div class="integration-desc">เช็กสิ่งที่ทำเสร็จแล้ว งานที่เพิ่งเพิ่ม และรายการ P0/P1 ก่อนรับเงินจริงจากลูกค้า</div></div></div>
-          <div class="integration-state warn"><span class="state-dot"></span><span>ต้องทดสอบและปิดงานก่อนเปิดขาย</span></div>
-          <div class="integration-actions"><a class="btn solid" id="saleChecklistSettings" href="checklist.html">เปิดเช็กลิสต์</a></div>
+        <div class="integration-card" id="financeIntegrationCard">
+          <div class="integration-top"><div class="integration-icon" style="background:#1d1d1f;color:#fff">฿</div><div class="integration-copy"><div class="integration-name">ช่องทางการเงิน</div><div class="integration-desc">กำหนดบัญชีธนาคาร พร้อมเพย์ หรือ e-Wallet ที่บริษัทใช้จ่ายและใช้กระทบยอด</div></div></div>
+          <div class="integration-state" id="setFinanceState"><span class="state-dot"></span><span>กำลังตรวจสถานะ</span></div>
+          <div class="integration-actions"><button class="btn solid" type="button" data-open-finance>จัดการช่องทางการเงิน</button></div>
         </div>
         <div class="integration-card" id="settingsGmailCard">
           <div class="integration-top"><div class="integration-icon gmail">M</div><div class="integration-copy"><div class="integration-name">Gmail</div><div class="integration-desc">ค้นหาใบเสร็จ ใบกำกับภาษี และ Subscription จากอีเมลธุรกิจ</div></div></div>
@@ -1306,9 +1305,6 @@ let LAST_SETTINGS_SIGNAL=localStorage.getItem(SETTINGS_SIGNAL_KEY)||"";
 
 const el=id=>document.getElementById(id);
 
-if(el("saleChecklistNav"))el("saleChecklistNav").href="checklist.html"+location.search;
-if(el("saleChecklistLink"))el("saleChecklistLink").href="checklist.html"+location.search;
-if(el("saleChecklistSettings"))el("saleChecklistSettings").href="checklist.html"+location.search;
 
 const THMON=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const baht=n=>"฿"+Number(n||0).toLocaleString("th-TH",{minimumFractionDigits:0,maximumFractionDigits:2});
@@ -1768,6 +1764,7 @@ function onboardingState(){
     line:Boolean(TENANT),
     business:Boolean(SETTINGS.company_name),
     google:Boolean(CONNECTED),
+    finance:financeChannels(true).length>0,
     email:Boolean(EMAIL_INFO.connected),
     receipt:ALL.some(r=>r.img||r.amount),
     signature:hasApproverSignature(),
@@ -1775,22 +1772,23 @@ function onboardingState(){
   };
 }
 function renderOnboarding(){
-  const st=onboardingState();const order=["line","business","google","email","receipt","signature","sheet"];
+  const st=onboardingState();const order=["line","business","google","finance","email","receipt","signature","sheet"];
   const done=order.filter(k=>st[k]).length;
-  el("onboardingCount").textContent=`${done}/7`;
-  el("onboardingBar").style.width=`${done/7*100}%`;
+  el("onboardingCount").textContent=`${done}/8`;
+  el("onboardingBar").style.width=`${done/8*100}%`;
   let foundNext=false;
   document.querySelectorAll(".onboard-step").forEach(b=>{
     const yes=st[b.dataset.step];b.classList.toggle("done",yes);b.classList.remove("next");
     b.querySelector(".step-dot").textContent=yes?"✓":"";
     if(!yes&&!foundNext){b.classList.add("next");foundNext=true;}
   });
-  if(done===7)localStorage.setItem(`onboarding-complete:${TENANT}`,"1");
+  if(done===8)localStorage.setItem(`onboarding-complete:${TENANT}`,"1");
 }
 function onboardAction(step){
   if(step==="business")return openBusiness("profile",document.querySelector('[data-biz="profile"]'));
   if(step==="signature")return openBusiness("approver",document.querySelector('[data-biz="approver"]'));
   if(step==="google"){location.href=WORKER+"/oauth/connect?tenant="+encodeURIComponent(TENANT);return;}
+  if(step==="finance")return openBusiness("finance",document.querySelector('[data-biz="finance"]'));
   if(step==="email")return openPage("email",document.querySelector('[data-p="email"]'));
   if(step==="receipt"){
     el("modalBody").innerHTML='<h3 style="margin-top:0">อัปโหลดใบเสร็จแรก</h3><p style="color:var(--muted);font-size:13px">กลับไปที่กลุ่ม LINE แล้วส่งรูปใบเสร็จหรือสลิปให้บอท จากนั้นตรวจข้อมูลและกดบันทึก</p><button class="btn solid" onclick="document.getElementById(\'modal\').classList.remove(\'show\')">เข้าใจแล้ว</button>';
@@ -1949,7 +1947,7 @@ function openEmailEditor(id){
 
 /* ---------- REIMBURSEMENT BATCHES: ONE ACCOUNTING TABLE V4 ---------- */
 const BATCH_WEEKDAYS=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
-const DASHBOARD_UI_VERSION="UNIFIED_ITEM_DRAWER_V3_3_20260805";
+const DASHBOARD_UI_VERSION="ONBOARDING_FINANCE_V3_6_20260805";
 console.info("Dashboard UI",DASHBOARD_UI_VERSION);
 const EXPECTED_BATCH_CONTRACT="REIMBURSEMENT_ACCOUNTING_TABLE_V6";
 const BATCH_STATUS_META={
@@ -2464,6 +2462,9 @@ function renderSettings(){
   const gm=el("setGmailState");
   if(gm){const bad=EMAIL_INFO.reconnectRequired===true;gm.className="integration-state "+(gmailConnected?"ok":bad?"bad":"warn");gm.innerHTML=`<span class="state-dot"></span><span>${gmailConnected?"เชื่อมต่อแล้ว":bad?"สิทธิ์หมดอายุ":"ยังไม่ได้เชื่อมต่อ"}</span>`;}
   if(el("setGmailAction"))el("setGmailAction").textContent=gmailConnected?"เปิดกล่องเอกสาร":"เชื่อมต่อ Gmail";
+
+  const financeReady=financeChannels(true).length>0,financeState=el("setFinanceState");
+  if(financeState){financeState.className="integration-state "+(financeReady?"ok":"warn");financeState.innerHTML=`<span class="state-dot"></span><span>${financeReady?`พร้อมใช้งาน ${financeChannels(true).length} ช่องทาง`:"ยังไม่มีช่องทางการเงิน"}</span>`;}
 }
 
 /* ---------- EXPORT ---------- */
