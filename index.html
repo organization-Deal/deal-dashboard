@@ -1,6 +1,7 @@
 <!-- REIMBURSEMENT_DASHBOARD_v2.7_REVIEW_DIRECT_20260805 -->
 <!-- REIMBURSEMENT_ACCOUNTING_TABLE_V3_2026-08-03 -->
 <!DOCTYPE html>
+<!-- DASHBOARD_UI_VERSION: MULTI_BUSINESS_PRO_V4_9_20260807 -->
 <!-- DASHBOARD_UI_VERSION: SIDEBAR_WORKSPACE_CONTROL_V4_8_20260807 -->
 <html lang="th">
 <head>
@@ -773,6 +774,21 @@
   @media(max-width:760px){.control-row{grid-template-columns:38px minmax(0,1fr);gap:10px}.control-state{grid-column:2;justify-self:start}.control-action{grid-column:2;justify-self:start}.system-control-copy h3{font-size:24px}.system-control-hero{padding:23px 20px}}
   @media(max-width:860px){.nav-kicker,.workspace-toolbox,.system-group,.sidebar-plan{display:none!important}}
   @media(max-width:600px){.nav-kicker,.workspace-toolbox,.system-group{display:none!important}.sidebar nav>.navlink{display:none!important}.sidebar nav>.navlink.mobile-primary{display:flex!important}}
+
+  /* Multi-business switcher — Pro */
+  .business-switcher{position:relative;padding:0 12px 13px}
+  .business-switcher-btn{width:100%;display:grid;grid-template-columns:34px minmax(0,1fr) 18px;gap:9px;align-items:center;border:1px solid rgba(0,0,0,.075);background:#fff;border-radius:14px;padding:8px 9px;cursor:pointer;text-align:left;box-shadow:0 4px 16px rgba(0,0,0,.035);transition:.16s ease}
+  .business-switcher-btn:hover{border-color:rgba(0,0,0,.16);box-shadow:0 7px 22px rgba(0,0,0,.06)}
+  .business-switcher-avatar{width:34px;height:34px;border-radius:10px;background:#111;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800}
+  .business-switcher-copy{min-width:0;display:flex;flex-direction:column;gap:1px}.business-switcher-copy strong{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.business-switcher-copy span{font-size:9.5px;color:var(--muted-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.business-switcher-chevron{font-size:12px;color:#8e8e93;text-align:center;transition:.16s ease}.business-switcher.open .business-switcher-chevron{transform:rotate(180deg)}
+  .business-switcher-menu{position:absolute;left:12px;right:12px;top:calc(100% - 7px);z-index:90;background:#fff;border:1px solid rgba(0,0,0,.09);border-radius:16px;padding:7px;box-shadow:0 22px 55px rgba(0,0,0,.15)}
+  .business-switcher-menu[hidden]{display:none}.business-menu-label{font-size:9px;font-weight:800;letter-spacing:.07em;color:#98989d;padding:7px 9px 6px;text-transform:uppercase}
+  .business-menu-item{width:100%;display:flex;align-items:center;gap:9px;border:0;background:transparent;border-radius:11px;padding:9px;cursor:pointer;text-align:left}.business-menu-item:hover{background:#f5f5f7}.business-menu-item.current{background:#f5f5f7}.business-menu-mark{width:28px;height:28px;border-radius:9px;background:#f0f0f2;color:#111;display:grid;place-items:center;font-size:10px;font-weight:800;flex:0 0 28px}.business-menu-item.current .business-menu-mark{background:#111;color:#fff}.business-menu-copy{min-width:0;flex:1}.business-menu-copy strong{display:block;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.business-menu-copy small{display:block;margin-top:2px;font-size:9.5px;color:#8e8e93}.business-current-check{font-size:12px;color:#111}
+  .business-add-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;border:0;border-top:1px solid #ededf0;background:#fff;margin-top:5px;padding:11px 9px 7px;cursor:pointer;font-weight:750;font-size:11.5px}.business-add-btn span:last-child{font-size:9px;background:#111;color:#fff;padding:3px 7px;border-radius:999px}.business-add-btn.locked span:last-child{background:#f0f0f2;color:#6e6e73}.business-add-btn:hover{color:#000}
+  .business-link-code{font-size:31px;font-weight:850;letter-spacing:.16em;background:#f5f5f7;border:1px solid #e5e5e7;border-radius:16px;padding:18px;text-align:center;margin:15px 0;color:#111}.business-link-steps{display:grid;gap:9px;margin:14px 0}.business-link-step{display:grid;grid-template-columns:27px 1fr;gap:9px;align-items:start;font-size:12px;color:#4b4b50}.business-link-step b{width:27px;height:27px;border-radius:9px;background:#111;color:#fff;display:grid;place-items:center;font-size:11px}.business-link-note{font-size:10.5px;color:#86868b;line-height:1.6;margin-top:10px}.business-link-actions{display:flex;gap:8px;margin-top:15px}.business-link-actions .btn{flex:1}
+  .billing-business-usage{margin-top:14px;padding-top:13px;border-top:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:space-between;gap:12px}.billing-business-usage span{font-size:11px;color:var(--muted)}.billing-business-usage strong{font-size:14px}.company-menu{cursor:pointer}
+  @media(max-width:1050px){.business-switcher{display:none}}
+  @media(max-width:600px){.business-switcher{display:none}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -782,6 +798,14 @@
     <div class="brand">
       <div class="logo">รับ</div>
       <div><h1>รับจ่ายแบบไม่จำกัด</h1><div class="sub">LINE Accounting</div></div>
+    </div>
+    <div class="business-switcher" id="businessSwitcher">
+      <button class="business-switcher-btn" id="businessSwitcherBtn" type="button" aria-haspopup="true" aria-expanded="false">
+        <span class="business-switcher-avatar" id="businessSwitcherAvatar">D</span>
+        <span class="business-switcher-copy"><strong id="businessSwitcherName">ธุรกิจปัจจุบัน</strong><span id="businessSwitcherMeta">กำลังโหลด Workspace…</span></span>
+        <span class="business-switcher-chevron">⌄</span>
+      </button>
+      <div class="business-switcher-menu" id="businessSwitcherMenu" hidden></div>
     </div>
     <nav>
       <div class="nav-kicker">WORKSPACE</div>
@@ -1355,6 +1379,7 @@
           <div class="s" id="billingUsageSub">กำลังโหลดโควตา…</div>
           <div class="billing-meter"><span id="billingUsageBar"></span></div>
           <div class="billing-usage-state" id="billingUsageState">ช่วง Beta ไม่จำกัดจำนวนเอกสาร</div>
+          <div class="billing-business-usage"><span>ธุรกิจในบัญชี</span><strong id="billingBusinessUsage">1 / 1</strong></div>
         </div>
       </div>
 
@@ -1911,12 +1936,69 @@ function renderActivity(){
 }
 
 
+
+/* ---------- MULTI BUSINESS / PRO WORKSPACES ---------- */
+let BUSINESS_INFO={ok:false,businesses:[],businessCount:1,businessLimit:1,canAddBusiness:false};
+let BUSINESS_PAIR_POLL=null;
+function businessInitial(name){return String(name||"D").trim().replace(/\s+/g,"").slice(0,1).toUpperCase()||"D";}
+function businessPlanLabel(){
+  if(BUSINESS_INFO.betaActive)return `Beta Pro · ${BUSINESS_INFO.businessCount||1}/${BUSINESS_INFO.businessLimit||3} ธุรกิจ`;
+  return `${BUSINESS_INFO.planName||"แพ็กเกจฟรี"} · ${BUSINESS_INFO.businessCount||1}/${BUSINESS_INFO.businessLimit||1} ธุรกิจ`;
+}
+function renderBusinessSwitcher(){
+  const current=(BUSINESS_INFO.businesses||[]).find(x=>x.isCurrent)||(BUSINESS_INFO.businesses||[])[0];
+  if(el("businessSwitcherName"))el("businessSwitcherName").textContent=current?.name||SETTINGS.company_name||"ธุรกิจปัจจุบัน";
+  if(el("businessSwitcherAvatar"))el("businessSwitcherAvatar").textContent=businessInitial(current?.name||SETTINGS.company_name||"D");
+  if(el("businessSwitcherMeta"))el("businessSwitcherMeta").textContent=businessPlanLabel();
+  if(el("coName")&&current?.name)el("coName").textContent=current.name;
+  const menu=el("businessSwitcherMenu");if(!menu)return;
+  const rows=(BUSINESS_INFO.businesses||[]).map((b,i)=>`<button type="button" class="business-menu-item ${b.isCurrent?"current":""}" ${b.locked?'data-locked-business="1"':`data-switch-business="${escAttr(b.dashboardUrl||"")}"`} ${b.isCurrent?"disabled":""}><span class="business-menu-mark">${esc(businessInitial(b.name))}</span><span class="business-menu-copy"><strong>${esc(b.name||`ธุรกิจ ${i+1}`)}</strong><small>${b.locked?"ต้องใช้ Pro เพื่อเปิด Workspace นี้":(b.isRoot?"ธุรกิจหลัก":"Workspace เพิ่มเติม")}</small></span>${b.locked?'<span class="new-badge beta">PRO</span>':(b.isCurrent?'<span class="business-current-check">✓</span>':"")}</button>`).join("");
+  const locked=!BUSINESS_INFO.canAddBusiness;
+  const addCopy=locked&&Number(BUSINESS_INFO.businessLimit||1)<=1?"เพิ่มธุรกิจ · ต้องใช้ Pro":`เพิ่มธุรกิจใหม่ · ${BUSINESS_INFO.businessCount||0}/${BUSINESS_INFO.businessLimit||1}`;
+  menu.innerHTML=`<div class="business-menu-label">YOUR BUSINESSES</div>${rows}<button class="business-add-btn ${locked?"locked":""}" type="button" data-add-business><span>＋ ${esc(addCopy)}</span><span>${locked?"PRO":"เพิ่ม"}</span></button>`;
+}
+async function refreshBusinesses({quiet=false}={}){
+  try{
+    const res=await fetch(apiUrl("/api/businesses")+`&_=${Date.now()}`,{cache:"no-store",headers:{"cache-control":"no-cache"}});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok||data.ok!==true)throw new Error(data.reason||data.error||("HTTP "+res.status));
+    BUSINESS_INFO=data;renderBusinessSwitcher();
+    if(el("billingBusinessUsage"))el("billingBusinessUsage").textContent=`${data.businessCount||1} / ${data.businessLimit||1}`;
+    return true;
+  }catch(err){console.warn("business workspace refresh failed",err);if(!quiet&&el("businessSwitcherMeta"))el("businessSwitcherMeta").textContent="โหลดธุรกิจไม่สำเร็จ";return false;}
+}
+function closeBusinessSwitcher(){const w=el("businessSwitcher"),m=el("businessSwitcherMenu"),b=el("businessSwitcherBtn");if(w)w.classList.remove("open");if(m)m.hidden=true;if(b)b.setAttribute("aria-expanded","false");}
+function toggleBusinessSwitcher(){const w=el("businessSwitcher"),m=el("businessSwitcherMenu"),b=el("businessSwitcherBtn");if(!w||!m||!b)return;const open=m.hidden;m.hidden=!open;w.classList.toggle("open",open);b.setAttribute("aria-expanded",open?"true":"false");if(open)refreshBusinesses({quiet:true});}
+function businessManagerHtml(){
+  const items=(BUSINESS_INFO.businesses||[]).map((b,i)=>`<button class="business-menu-item ${b.isCurrent?"current":""}" style="border:1px solid #ececf0;margin-bottom:7px" type="button" ${b.locked?'data-locked-business="1"':`data-switch-business="${escAttr(b.dashboardUrl||"")}"`} ${b.isCurrent?"disabled":""}><span class="business-menu-mark">${esc(businessInitial(b.name))}</span><span class="business-menu-copy"><strong>${esc(b.name||`ธุรกิจ ${i+1}`)}</strong><small>${b.locked?"แพ็กเกจ Pro ขึ้นไป":(b.isCurrent?"กำลังใช้งาน":"กดเพื่อสลับ Workspace")}</small></span>${b.locked?'<span class="new-badge beta">PRO</span>':(b.isCurrent?'<span class="business-current-check">✓</span>':"")}</button>`).join("");
+  const can=BUSINESS_INFO.canAddBusiness===true;
+  return `<h3 style="margin:0">ธุรกิจของคุณ</h3><p style="color:#6e6e73;font-size:12px;margin:6px 0 17px">${esc(businessPlanLabel())}</p>${items}<button class="btn solid" style="width:100%;margin-top:7px" type="button" data-add-business>${can?"＋ เพิ่มธุรกิจใหม่":"อัปเกรด Pro เพื่อเพิ่มธุรกิจ"}</button>`;
+}
+function openBusinessManager(){el("modalBody").innerHTML=businessManagerHtml();el("modal").classList.add("show");}
+async function startAddBusiness(){
+  if(!BUSINESS_INFO.canAddBusiness){
+    closeBusinessSwitcher();el("modal").classList.remove("show");openPage("billing",document.querySelector('[data-p="billing"]'));window.scrollTo({top:0,behavior:"smooth"});
+    setTimeout(()=>alert("การเพิ่มธุรกิจที่ 2–3 ใช้แพ็กเกจ Pro ขึ้นไป"),100);return;
+  }
+  try{
+    const before=Number(BUSINESS_INFO.businessCount||0);
+    const res=await fetch(apiUrl("/api/businesses/invite"),{method:"POST",headers:{"content-type":"application/json"},body:"{}"});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok||data.ok!==true){if(data.reason==="business_limit"){BUSINESS_INFO={...BUSINESS_INFO,...data};renderBusinessSwitcher();return startAddBusiness();}throw new Error(data.message||data.reason||"สร้างรหัสไม่สำเร็จ");}
+    closeBusinessSwitcher();
+    el("modalBody").innerHTML=`<h3 style="margin:0">เพิ่มธุรกิจใหม่</h3><p style="color:#6e6e73;font-size:12px;margin:6px 0 0">Pro รองรับสูงสุด ${data.businessLimit||3} ธุรกิจ · แต่ละธุรกิจแยก Sheet, Drive และข้อมูลบัญชีออกจากกัน</p><div class="business-link-code" id="businessPairCode">${esc(data.code)}</div><div class="business-link-steps"><div class="business-link-step"><b>1</b><span>สร้างหรือเปิด <strong>กลุ่ม LINE ของธุรกิจใหม่</strong> แล้วเพิ่ม LINE OA รับจ่ายแบบไม่จำกัดเข้ากลุ่ม</span></div><div class="business-link-step"><b>2</b><span>พิมพ์ในกลุ่มว่า <strong>เชื่อมธุรกิจ ${esc(data.code)}</strong></span></div><div class="business-link-step"><b>3</b><span>ระบบจะสร้าง Workspace แยกให้ธุรกิจนั้น แล้วธุรกิจใหม่จะโผล่ในตัวสลับด้านซ้ายอัตโนมัติ</span></div></div><div class="business-link-note">รหัสมีอายุ 30 นาที · อย่าส่งรหัสนี้ให้บุคคลอื่น เพราะผู้ที่มีรหัสสามารถนำกลุ่ม LINE มาผูกกับบัญชีนี้ได้</div><div class="business-link-actions"><button class="btn" type="button" data-copy-business-code="${escAttr(data.code)}">คัดลอกรหัส</button><button class="btn solid" type="button" data-refresh-businesses>ตรวจว่าผูกแล้วหรือยัง</button></div><div class="save-state" id="businessPairState" style="display:block;margin-top:11px">กำลังรอธุรกิจใหม่…</div>`;
+    el("modal").classList.add("show");
+    clearInterval(BUSINESS_PAIR_POLL);let tries=0;
+    BUSINESS_PAIR_POLL=setInterval(async()=>{tries++;const ok=await refreshBusinesses({quiet:true});if(ok&&Number(BUSINESS_INFO.businessCount||0)>before){clearInterval(BUSINESS_PAIR_POLL);BUSINESS_PAIR_POLL=null;if(el("businessPairState"))el("businessPairState").textContent="เชื่อมธุรกิจสำเร็จ ✓ ปิดหน้าต่างนี้แล้วสลับ Workspace ได้เลย";renderBusinessSwitcher();}else if(tries>=30){clearInterval(BUSINESS_PAIR_POLL);BUSINESS_PAIR_POLL=null;if(el("businessPairState"))el("businessPairState").textContent="ยังไม่พบธุรกิจใหม่ · กดตรวจอีกครั้งหลังส่งรหัสในกลุ่ม LINE";}},4000);
+  }catch(err){console.error(err);alert("สร้างรหัสเพิ่มธุรกิจไม่สำเร็จ: "+String(err.message||err));}
+}
+
 /* ---------- SUBSCRIPTION / BETA / UPGRADE ---------- */
 const PLAN_CATALOG={
-  free:{id:"free",name:"ฟรี",monthly:0,annual:0,documents:10,features:["เอกสาร 10 รายการ/เดือน","LINE Bot + Dashboard","Gmail 1 บัญชี","ผู้ใช้งานใน LINE ไม่จำกัด"]},
-  starter:{id:"starter",name:"Starter",monthly:199,annual:1990,documents:50,features:["เอกสาร 50 รายการ/เดือน","ตั้งเบิก ตรวจ อนุมัติ และตีกลับ","PDF ใบเบิก + ใบแทน","แจ้งผลการโอนกลับ LINE","Gmail 1 บัญชี","ผู้ใช้งานไม่จำกัด"]},
-  pro:{id:"pro",name:"Pro",monthly:399,annual:3990,documents:300,recommended:true,features:["เอกสาร 300 รายการ/เดือน","ทุกอย่างใน Starter","รอบเบิกปกติและรอบด่วน","รวมหลายรายการเป็นใบเบิกหลัก","หลายช่องทางการเงิน + กระทบยอด","รายจ่ายประจำ + ประวัติ + Export"]},
-  business:{id:"business",name:"Business",monthly:990,annual:9900,documents:1500,features:["เอกสาร 1,500 รายการ/เดือน","ทุกอย่างใน Pro","รองรับทีมที่มีปริมาณเอกสารสูง","Workflow รายงาน / Export / Backup","Priority support","พร้อมขยาย Workflow อนุมัติระดับองค์กร"]},
+  free:{id:"free",name:"ฟรี",monthly:0,annual:0,documents:10,businesses:1,features:["เอกสาร 10 รายการ/เดือน","1 ธุรกิจ","LINE Bot + Dashboard","Gmail 1 บัญชี","ผู้ใช้งานใน LINE ไม่จำกัด"]},
+  starter:{id:"starter",name:"Starter",monthly:199,annual:1990,documents:50,businesses:1,features:["เอกสาร 50 รายการ/เดือน","1 ธุรกิจ","ตั้งเบิก ตรวจ อนุมัติ และตีกลับ","PDF ใบเบิก + ใบแทน","แจ้งผลการโอนกลับ LINE","Gmail 1 บัญชี","ผู้ใช้งานไม่จำกัด"]},
+  pro:{id:"pro",name:"Pro",monthly:399,annual:3990,documents:300,businesses:3,recommended:true,features:["เอกสาร 300 รายการ/เดือน","สูงสุด 3 ธุรกิจในบัญชีเดียว","ทุกอย่างใน Starter","รอบเบิกปกติและรอบด่วน","รวมหลายรายการเป็นใบเบิกหลัก","หลายช่องทางการเงิน + กระทบยอด","รายจ่ายประจำ + ประวัติ + Export"]},
+  business:{id:"business",name:"Business",monthly:990,annual:9900,documents:1500,businesses:10,features:["เอกสาร 1,500 รายการ/เดือน","สูงสุด 10 ธุรกิจ","ทุกอย่างใน Pro","รองรับทีมที่มีปริมาณเอกสารสูง","Workflow รายงาน / Export / Backup","Priority support","พร้อมขยาย Workflow อนุมัติระดับองค์กร"]},
 };
 function planMoney(v){return Number(v||0).toLocaleString("th-TH");}
 function planDate(value){const d=cdate(value);return d?fmtDate(d):"—";}
@@ -1941,12 +2023,13 @@ function renderSubscription(){
   const banner=el("betaPlanBanner");if(banner)banner.hidden=false;
   if(el("betaPlanBadge"))el("betaPlanBadge").textContent=PLAN_INFO.betaActive?"BETA FREE":String(PLAN_INFO.planName||"PLAN").toUpperCase();
   if(el("betaPlanTitle"))el("betaPlanTitle").textContent=PLAN_INFO.betaActive?`ใช้ฟรีทุกฟีเจอร์ Pro อีก ${PLAN_INFO.daysRemaining||0} วัน`:`แพ็กเกจ ${PLAN_INFO.planName||"ฟรี"}`;
-  if(el("betaPlanSub"))el("betaPlanSub").textContent=PLAN_INFO.betaActive?`Beta ฟรีถึง ${planDate(PLAN_INFO.trialEndsAt)} · เดือนนี้บันทึกแล้ว ${used} เอกสาร`:(limit?`เดือนนี้ ${used}/${limit} เอกสาร`:`เดือนนี้ ${used} เอกสาร`);
+  if(el("betaPlanSub"))el("betaPlanSub").textContent=PLAN_INFO.betaActive?`Beta ฟรีถึง ${planDate(PLAN_INFO.trialEndsAt)} · ${PLAN_INFO.businessCount||1}/${PLAN_INFO.businessLimit||3} ธุรกิจ · เดือนนี้ ${used} เอกสาร`:(limit?`${PLAN_INFO.businessCount||1}/${PLAN_INFO.businessLimit||1} ธุรกิจ · เดือนนี้ ${used}/${limit} เอกสาร`:`เดือนนี้ ${used} เอกสาร`);
   if(el("billingCurrentName"))el("billingCurrentName").textContent=PLAN_INFO.betaActive?"Beta ฟรี · สิทธิ์ Pro":`แพ็กเกจ ${PLAN_INFO.planName||"ฟรี"}`;
   if(el("billingCurrentDesc"))el("billingCurrentDesc").textContent=PLAN_INFO.betaActive?"ช่วงทดสอบระบบ ใช้ Workflow Pro ได้ฟรี ไม่มีการตัดเงิน และไม่จำกัดจำนวนเอกสารจนกว่าจะสิ้นสุด Beta":"รายการเดิมยังใช้งานได้ตามปกติ โควตาเอกสารใหม่จะรีเซ็ตทุกต้นเดือน";
   if(el("billingTrialText"))el("billingTrialText").textContent=PLAN_INFO.betaActive?`ฟรีถึง ${planDate(PLAN_INFO.trialEndsAt)} · เหลือ ${PLAN_INFO.daysRemaining||0} วัน`:`${PLAN_INFO.usage?.month||"เดือนปัจจุบัน"}`;
   if(el("billingUsageNumber"))el("billingUsageNumber").textContent=limit?`${planMoney(used)} / ${planMoney(limit)}`:`${planMoney(used)}`;
   if(el("billingUsageSub"))el("billingUsageSub").textContent=limit?`เอกสารที่บันทึกใน ${PLAN_INFO.usage?.month||"เดือนนี้"}`:`เอกสารที่บันทึกเดือนนี้ · Beta ไม่จำกัด`;
+  if(el("billingBusinessUsage"))el("billingBusinessUsage").textContent=`${PLAN_INFO.businessCount||1} / ${PLAN_INFO.businessLimit||1}`;
   const bar=el("billingUsageBar");if(bar)bar.style.width=limit?`${Math.min(100,Number(PLAN_INFO.usage?.percent||0))}%`:`${Math.min(100,Math.round(used/300*100))}%`;
   const state=el("billingUsageState");if(state){state.className="billing-usage-state";if(PLAN_INFO.betaActive)state.textContent="ช่วง Beta ไม่จำกัดจำนวนเอกสาร และยังไม่มีการเรียกเก็บเงิน";else if(PLAN_INFO.usage?.threshold==="limit"){state.classList.add("limit");state.textContent="โควตาครบแล้ว · ระบบหยุดรับเอกสารใหม่จนกว่าโควตาจะเพิ่มหรือเริ่มเดือนใหม่";}else if(["warning80","warning90"].includes(PLAN_INFO.usage?.threshold)){state.classList.add("warn");state.textContent=`ใช้โควตาแล้ว ${PLAN_INFO.usage?.percent||0}% · แนะนำให้เตรียมอัปเกรดก่อนเต็ม`; }else state.textContent=`เหลือ ${Math.max(0,limit-used)} เอกสารในเดือนนี้`;}
   const req=el("billingRequest");if(req){const requested=PLAN_INFO.requestedPlanName||"";req.hidden=!requested;req.textContent=requested?`เลือกไว้หลัง Beta: ${requested} · ${PLAN_INFO.requestedCycle==="annual"?"รายปี":"รายเดือน"} (ยังไม่เรียกเก็บเงิน)`:"";}
@@ -2157,7 +2240,7 @@ function openPage(p,source=null){
     renderOnboarding();
   }
   if(p==="email"||p==="subscriptions") refreshEmailData();
-  if(p==="billing") refreshSubscription({quiet:true});
+  if(p==="billing") Promise.all([refreshSubscription({quiet:true}),refreshBusinesses({quiet:true})]);
   if(p==="batches") refreshBatchData();
   if(p==="reconciliation") refreshReconciliation();
 }
@@ -2978,6 +3061,16 @@ function download(name,text){
 /* ---------- NAV / DRAW ---------- */
 const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"เบิกจ่าย",batches:"เบิกจ่าย",reconciliation:"กระทบยอดธนาคาร",reports:"รายงานและภาษี",bills:"ศูนย์เอกสารบัญชี",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",billing:"แพ็กเกจและอัปเกรด",settings:"ระบบและการเชื่อมต่อ",business:"จัดการธุรกิจ"};
 document.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>openPage(b.dataset.p,b)));
+if(el("businessSwitcherBtn"))el("businessSwitcherBtn").addEventListener("click",e=>{e.stopPropagation();toggleBusinessSwitcher();});
+if(document.querySelector(".company-menu"))document.querySelector(".company-menu").addEventListener("click",async()=>{await refreshBusinesses({quiet:true});openBusinessManager();});
+document.addEventListener("click",e=>{
+  const lockedBiz=e.target.closest("[data-locked-business]");if(lockedBiz){e.preventDefault();el("modal").classList.remove("show");closeBusinessSwitcher();openPage("billing",document.querySelector('[data-p="billing"]'));window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>alert("Workspace นี้ต้องใช้แพ็กเกจ Pro ขึ้นไป"),100);return;}
+  const sw=e.target.closest("[data-switch-business]");if(sw){e.preventDefault();const url=sw.dataset.switchBusiness;if(url)location.href=url;return;}
+  const add=e.target.closest("[data-add-business]");if(add){e.preventDefault();startAddBusiness();return;}
+  const copy=e.target.closest("[data-copy-business-code]");if(copy){e.preventDefault();const code=copy.dataset.copyBusinessCode||"";navigator.clipboard?.writeText(code).then(()=>{copy.textContent="คัดลอกแล้ว ✓";}).catch(()=>prompt("คัดลอกรหัสนี้",code));return;}
+  const refresh=e.target.closest("[data-refresh-businesses]");if(refresh){e.preventDefault();refreshBusinesses().then(()=>{if(el("businessPairState"))el("businessPairState").textContent=`พบ ${BUSINESS_INFO.businessCount||1}/${BUSINESS_INFO.businessLimit||1} ธุรกิจ`;});return;}
+  if(!e.target.closest("#businessSwitcher"))closeBusinessSwitcher();
+});
 document.querySelectorAll("[data-plan-cycle]").forEach(b=>b.addEventListener("click",()=>{PLAN_CYCLE=b.dataset.planCycle==="annual"?"annual":"monthly";document.querySelectorAll("[data-plan-cycle]").forEach(x=>x.classList.toggle("on",x.dataset.planCycle===PLAN_CYCLE));renderPricing();}));
 document.addEventListener("click",e=>{const open=e.target.closest("[data-open-billing]");if(open){e.preventDefault();openPage("billing",document.querySelector('[data-p="billing"]'));window.scrollTo({top:0,behavior:"smooth"});return;}const select=e.target.closest("[data-select-plan]");if(select){e.preventDefault();requestUpgrade(select.dataset.selectPlan);}});
 
@@ -3233,6 +3326,7 @@ async function load(){
   if(ok){
     await refreshSettings();
     await refreshSubscription({quiet:true});
+    await refreshBusinesses({quiet:true});
     // OAuth callback returns with ?gmail=connected. Confirm the token first so the setup gate cannot show a stale "connect again" state.
     if(QS.get("gmail")==="connected")await confirmGmailOAuthReturn();
     await Promise.all([refreshEmailData(),refreshBatchData({quiet:true}),refreshWorkspaceLinks()]);
@@ -3242,7 +3336,7 @@ async function load(){
     startRealtime();let target=QS.get("page");if(target==="reimburse")target="batches";if(target&&el("page-"+target)){const b=document.querySelector(`[data-p="${target}"]`);openPage(target,b);}}
 }
 
-el("syncBtn").addEventListener("click",async()=>{const reconOpen=el("page-reconciliation")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");const billingOpen=el("page-billing")?.classList.contains("show");if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings(),refreshWorkspaceLinks()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings(),refreshWorkspaceLinks()]);else if(billingOpen)await Promise.all([refreshSubscription(),refreshSettings(),refreshWorkspaceLinks()]);else await Promise.all([refreshData({manual:true}),refreshSettings(),refreshWorkspaceLinks(),refreshSubscription({quiet:true})]);});
+el("syncBtn").addEventListener("click",async()=>{const reconOpen=el("page-reconciliation")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");const billingOpen=el("page-billing")?.classList.contains("show");if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings(),refreshWorkspaceLinks()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings(),refreshWorkspaceLinks()]);else if(billingOpen)await Promise.all([refreshSubscription(),refreshBusinesses(),refreshSettings(),refreshWorkspaceLinks()]);else await Promise.all([refreshData({manual:true}),refreshSettings(),refreshWorkspaceLinks(),refreshSubscription({quiet:true})]);});
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden&&HAS_LOADED){refreshVisiblePage();refreshSettingsIfAssetChanged();}
 });
