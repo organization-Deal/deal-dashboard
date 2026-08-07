@@ -855,6 +855,101 @@
   @media(max-width:1050px){.sidebar{width:74px}.sidebar-nav-v51{padding:0 8px 12px}.sidebar-fold,.sidebar-separator,.clean-system-group,.setup-status-v51{display:none!important}}
   @media(max-width:600px){.sidebar{width:100%}.sidebar-nav-v51{overflow-x:auto;overflow-y:hidden}.sidebar-fold,.sidebar-separator,.clean-system-group,.setup-status-v51{display:none!important}.control-layout{grid-template-columns:1fr!important}}
 
+
+
+  /* ═══════════════════════════════════════════════════════
+     MOBILE WORKSPACE V5.2 — PHONE-FIRST DASHBOARD
+     ═══════════════════════════════════════════════════════ */
+  .mobile-more-nav,.mobile-more-backdrop{display:none}
+  @media(max-width:600px){
+    :root{--mobile-top:72px;--mobile-bottom:78px}
+    html,body{min-height:100%;background:#f4f4f6;overscroll-behavior-y:none}
+    body{font-size:14px;padding:0;-webkit-tap-highlight-color:transparent} body.mobile-more-open{overflow:hidden}
+    .app{display:block;min-height:100dvh}
+
+    /* Top workspace / business switcher */
+    .business-switcher{display:block!important;position:fixed;z-index:72;top:max(8px,env(safe-area-inset-top));left:10px;right:10px;padding:0!important}
+    .business-switcher-btn{height:56px!important;grid-template-columns:36px minmax(0,1fr) 18px!important;border:1px solid rgba(0,0,0,.08)!important;background:rgba(255,255,255,.94)!important;border-radius:17px!important;padding:8px 11px!important;box-shadow:0 8px 28px rgba(0,0,0,.08)!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+    .business-switcher-avatar{width:36px!important;height:36px!important;border-radius:11px!important}
+    .business-switcher-copy strong{font-size:13px!important;letter-spacing:-.01em}.business-switcher-copy span{font-size:10px!important}
+    .business-switcher-menu{position:fixed!important;left:10px!important;right:10px!important;top:calc(max(8px,env(safe-area-inset-top)) + 61px)!important;border-radius:18px!important;padding:7px!important;box-shadow:0 24px 70px rgba(0,0,0,.2)!important;max-height:58dvh;overflow:auto}
+
+    /* Main shell */
+    .main{padding:calc(var(--mobile-top) + max(10px,env(safe-area-inset-top))) 12px calc(var(--mobile-bottom) + 28px + env(safe-area-inset-bottom))!important;width:100%;max-width:none}
+    .head{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:9px!important;align-items:center!important;margin:4px 2px 14px!important;padding:0!important}
+    .head-title{width:auto!important;min-width:0}.head-kicker{display:none}.head h2{font-size:24px!important;line-height:1.12;letter-spacing:-.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .syncstate{grid-column:2;width:36px;height:36px;padding:0!important;display:grid!important;place-items:center;border:1px solid rgba(0,0,0,.07)!important;background:#fff!important;box-shadow:none!important}
+    .syncstate .dot,.syncstate .label{display:none!important}.syncstate button{width:34px!important;height:34px!important;background:transparent!important;font-size:18px}
+    .rangesel{grid-column:1/-1;order:unset!important;width:100%;padding:3px!important;border-radius:12px!important;background:#e8e8eb!important}
+    .rangesel button{flex:1;padding:7px 6px!important;font-size:11.5px!important}.rangesel button.on{box-shadow:0 1px 5px rgba(0,0,0,.09)!important}
+    .workspace-links,.company-menu{display:none!important}
+
+    /* Bottom nav */
+    .sidebar{display:block!important;position:fixed!important;z-index:70!important;left:0;right:0;bottom:0!important;top:auto!important;width:100%!important;height:calc(var(--mobile-bottom) + env(safe-area-inset-bottom))!important;background:rgba(250,250,252,.95)!important;border:0!important;border-top:1px solid rgba(0,0,0,.08)!important;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 -8px 30px rgba(0,0,0,.05)}
+    .brand,.sidefoot,.sidebar-fold,.sidebar-separator,.business-group,.clean-system-group,.setup-status-v51,.nav-kicker,.compact-only{display:none!important}
+    .sidebar-nav-v51{height:var(--mobile-bottom)!important;display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:2px!important;padding:7px 7px 8px!important;overflow:visible!important}
+    .sidebar nav>.navlink{display:none!important}
+    .sidebar nav>.navlink.mobile-primary{display:flex!important;min-width:0!important;height:61px!important;flex-direction:column!important;justify-content:center!important;gap:4px!important;margin:0!important;padding:5px 2px!important;border:0!important;border-radius:13px!important;background:transparent!important;color:#86868b!important;box-shadow:none!important;font-size:10px!important}
+    .sidebar nav>.navlink.mobile-primary .ic{width:23px!important;height:23px!important;color:inherit!important}.sidebar nav>.navlink.mobile-primary .ic svg{width:20px!important;height:20px!important}
+    .sidebar nav>.navlink.mobile-primary span:not(.ic){display:block!important;font-size:9.5px!important;font-weight:600!important;line-height:1}
+    .sidebar nav>.navlink.mobile-primary.active{color:#111!important;background:#ededf0!important}.sidebar nav>.navlink.mobile-primary.active .ic{color:#111!important}
+    .mobile-more-nav{display:flex!important}
+
+    /* Mobile More bottom sheet */
+    .mobile-more-backdrop{position:fixed;inset:0;z-index:120;background:rgba(20,20,22,.34);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);align-items:flex-end;padding:0}
+    .mobile-more-backdrop:not([hidden]){display:flex}
+    .mobile-more-sheet{width:100%;max-height:86dvh;overflow:auto;background:#f7f7f8;border-radius:26px 26px 0 0;padding:9px 14px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -18px 60px rgba(0,0,0,.18)}
+    .mobile-sheet-handle{width:38px;height:4px;border-radius:99px;background:#d1d1d6;margin:2px auto 12px}
+    .mobile-more-head{display:flex;justify-content:space-between;align-items:center;padding:0 4px 12px}.mobile-more-head span{font-size:9px;font-weight:800;letter-spacing:.1em;color:#9b9ba1}.mobile-more-head h3{margin:2px 0 0;font-size:22px;letter-spacing:-.035em}.mobile-more-head button{border:0;background:#e8e8eb;width:34px;height:34px;border-radius:50%;font-size:22px;color:#555;display:grid;place-items:center}
+    .mobile-more-section{margin-bottom:12px}.mobile-more-label{font-size:9.5px;color:#8e8e93;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:0 4px 7px}
+    .mobile-more-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mobile-more-grid button{border:1px solid #e5e5e8;background:#fff;border-radius:16px;padding:14px;text-align:left;min-height:75px;color:#1d1d1f}.mobile-more-grid b{display:block;font-size:13px}.mobile-more-grid small{display:block;color:#8e8e93;font-size:10px;margin-top:4px}
+    .mobile-more-list{overflow:hidden;border:1px solid #e5e5e8;background:#fff;border-radius:17px}.mobile-more-list button{width:100%;min-height:48px;border:0;border-bottom:1px solid #eeeeef;background:#fff;padding:0 14px;display:flex;align-items:center;justify-content:space-between;text-align:left;color:#1d1d1f;font-size:13px}.mobile-more-list button:last-child{border-bottom:0}.mobile-more-list button b{color:#aaa;font-size:18px;font-weight:400}
+
+    /* Global cards / spacing */
+    .page{animation:none}.card{padding:16px!important;border-radius:18px!important;margin-bottom:11px!important;border-color:rgba(0,0,0,.065)!important;box-shadow:none!important}.card h3{font-size:16px!important}
+    .grid2,.biz-grid,.connection-details,.control-layout,.billing-hero,.billing-future{display:block!important}
+    .page-intro{margin:0 2px 13px!important}.page-intro h3{font-size:20px!important}.page-intro p{font-size:11.5px!important;line-height:1.55}
+    .btn{min-height:42px;border-radius:12px!important;padding:9px 12px!important}.btn.small{min-height:36px!important}
+    input,select,textarea{font-size:16px!important} /* prevents iOS zoom */
+
+    /* Overview */
+    .beta-plan-banner{padding:13px!important;border-radius:16px!important;margin-bottom:11px!important;box-shadow:none!important}.beta-plan-banner .btn{width:100%}
+    .kpis{grid-template-columns:1fr 1fr!important;gap:9px!important;margin-bottom:11px!important}.kpi{min-height:108px!important;padding:15px!important;border-radius:18px!important;box-shadow:none!important}.kpi .lb{font-size:10.5px!important}.kpi .big{font-size:23px!important;margin:7px 0 3px!important}.kpi .foot{font-size:9.8px!important}.kpi.hero{background:#1d1d1f!important}
+    .accounting-note{padding:10px 11px!important;margin-bottom:11px!important;border-radius:13px!important;font-size:10.5px!important;line-height:1.5}
+    .trend{height:150px!important}
+
+    /* Toolbar / forms */
+    .toolbar,.doc-toolbar{display:grid!important;grid-template-columns:1fr!important;gap:7px!important;padding:12px!important}.toolbar>*,.doc-toolbar>*{width:100%!important;min-width:0!important}
+    .biz-form,.form-grid,.finance-form-grid{grid-template-columns:1fr!important}.field-row{grid-template-columns:1fr!important}
+    .form-actions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}.form-actions .btn,.form-actions a.btn{width:100%;text-align:center}
+
+    /* Documents / email */
+    .doc-kpis,.email-kpis{grid-template-columns:1fr 1fr!important;gap:8px!important}.doc-kpi,.email-kpi{min-height:88px!important;padding:13px!important;border-radius:15px!important}.doc-kpi strong,.email-kpi .v{font-size:22px!important}
+    .email-item{padding:14px!important;border-radius:16px!important;gap:10px!important}.email-actions{display:grid!important;grid-template-columns:1fr 1fr!important}.email-actions .btn{width:100%}
+    .subscription-grid{grid-template-columns:1fr!important}.sub-card{padding:15px!important;border-radius:16px!important}
+
+    /* Accounting workspace: cards instead of 1540px table */
+    .acct-command-head{margin-bottom:11px!important;gap:10px!important}.acct-command-head h3{font-size:23px!important}.acct-command-head p{font-size:11px!important;line-height:1.5}.acct-head-actions{display:grid!important;grid-template-columns:1fr 1fr!important;width:100%!important}.acct-head-actions .btn{width:100%}
+    .acct-status-strip{display:flex!important;overflow-x:auto!important;scroll-snap-type:x proximity;gap:7px!important;margin:0 -12px 11px!important;padding:0 12px 4px!important;scrollbar-width:none}.acct-status-strip::-webkit-scrollbar{display:none}.acct-status-strip button{flex:0 0 auto!important;min-width:126px!important;scroll-snap-align:start;padding:10px!important;border-radius:13px!important}
+    .accounting-worktable-v4{border:0!important;background:transparent!important;border-radius:0!important;overflow:visible!important}.worktable-head{padding:13px!important;border:1px solid #e6e6e9!important;border-radius:16px!important;background:#fff!important;margin-bottom:9px!important}.worktable-head h3{font-size:17px!important}.worktable-head p{font-size:10.5px!important}.worktable-tools{display:grid!important;grid-template-columns:1fr!important;width:100%!important}.worktable-actions,.acct-bulkbar{border:1px solid #e6e6e9!important;border-radius:16px!important;background:#fff!important;margin-bottom:9px!important;padding:12px!important}.acct-bulk-actions{grid-template-columns:1fr 1fr!important;gap:7px!important}.acct-bulk-actions .btn{min-height:40px!important}
+    .master-table-wrap.acct-master-wrap{overflow:visible!important;min-height:0!important;max-height:none!important;background:transparent!important;border:0!important}.acct-master-table{display:block!important;min-width:0!important;width:100%!important}.acct-master-table thead{display:none!important}.acct-master-table tbody{display:grid!important;gap:9px!important}.acct-master-table tbody tr{display:grid!important;grid-template-columns:1fr 1fr!important;gap:0 12px!important;width:100%!important;border:1px solid #e2e2e5!important;border-radius:18px!important;padding:12px!important;background:#fff!important;overflow:hidden!important;box-shadow:none!important}.acct-master-table tbody td{position:static!important;display:block!important;min-width:0!important;width:auto!important;padding:8px 0!important;border:0!important;border-bottom:1px solid #f0f0f2!important;background:transparent!important;box-shadow:none!important;text-align:left!important}.acct-master-table tbody td::before{content:attr(data-label);display:block;font-size:9.5px;font-weight:700;color:#9a9aa0;margin-bottom:4px}.acct-master-table tbody td.sticky-select{display:none!important}.acct-master-table tbody td[data-label="รายการ"],.acct-master-table tbody td[data-label="ผู้เบิก"],.acct-master-table tbody td[data-label="บัญชีรับเงิน"],.acct-master-table tbody td[data-label="บัญชีที่จ่าย"],.acct-master-table tbody td[data-label="เอกสาร"],.acct-master-table tbody td[data-label="สิ่งที่ต้องทำ"],.acct-master-table tbody td[data-label="หลักฐานโอน"],.acct-master-table tbody td[data-label="ดำเนินการ"]{grid-column:1/-1!important}.acct-master-table tbody td[data-label="ดำเนินการ"]{border-bottom:0!important;padding-bottom:0!important}.acct-master-table .master-primary{max-width:none!important;white-space:normal!important}.acct-master-table .master-secondary{max-width:none!important;white-space:normal!important}.acct-master-table .master-money{text-align:left!important;font-size:18px!important}.acct-master-table .payment-channel-select{width:100%!important;min-height:42px!important}.acct-master-table .acct-next .btn{width:100%!important;min-height:44px!important}.acct-master-table tbody tr.row-paid{border-color:#cfe7d5!important;background:#f4fbf6!important}.acct-master-table tbody tr.row-correction{border-color:#f0c9c5!important;background:#fff7f6!important}
+
+    /* Reconciliation */
+    .recon-command-head h3{font-size:23px!important}.recon-actions{width:100%;display:grid!important;grid-template-columns:1fr 1fr!important}.recon-actions .btn,.recon-actions label{width:100%;text-align:center}.recon-kpis{display:flex!important;overflow-x:auto!important;gap:7px!important;margin:0 -12px 11px!important;padding:0 12px 4px!important;scrollbar-width:none}.recon-kpis::-webkit-scrollbar{display:none}.recon-kpi{flex:0 0 130px!important}.recon-import-card{padding:13px!important;border-radius:16px!important}.recon-import-buttons{display:grid!important;grid-template-columns:1fr!important}.recon-import-buttons .btn{width:100%}.recon-table-card{border-radius:16px!important}.recon-table-wrap{min-height:360px!important;max-height:none!important;-webkit-overflow-scrolling:touch}.recon-table{min-width:920px!important}
+
+    /* Billing */
+    .billing-current{min-height:0!important;padding:20px!important;border-radius:20px!important}.billing-current h3{font-size:25px!important}.billing-usage-card{padding:16px!important;border-radius:18px!important}.pricing-grid{grid-template-columns:1fr!important}.pricing-card{padding:18px!important;border-radius:18px!important;min-height:0!important}.pricing-card.featured{transform:none!important}.pricing-card .btn{width:100%}
+
+    /* System / settings */
+    .system-control-hero{padding:19px!important;border-radius:20px!important;margin-bottom:10px!important}.system-control-copy h3{font-size:22px!important}.system-control-copy p{font-size:11px!important}.system-control-actions{display:grid!important;grid-template-columns:1fr!important;width:100%!important}.system-control-actions .btn{width:100%}.control-panel,.workspace-status-panel{border-radius:18px!important;box-shadow:none!important}.control-panel{padding:0 14px!important}.control-row{grid-template-columns:36px minmax(0,1fr)!important;padding:14px 0!important}.control-action{width:100%!important}.control-action .btn{width:100%!important}.workspace-status-panel{margin-top:10px!important}
+
+    /* Drawers / dialogs / modals become bottom sheets */
+    .modal{padding:0!important;align-items:flex-end!important}.modal .box{max-width:none!important;width:100%!important;max-height:88dvh!important;border-radius:24px 24px 0 0!important;padding:18px 16px calc(18px + env(safe-area-inset-bottom))!important;box-shadow:0 -18px 60px rgba(0,0,0,.18)!important}
+    .acct-drawer-backdrop,.acct-dialog-backdrop,.recon-drawer-backdrop{align-items:flex-end!important;padding:0!important}.acct-drawer,.recon-drawer{position:absolute!important;top:auto!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;height:min(88dvh,820px)!important;border-radius:24px 24px 0 0!important;overflow:hidden!important}.acct-dialog{width:100%!important;max-width:none!important;max-height:88dvh!important;border-radius:24px 24px 0 0!important}.acct-drawer-head,.acct-dialog-head{padding:16px!important}.acct-drawer-body,.acct-dialog-body{padding:14px!important}.acct-drawer-footer,.acct-dialog-footer{padding:12px 14px calc(12px + env(safe-area-inset-bottom))!important;display:grid!important;grid-template-columns:1fr 1fr!important}.acct-drawer-footer .btn,.acct-drawer-footer label,.acct-dialog-footer .btn{width:100%!important}
+
+    /* Prevent accidental overflow */
+    img,svg{max-width:100%}.main section{min-width:0}.card,.batch-section,.worktable-head,.recon-table-card{max-width:100%}
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -878,8 +973,9 @@
       <button class="navlink active mobile-primary" data-p="overview"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></span><span>ภาพรวม</span></button>
       <button class="navlink mobile-primary" data-p="batches"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/><circle cx="18" cy="17" r="2"/></svg></span><span>เบิกจ่าย</span></button>
       <button class="navlink mobile-primary" data-p="expenses"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v13"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg></span><span>รายจ่าย</span></button>
-      <button class="navlink mobile-primary" data-p="income"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21V8"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span><span>รายรับ</span></button>
+      <button class="navlink" data-p="income"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21V8"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span><span>รายรับ</span></button>
       <button class="navlink mobile-primary" data-p="reconciliation"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h11"/><path d="M4 12h7"/><path d="M4 17h6"/><path d="m14 15 2 2 4-5"/><circle cx="17" cy="14" r="5"/></svg></span><span>กระทบยอด</span></button>
+      <button class="navlink mobile-primary mobile-more-nav" id="mobileMoreNav" type="button"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></span><span>เพิ่มเติม</span></button>
       <button class="navlink" data-p="reports"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19V3"/></svg></span><span>รายงานและภาษี</span></button>
 
       <details class="sidebar-fold">
@@ -937,6 +1033,41 @@
       <div class="who"><div class="av">D</div><div><div id="whoName">เจ้าของธุรกิจ</div><small>Workspace owner</small></div></div>
     </div>
   </aside>
+
+  <div class="mobile-more-backdrop" id="mobileMoreBackdrop" hidden>
+    <section class="mobile-more-sheet" role="dialog" aria-modal="true" aria-labelledby="mobileMoreTitle">
+      <div class="mobile-sheet-handle"></div>
+      <div class="mobile-more-head"><div><span>WORKSPACE</span><h3 id="mobileMoreTitle">เมนูเพิ่มเติม</h3></div><button type="button" id="mobileMoreClose" aria-label="ปิด">×</button></div>
+      <div class="mobile-more-section">
+        <div class="mobile-more-label">งานและรายงาน</div>
+        <div class="mobile-more-grid">
+          <button type="button" data-mobile-page="income"><b>รายรับ</b><small>รายการรับเงิน</small></button>
+          <button type="button" data-mobile-page="reports"><b>รายงานและภาษี</b><small>สรุปและส่งออก</small></button>
+          <button type="button" data-mobile-page="bills"><b>เอกสาร</b><small>เอกสารทั้งหมด</small></button>
+          <button type="button" data-mobile-page="activity"><b>ประวัติ</b><small>กิจกรรมล่าสุด</small></button>
+        </div>
+      </div>
+      <div class="mobile-more-section">
+        <div class="mobile-more-label">อัตโนมัติ</div>
+        <div class="mobile-more-list">
+          <button type="button" data-mobile-page="email"><span>เอกสารจากอีเมล</span><b>›</b></button>
+          <button type="button" data-mobile-page="subscriptions"><span>รายจ่ายประจำ</span><b>›</b></button>
+          <button type="button" data-mobile-external="files"><span>จับคู่หลักฐาน</span><b>↗</b></button>
+          <button type="button" data-mobile-external="receipt"><span>เอกสารอัตโนมัติ</span><b>↗</b></button>
+        </div>
+      </div>
+      <div class="mobile-more-section">
+        <div class="mobile-more-label">ธุรกิจและระบบ</div>
+        <div class="mobile-more-list">
+          <button type="button" data-mobile-biz="profile"><span>ข้อมูลบริษัท</span><b>›</b></button>
+          <button type="button" data-mobile-biz="finance"><span>บัญชีและช่องทางการเงิน</span><b>›</b></button>
+          <button type="button" data-mobile-biz="team"><span>ทีมและผู้ใช้งาน</span><b>›</b></button>
+          <button type="button" data-mobile-page="settings"><span>ตั้งค่าการใช้งาน</span><b>›</b></button>
+          <button type="button" data-mobile-page="billing"><span>แพ็กเกจและอัปเกรด</span><b>›</b></button>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <main class="main">
     <div class="head">
@@ -2311,6 +2442,7 @@ function openPage(p,source=null){
   COMPANY_SETUP_ACTIVE=(p==="email"||p==="settings"||p==="billing")?p:"";
   document.querySelectorAll(".navlink,.subnavlink").forEach(x=>x.classList.remove("active"));
   if(source)source.classList.add("active");
+  if(el("mobileMoreNav")&&!['overview','batches','expenses','reconciliation'].includes(p))el("mobileMoreNav").classList.add("active");
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
   const page=el("page-"+p);if(page)page.classList.add("show");
   el("pageTitle").textContent=TITLES[p]||"จัดการธุรกิจ";
@@ -2331,6 +2463,7 @@ function openBusiness(tab,source=null){
   document.body.classList.remove("company-setup-required");
   document.querySelectorAll(".navlink,.subnavlink").forEach(x=>x.classList.remove("active"));
   if(source)source.classList.add("active");
+  if(el("mobileMoreNav"))el("mobileMoreNav").classList.add("active");
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
   el("page-business").classList.add("show");
   el("pageTitle").textContent={profile:"ข้อมูลธุรกิจ",approver:"ผู้อนุมัติค่าใช้จ่าย",categories:"หมวดหมู่",finance:"ช่องทางการเงิน",team:"ทีมของฉัน"}[tab]||"จัดการธุรกิจ";
@@ -2769,20 +2902,20 @@ function renderMasterTable(){
     const accountNo=row.accountNo||"";
     const rowClass=row.statusKey==="paid"?"row-paid":["correction","rejected"].includes(row.statusKey)?"row-correction":"";
     return `<tr class="${rowClass}" role="button" tabindex="0" aria-label="เปิดดูรายละเอียด ${escAttr(row.title)}" ${isQueue?`data-open-queue="${escAttr(row.id)}"`:`data-open-batch="${escAttr(row.id)}"`}>
-      <td class="sticky-select">${checkbox}</td>
-      <td><span class="acct-priority ${row.priority}">${row.priority==="urgent"?"ด่วน":"ปกติ"}</span></td>
-      <td class="sticky-status"><span class="master-status ${escAttr(row.statusKey)}">${esc(rowStatus(row).label)}</span></td>
-      <td><span class="master-primary">${batchDate(row.claimDate)}</span></td>
-      <td><span class="master-secondary">${batchReceiptDate(row)}</span></td>
-      <td><span class="master-primary">${esc(row.payerName)}</span><span class="master-secondary">${esc(row.accountName||"")}</span></td>
-      <td><span class="master-primary">${esc(row.title)}</span><span class="master-secondary">${esc(row.note)}</span></td>
-      <td class="master-money">${baht(row.amount)}</td>
-      <td><span class="master-account">${esc(row.bank||"—")} ${esc(accountNo||"—")}<small>${esc(row.accountName||"ชื่อบัญชีไม่ครบ")}</small></span>${accountNo?`<button class="copy-mini" data-copy-account="${escAttr(accountNo)}">คัดลอก</button>`:""}</td>
-      <td>${paymentChannelCell(row)}</td>
-      <td>${documentCell(row)}</td>
-      <td>${issueCell(row)}</td>
-      <td>${paymentProofCell(row)}</td>
-      <td><div class="acct-next">${nextActionCell(row)}</div></td>
+      <td class="sticky-select" data-label="เลือก">${checkbox}</td>
+      <td data-label="ประเภท"><span class="acct-priority ${row.priority}">${row.priority==="urgent"?"ด่วน":"ปกติ"}</span></td>
+      <td class="sticky-status" data-label="สถานะ"><span class="master-status ${escAttr(row.statusKey)}">${esc(rowStatus(row).label)}</span></td>
+      <td data-label="วันที่ตั้งเบิก"><span class="master-primary">${batchDate(row.claimDate)}</span></td>
+      <td data-label="วันที่เอกสาร"><span class="master-secondary">${batchReceiptDate(row)}</span></td>
+      <td data-label="ผู้เบิก"><span class="master-primary">${esc(row.payerName)}</span><span class="master-secondary">${esc(row.accountName||"")}</span></td>
+      <td data-label="รายการ"><span class="master-primary">${esc(row.title)}</span><span class="master-secondary">${esc(row.note)}</span></td>
+      <td class="master-money" data-label="ยอดเงิน">${baht(row.amount)}</td>
+      <td data-label="บัญชีรับเงิน"><span class="master-account">${esc(row.bank||"—")} ${esc(accountNo||"—")}<small>${esc(row.accountName||"ชื่อบัญชีไม่ครบ")}</small></span>${accountNo?`<button class="copy-mini" data-copy-account="${escAttr(accountNo)}">คัดลอก</button>`:""}</td>
+      <td data-label="บัญชีที่จ่าย">${paymentChannelCell(row)}</td>
+      <td data-label="เอกสาร">${documentCell(row)}</td>
+      <td data-label="สิ่งที่ต้องทำ">${issueCell(row)}</td>
+      <td data-label="หลักฐานโอน">${paymentProofCell(row)}</td>
+      <td data-label="ดำเนินการ"><div class="acct-next">${nextActionCell(row)}</div></td>
     </tr>`;
   }).join(""):`<tr><td colspan="14"><div class="master-empty"><b>ไม่มีงานในสถานะนี้</b>ลองเลือก “ทุกสถานะ” หรือเปลี่ยนคำค้นหา</div></td></tr>`;
   updateMasterSelection();
@@ -3140,6 +3273,16 @@ function download(name,text){
 
 /* ---------- NAV / DRAW ---------- */
 const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"เบิกจ่าย",batches:"เบิกจ่าย",reconciliation:"กระทบยอดธนาคาร",reports:"รายงานและภาษี",bills:"ศูนย์เอกสารบัญชี",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",billing:"แพ็กเกจ",settings:"ตั้งค่าการใช้งาน",business:"จัดการธุรกิจ"};
+
+function closeMobileMore(){const box=el("mobileMoreBackdrop");if(box)box.hidden=true;document.body.classList.remove("mobile-more-open");}
+function openMobileMore(){const box=el("mobileMoreBackdrop");if(!box)return;closeBusinessSwitcher();box.hidden=false;document.body.classList.add("mobile-more-open");}
+if(el("mobileMoreNav"))el("mobileMoreNav").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openMobileMore();});
+if(el("mobileMoreClose"))el("mobileMoreClose").onclick=closeMobileMore;
+if(el("mobileMoreBackdrop"))el("mobileMoreBackdrop").addEventListener("click",e=>{if(e.target===el("mobileMoreBackdrop"))closeMobileMore();});
+document.querySelectorAll("[data-mobile-page]").forEach(b=>b.addEventListener("click",()=>{const p=b.dataset.mobilePage;closeMobileMore();openPage(p,document.querySelector(`[data-p="${p}"]`));window.scrollTo({top:0,behavior:"smooth"});}));
+document.querySelectorAll("[data-mobile-biz]").forEach(b=>b.addEventListener("click",()=>{const tab=b.dataset.mobileBiz;closeMobileMore();openBusiness(tab);window.scrollTo({top:0,behavior:"smooth"});}));
+document.querySelectorAll("[data-mobile-external]").forEach(b=>b.addEventListener("click",()=>{const target=b.dataset.mobileExternal==="files"?el("filesLink"):el("receiptLink");if(target?.href){closeMobileMore();location.href=target.href;}}));
+
 document.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>openPage(b.dataset.p,b)));
 if(el("businessSwitcherBtn"))el("businessSwitcherBtn").addEventListener("click",e=>{e.stopPropagation();toggleBusinessSwitcher();});
 if(document.querySelector(".company-menu"))document.querySelector(".company-menu").addEventListener("click",async()=>{await refreshBusinesses({quiet:true});openBusinessManager();});
