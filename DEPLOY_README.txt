@@ -1,16 +1,14 @@
-Dashboard v5.0 — Non-blocking Company Setup
+Dashboard Sidebar Clean v5.1
 
-แก้จาก Dashboard v4.9 Multi-business Pro ล่าสุด
+ฐาน: v5.0 non-blocking company setup + v4.9 multi-business/subscription
 
-สิ่งที่เปลี่ยน:
-- Company Setup แบบเต็มหน้าจอจะไม่เด้งอัตโนมัติอีกต่อไป
-- Refresh / Gmail OAuth callback / sync / navigation จะไม่เปิด modal บังคับ
-- Dashboard เปิดใช้งานและสลับหน้าได้ตามปกติ แม้ setup ยังไม่ครบ
-- Checklist "ตั้งค่าบริษัท" ใน Sidebar ยังอยู่และอัปเดต 0/3, 1/3, 2/3, 3/3 ตามจริง
-- กดแต่ละรายการใน checklist เพื่อไปเชื่อม Gmail / ข้อมูลบริษัท / ช่องทางการเงินได้ตามเดิม
-- เมื่อครบ 3/3 จะเปลี่ยนเป็น "บริษัทพร้อมใช้งาน"
-- ไม่ลบข้อมูลและไม่แก้ Workflow เบิกจ่าย / Multi-business / Subscription
+เปลี่ยน:
+- Sidebar ใหม่: งานประจำ / เอกสารและอัตโนมัติ / จัดการธุรกิจ / ตั้งค่าการใช้งาน
+- ตัดกล่องเครื่องมือและปุ่ม Beta ซ้ำด้านล่าง
+- Business switcher เรียบขึ้น
+- Setup 3/3 เป็น status บาง ๆ ไม่เป็นการ์ดใหญ่
+- ซ่อน scrollbar หนา
+- หน้า Settings เป็น flat operational control panel โทนดำ-ขาว
+- ไม่เปลี่ยน API / Multi-business / Subscription / Workflow
 
-วิธี Deploy:
-1. เอา index.html ไปทับ root ของ repo deal-dashboard
-2. Deploy Dashboard อย่างเดียว
+Deploy: เอา index.html ไปทับ root ของ deal-dashboard แล้ว Deploy Dashboard เท่านั้น
