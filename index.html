@@ -2094,22 +2094,68 @@ function renderSubscriptions(){
   const total=SUBSCRIPTIONS.length;
   el("subscriptionList").innerHTML=total?SUBSCRIPTIONS.map(x=>`<div class="sub-card"><div class="sub-name">${esc(x.name)}</div><div class="sub-vendor">${esc(x.vendor||"")}</div><div class="sub-amount">${currencyAmount(x.lastAmount,x.currency)}</div><div class="sub-foot">พบ ${x.count} รอบ${x.variable?" · ยอดแปรผัน":""}<br>ล่าสุด ${fmtDate(pdate(x.lastDate)||cdate(x.lastDate))}<br>คาดว่ารอบถัดไป ${fmtDate(pdate(x.nextExpected))}</div></div>`).join(""):'<div class="email-empty" style="grid-column:1/-1">ยังไม่พบรายจ่ายประจำ<br><br>เมื่อระบบได้รับใบแจ้งหนี้หรือใบเสร็จ Subscription จากอีเมล จะสรุปให้ตรงนี้อัตโนมัติ</div>';
 }
+async function refreshGmailConnectionStatus({retries=1,delayMs=350}={}){
+  let lastError=null;
+  for(let attempt=0;attempt<Math.max(1,retries);attempt++){
+    try{
+      const stamp=`&_=${Date.now()}`;
+      const res=await fetch(apiUrl("/api/gmail-status")+stamp,{cache:"no-store"});
+      if(!res.ok)throw new Error(`Gmail status ${res.status}`);
+      EMAIL_INFO=await res.json();
+      renderEmailInbox();
+      renderOnboarding();
+      renderSettings();
+      if(EMAIL_INFO.connected===true&&EMAIL_INFO.reconnectRequired!==true)return true;
+    }catch(err){lastError=err;console.warn("gmail status refresh failed",err);}
+    if(attempt<retries-1)await new Promise(resolve=>setTimeout(resolve,delayMs));
+  }
+  if(lastError)console.warn("gmail status unavailable after retry",lastError);
+  return EMAIL_INFO.connected===true&&EMAIL_INFO.reconnectRequired!==true;
+}
+
 async function refreshEmailData({manual=false}={}){
   if(EMAIL_LOADING)return false;
   EMAIL_LOADING=true;
   if(manual&&el("emailInboxState"))el("emailInboxState").textContent="กำลังอัปเดต…";
+  let statusOk=false,docsOk=false,subsOk=false;
   try{
+    // Gmail connection status is independent from inbox/subscription APIs.
+    // Never let a temporary inbox error make Company Setup think Gmail is disconnected.
+    statusOk=await refreshGmailConnectionStatus({retries:1});
     const stamp=`&_=${Date.now()}`;
-    const [infoRes,docRes,subRes]=await Promise.all([
-      fetch(apiUrl("/api/gmail-status")+stamp,{cache:"no-store"}),
+    const [docResult,subResult]=await Promise.allSettled([
       fetch(apiUrl("/api/email-documents")+stamp,{cache:"no-store"}),
       fetch(apiUrl("/api/subscriptions")+stamp,{cache:"no-store"}),
     ]);
-    if(!infoRes.ok||!docRes.ok||!subRes.ok)throw new Error(`Email API ${infoRes.status}/${docRes.status}/${subRes.status}`);
-    EMAIL_INFO=await infoRes.json(); EMAIL_DOCS=await docRes.json(); SUBSCRIPTIONS=await subRes.json();
-    renderEmailInbox();renderSubscriptions();renderOnboarding();renderSettings();return true;
-  }catch(err){console.error("email inbox refresh failed",err);if(el("emailInboxState"))el("emailInboxState").textContent="โหลดเอกสารจากอีเมลไม่สำเร็จ";return false;}
-  finally{EMAIL_LOADING=false;}
+    if(docResult.status==="fulfilled"&&docResult.value.ok){EMAIL_DOCS=await docResult.value.json();docsOk=true;}
+    else console.warn("email documents refresh failed",docResult.status==="fulfilled"?docResult.value.status:docResult.reason);
+    if(subResult.status==="fulfilled"&&subResult.value.ok){SUBSCRIPTIONS=await subResult.value.json();subsOk=true;}
+    else console.warn("subscriptions refresh failed",subResult.status==="fulfilled"?subResult.value.status:subResult.reason);
+    renderEmailInbox();renderSubscriptions();renderOnboarding();renderSettings();
+    if(manual&&(!docsOk||!subsOk)&&el("emailInboxState"))el("emailInboxState").textContent="เชื่อม Gmail แล้ว แต่ข้อมูลบางส่วนกำลังซิงก์ใหม่";
+    return statusOk;
+  }catch(err){
+    console.error("email inbox refresh failed",err);
+    renderOnboarding();
+    if(el("emailInboxState"))el("emailInboxState").textContent=EMAIL_INFO.connected?"เชื่อม Gmail แล้ว · กำลังโหลดเอกสารใหม่":"โหลดสถานะ Gmail ไม่สำเร็จ";
+    return statusOk;
+  }finally{EMAIL_LOADING=false;}
+}
+
+async function confirmGmailOAuthReturn(){
+  if(QS.get("gmail")!=="connected")return false;
+  if(el("companySetupGmailDetail"))el("companySetupGmailDetail").textContent="กำลังยืนยันการเชื่อม Gmail…";
+  const connected=await refreshGmailConnectionStatus({retries:8,delayMs:450});
+  if(connected){
+    COMPANY_SETUP_ACTIVE="";
+    renderCompanySetupGate({force:!companySetupState().ready});
+    const next=new URL(location.href);
+    next.searchParams.delete("gmail");
+    history.replaceState(null,"",next.pathname+next.search+next.hash);
+  }else{
+    renderCompanySetupGate({force:true});
+  }
+  return connected;
 }
 async function emailPost(path,body){
   const res=await fetch(apiUrl(path),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body||{})});
@@ -2952,7 +2998,12 @@ async function load(){
     return;
   }
   const ok=await refreshData({initial:true});
-  if(ok){await refreshSettings();await Promise.all([refreshEmailData(),refreshBatchData({quiet:true}),refreshWorkspaceLinks()]);
+  if(ok){
+    await refreshSettings();
+    // OAuth callback returns with ?gmail=connected. Confirm the token first so the setup gate cannot show a stale "connect again" state.
+    if(QS.get("gmail")==="connected")await confirmGmailOAuthReturn();
+    await Promise.all([refreshEmailData(),refreshBatchData({quiet:true}),refreshWorkspaceLinks()]);
+    renderCompanySetupGate({force:!companySetupState().ready});
     const last=Date.parse(EMAIL_INFO.lastSyncAt||"");
     if(EMAIL_INFO.connected&&(!Number.isFinite(last)||Date.now()-last>10*60*1000))syncGmail({manual:false});
     startRealtime();let target=QS.get("page");if(target==="reimburse")target="batches";if(target&&el("page-"+target)){const b=document.querySelector(`[data-p="${target}"]`);openPage(target,b);}}
