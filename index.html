@@ -1,7 +1,7 @@
 <!-- REIMBURSEMENT_DASHBOARD_v2.7_REVIEW_DIRECT_20260805 -->
 <!-- REIMBURSEMENT_ACCOUNTING_TABLE_V3_2026-08-03 -->
 <!DOCTYPE html>
-<!-- DASHBOARD_UI_VERSION: MOBILE_OPERATION_FEEDBACK_V3_7_20260805 -->
+<!-- DASHBOARD_UI_VERSION: SIDEBAR_WORKSPACE_CONTROL_V4_8_20260807 -->
 <html lang="th">
 <head>
 <meta charset="UTF-8" />
@@ -701,6 +701,78 @@
   @media(max-width:1180px){.pricing-grid{grid-template-columns:1fr 1fr}.billing-hero{grid-template-columns:1fr}.billing-future{grid-template-columns:1fr}}
   @media(max-width:650px){.beta-plan-banner{align-items:flex-start;flex-direction:column}.billing-section-head{align-items:flex-start;flex-direction:column}.pricing-grid{grid-template-columns:1fr}.pricing-card{min-height:0}.billing-current{padding:23px 20px}.billing-current h3{font-size:27px}.billing-usage-card{padding:20px}}
 
+
+
+  /* ── Sidebar information architecture v4.8 ─────────── */
+  .nav-kicker{padding:10px 12px 5px;font-size:9px;line-height:1;letter-spacing:.12em;font-weight:800;color:#a0a0a5}
+  .workspace-toolbox{margin:9px 8px 2px;padding:9px;border:1px solid rgba(0,0,0,.06);border-radius:14px;background:#f7f7f9}
+  .workspace-tool-label{padding:0 4px 6px;font-size:9px;font-weight:800;letter-spacing:.08em;color:#9a9aa0;text-transform:uppercase}
+  .workspace-tool-link{display:grid;grid-template-columns:20px 1fr auto;align-items:center;gap:8px;padding:7px 6px;border-radius:9px;text-decoration:none;color:#4c4c50;font-size:11.5px;font-weight:600;transition:.15s ease}
+  .workspace-tool-link:hover{background:#fff;color:#111;box-shadow:0 1px 0 rgba(0,0,0,.03)}
+  .workspace-tool-link b{font-size:11px;font-weight:500;color:#b0b0b5}
+  .workspace-tool-icon{width:20px;height:20px;display:grid;place-items:center;color:#77777d}
+  .workspace-tool-icon svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .system-group{padding:0 8px 8px}
+  .system-group .subnavlink{padding:8px 9px;font-size:11.7px}
+  .system-nav{padding-left:10px!important}
+  .system-dot{width:6px;height:6px;border-radius:50%;background:#c8c8cc;flex:0 0 6px}
+  .system-nav.active .system-dot{background:#111}
+  .system-connect-link{display:flex;text-decoration:none;border:1px dashed #d4d4d8!important;margin-top:5px!important;background:#fff!important}
+  .system-connect-link:hover{border-style:solid!important}
+  .new-badge.beta{background:#111!important;color:#fff!important}
+  .sidefoot{background:rgba(251,251,253,.92)}
+  .sidebar-plan{width:100%;border:1px solid #e3e3e7;background:#fff;border-radius:12px;padding:9px 10px;display:grid;grid-template-columns:auto 1fr auto;gap:7px;align-items:center;text-align:left;cursor:pointer;color:#333;margin-bottom:10px}
+  .sidebar-plan span{font-size:8.5px;padding:3px 5px;border-radius:6px;background:#111;color:#fff;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .sidebar-plan strong{font-size:10.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sidebar-plan b{font-size:15px;font-weight:400;color:#aaa}
+  .who small{display:block;font-size:9px;color:#aaa;margin-top:1px}
+  .onboarding{border:0;border-top:1px solid #ececef;border-radius:0;background:transparent;margin:8px 10px 4px}
+  .onboarding-head{padding:9px 4px 7px}
+  .onboarding-progress{margin:0 4px 5px;height:2px}
+  .onboarding-body{padding:2px 0 5px}
+  .onboarding.complete .onboarding-head strong{color:#4d4d51}
+  .onboarding.complete .count{color:#248a3d;font-weight:800}
+  .onboarding.complete .onboarding-progress span{background:#248a3d}
+
+  /* ── System Control Center v4.8 ────────────────────── */
+  .system-control-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:16px;padding:28px 30px;border-radius:26px;background:#171719;color:#fff;overflow:hidden;position:relative}
+  .system-control-hero:after{content:"";position:absolute;right:-70px;top:-100px;width:260px;height:260px;border:1px solid rgba(255,255,255,.08);border-radius:50%;box-shadow:0 0 0 42px rgba(255,255,255,.025),0 0 0 84px rgba(255,255,255,.018)}
+  .system-control-copy,.system-control-actions{position:relative;z-index:1}
+  .system-control-eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;color:rgba(255,255,255,.48)}
+  .system-control-copy h3{font-size:29px;line-height:1.12;letter-spacing:-.035em;margin:7px 0 7px;color:#fff}
+  .system-control-copy p{max-width:650px;margin:0;color:rgba(255,255,255,.58);font-size:12.5px;line-height:1.65}
+  .system-control-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+  .system-live{display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid rgba(255,255,255,.13);border-radius:999px;color:rgba(255,255,255,.72);font-size:10.5px;white-space:nowrap}
+  .system-live i{width:7px;height:7px;border-radius:50%;background:#30d158;box-shadow:0 0 0 4px rgba(48,209,88,.12)}
+  .system-upgrade-btn{border:0;background:#fff;color:#111;border-radius:11px;padding:9px 13px;font-size:11px;font-weight:750;cursor:pointer}
+  .control-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,.72fr);gap:16px}
+  .control-panel,.workspace-status-panel{background:#fff;border:1px solid rgba(0,0,0,.065);border-radius:24px;box-shadow:var(--shadow)}
+  .control-panel{padding:22px 24px}
+  .control-panel-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;padding:0 1px 18px;border-bottom:1px solid #eeeef1}
+  .control-panel-head span,.workspace-status-head span{font-size:9.5px;font-weight:800;letter-spacing:.1em;color:#a0a0a5}
+  .control-panel-head h3,.workspace-status-head h3{font-size:18px;margin:3px 0 0;letter-spacing:-.02em}
+  .control-panel-head p{max-width:380px;margin:0;color:var(--muted);font-size:10.8px;line-height:1.55;text-align:right}
+  .control-list{display:flex;flex-direction:column}
+  .control-row{display:grid;grid-template-columns:42px minmax(0,1fr) auto auto;gap:13px;align-items:center;padding:17px 1px;border-bottom:1px solid #f0f0f2}
+  .control-row:last-child{border-bottom:0;padding-bottom:1px}
+  .control-brand{width:40px;height:40px;border-radius:12px;background:#111;color:#fff;display:grid;place-items:center;font-size:14px;font-weight:850}
+  .control-brand.google{background:#fff;color:#111;border:1px solid #dddde1}.control-brand.gmail{background:#f5f5f7;color:#111}.control-brand.finance{background:#111;color:#fff}
+  .control-copy{min-width:0}.control-copy strong{display:block;font-size:13px;letter-spacing:-.01em}.control-copy span{display:block;margin-top:3px;color:var(--muted);font-size:10.5px;line-height:1.5}
+  .control-state{margin:0!important;white-space:nowrap;justify-self:end}
+  .control-action{border:1px solid #dddde1;background:#fff;color:#202024;border-radius:10px;padding:8px 10px;text-decoration:none;font-size:10.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .control-action.primary{background:#1d1d1f;color:#fff;border-color:#1d1d1f}
+  .workspace-status-panel{padding:22px;align-self:start}
+  .workspace-status-head{padding-bottom:14px;border-bottom:1px solid #eeeef1}
+  .workspace-status-facts{display:grid;padding:5px 0}
+  .workspace-status-facts>div{display:flex;justify-content:space-between;gap:15px;padding:11px 0;border-bottom:1px solid #f1f1f3;font-size:11px}
+  .workspace-status-facts span{color:var(--muted)}.workspace-status-facts strong{font-weight:700;text-align:right;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .workspace-owner-note{margin-top:14px;padding:15px;border-radius:16px;background:#f5f5f7}
+  .workspace-owner-note strong{font-size:11.5px}.workspace-owner-note p{margin:5px 0 0;color:var(--muted);font-size:10.5px;line-height:1.55}
+  .workspace-paths{margin-top:13px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:#8e8e93;font-size:9.5px}.workspace-paths i{font-style:normal;color:#c0c0c5}
+  @media(max-width:1050px){.control-layout{grid-template-columns:1fr}.system-control-hero{align-items:flex-start;flex-direction:column}.system-control-actions{justify-content:flex-start}.control-panel-head{align-items:flex-start;flex-direction:column}.control-panel-head p{text-align:left}}
+  @media(max-width:760px){.control-row{grid-template-columns:38px minmax(0,1fr);gap:10px}.control-state{grid-column:2;justify-self:start}.control-action{grid-column:2;justify-self:start}.system-control-copy h3{font-size:24px}.system-control-hero{padding:23px 20px}}
+  @media(max-width:860px){.nav-kicker,.workspace-toolbox,.system-group,.sidebar-plan{display:none!important}}
+  @media(max-width:600px){.nav-kicker,.workspace-toolbox,.system-group{display:none!important}.sidebar nav>.navlink{display:none!important}.sidebar nav>.navlink.mobile-primary{display:flex!important}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -712,34 +784,51 @@
       <div><h1>รับจ่ายแบบไม่จำกัด</h1><div class="sub">LINE Accounting</div></div>
     </div>
     <nav>
-      <button class="navlink active" data-p="overview"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></span><span>ภาพรวม</span></button>
-      <button class="navlink" data-p="expenses"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v13"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg></span><span>รายจ่าย</span></button>
-      <button class="navlink" data-p="income"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21V8"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span><span>รายรับ</span></button>
-      <button class="navlink" data-p="batches"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/><circle cx="18" cy="17" r="2"/></svg></span><span>เบิกจ่าย</span></button>
-      <button class="navlink" data-p="reconciliation"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h11"/><path d="M4 12h7"/><path d="M4 17h6"/><path d="m14 15 2 2 4-5"/><circle cx="17" cy="14" r="5"/></svg></span><span>กระทบยอด</span></button>
-      <button class="navlink" data-p="reports"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19V3"/></svg></span><span>รายงานและภาษี</span></button>
+      <div class="nav-kicker">WORKSPACE</div>
+      <button class="navlink active mobile-primary" data-p="overview"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></span><span>ภาพรวม</span></button>
+      <button class="navlink mobile-primary" data-p="batches"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/><circle cx="18" cy="17" r="2"/></svg></span><span>เบิกจ่าย</span></button>
+      <button class="navlink mobile-primary" data-p="expenses"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v13"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg></span><span>รายจ่าย</span></button>
+      <button class="navlink mobile-primary" data-p="income"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21V8"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span><span>รายรับ</span></button>
       <button class="navlink" data-p="bills"><span class="ic"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5"/><path d="M9 12h7M9 16h7"/></svg></span><span>เอกสาร</span></button>
-      <button class="navlink" data-p="email"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><span>เอกสารจากอีเมล</span></button>
+      <button class="navlink mobile-primary" data-p="reconciliation"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h11"/><path d="M4 12h7"/><path d="M4 17h6"/><path d="m14 15 2 2 4-5"/><circle cx="17" cy="14" r="5"/></svg></span><span>กระทบยอด</span></button>
+      <button class="navlink" data-p="reports"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19V3"/></svg></span><span>รายงานและภาษี</span></button>
       <button class="navlink" data-p="subscriptions"><span class="ic"><svg viewBox="0 0 24 24"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="8" cy="7" r="3"/></svg></span><span>รายจ่ายประจำ</span></button>
+      <button class="navlink" data-p="email"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span><span>เอกสารจากอีเมล</span></button>
       <button class="navlink" data-p="activity"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg></span><span>ประวัติ</span></button>
+
+      <div class="workspace-toolbox" aria-label="เครื่องมือ Workspace">
+        <div class="workspace-tool-label">เครื่องมือ</div>
+        <a class="workspace-tool-link" id="filesLink" href="#"><span class="workspace-tool-icon"><svg viewBox="0 0 24 24"><path d="M4 7h11"/><path d="M4 12h7"/><path d="M4 17h6"/><path d="m14 15 2 2 4-5"/><circle cx="17" cy="14" r="5"/></svg></span><span>จับคู่หลักฐาน</span><b>↗</b></a>
+        <a class="workspace-tool-link" id="receiptLink" href="#"><span class="workspace-tool-icon"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span><span>เอกสารอัตโนมัติ</span><b>↗</b></a>
+      </div>
+
       <div class="nav-divider"></div>
+      <div class="nav-kicker">BUSINESS</div>
       <div class="business-group" id="businessGroup">
         <button class="nav-section-toggle" id="businessToggle" type="button">
           <span class="section-icon"><svg viewBox="0 0 24 24"><path d="M4 21v-9l8-6 8 6v9"/><path d="M9 21v-6h6v6"/><path d="M8 6V3h8v3"/></svg></span>
           <span class="section-label">จัดการธุรกิจ</span><span class="chev">⌄</span>
         </button>
         <div class="subnav" id="businessMenu">
-          <button class="subnavlink" data-biz="profile">ดู/แก้ไขข้อมูลธุรกิจ</button>
-          <button class="subnavlink" data-biz="approver">ผู้อนุมัติค่าใช้จ่าย</button>
+          <button class="subnavlink" data-biz="profile">ข้อมูลบริษัท</button>
+          <button class="subnavlink" data-biz="approver">ผู้อนุมัติ & ลายเซ็น</button>
+          <button class="subnavlink" data-biz="team">ทีม & ผู้ใช้งาน</button>
+          <button class="subnavlink" data-biz="finance">บัญชีและช่องทางการเงิน</button>
           <button class="subnavlink" data-biz="categories">หมวดหมู่</button>
-          <button class="subnavlink" data-biz="finance">ช่องทางการเงิน <span class="new-badge">ใหม่</span></button>
-          <button class="subnavlink" data-biz="team">ทีมของฉัน</button>
-          <button class="subnavlink" data-p="billing">แพ็กเกจและอัปเกรด <span class="new-badge">Beta</span></button>
-          <button class="subnavlink" data-p="settings">ตั้งค่า</button>
         </div>
       </div>
+
+      <div class="nav-divider"></div>
+      <div class="nav-kicker">SYSTEM</div>
+      <div class="system-group">
+        <button class="subnavlink system-nav" data-p="settings"><span class="system-dot"></span>ระบบและการเชื่อมต่อ</button>
+        <button class="subnavlink system-nav" data-p="billing"><span class="system-dot"></span>แพ็กเกจและอัปเกรด <span class="new-badge beta">Beta</span></button>
+        <a class="subnavlink system-nav system-connect-link" id="connBtn" href="#"><span class="system-dot"></span><span>เชื่อมต่อ Google</span></a>
+      </div>
+
       <button class="navlink compact-only" data-biz="profile"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 21v-9l8-6 8 6v9"/><path d="M9 21v-6h6v6"/></svg></span><span>จัดการธุรกิจ</span></button>
-      <button class="navlink compact-only" data-p="settings"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21h-4v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3.1 14H3v-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3h4v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>ตั้งค่า</span></button>
+      <button class="navlink compact-only" data-p="settings"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21h-4v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3.1 14H3v-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V3h4v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>ระบบ</span></button>
+
       <div class="onboarding" id="onboardingCard">
         <button class="onboarding-head" id="onboardingToggle" type="button">
           <strong>ตั้งค่าบริษัทก่อนใช้งาน</strong><span class="count" id="onboardingCount">0/3</span><span class="chev">⌄</span>
@@ -753,11 +842,8 @@
       </div>
     </nav>
     <div class="sidefoot">
-      <div class="quick-title">Quick actions</div>
-      <a class="sidelink" id="filesLink" href="#"><span>จับคู่หลักฐาน</span></a>
-      <a class="sidelink" id="receiptLink" href="#"><span>เอกสารอัตโนมัติ</span></a>
-      <a class="connbtn" id="connBtn" href="#"><span>เชื่อมต่อ Google</span></a>
-      <div class="who"><div class="av">D</div><div><div id="whoName">เจ้าของธุรกิจ</div></div></div>
+      <button class="sidebar-plan" type="button" data-p="billing"><span>Beta</span><strong>แพ็กเกจทดลองใช้งาน</strong><b>›</b></button>
+      <div class="who"><div class="av">D</div><div><div id="whoName">เจ้าของธุรกิจ</div><small>Workspace owner</small></div></div>
     </div>
   </aside>
 
@@ -1290,45 +1376,64 @@
 
     <!-- SETTINGS -->
     <section class="page" id="page-settings">
-      <div class="page-intro"><h3>การเชื่อมต่อ</h3><p>ดูสถานะระบบที่เชื่อมกับธุรกิจนี้ และจัดการสิทธิ์แต่ละบริการจากจุดเดียว</p></div>
-      <div class="integration-grid">
-        <div class="integration-card">
-          <div class="integration-top"><div class="integration-icon line">L</div><div class="integration-copy"><div class="integration-name">LINE</div><div class="integration-desc">ช่องทางรับสลิป ใบเสร็จ และแจ้งผลการทำงานกลับไปยังทีม</div></div></div>
-          <div class="integration-state ok" id="setLineState"><span class="state-dot"></span><span>เชื่อมต่อแล้ว</span></div>
-          <div class="integration-actions"><button class="btn" id="showLineInfo" type="button">ดูรายละเอียด</button></div>
+      <div class="system-control-hero">
+        <div class="system-control-copy">
+          <span class="system-control-eyebrow">SYSTEM CONTROL</span>
+          <h3>ศูนย์ควบคุม Workspace</h3>
+          <p>เช็กการเชื่อมต่อ พื้นที่เก็บข้อมูล และบริการที่ทำให้ระบบบัญชีใน LINE ทำงานอยู่จากหน้าจอเดียว</p>
         </div>
-        <div class="integration-card" id="googleIntegrationCard">
-          <div class="integration-top"><div class="integration-icon google">G</div><div class="integration-copy"><div class="integration-name">Google Drive & Sheets</div><div class="integration-desc">เก็บหลักฐาน เอกสาร PDF และข้อมูลบัญชีไว้ในพื้นที่ Google ของบริษัท</div></div></div>
-          <div class="integration-state" id="setGoogleState"><span class="state-dot"></span><span>กำลังตรวจสถานะ</span></div>
-          <div class="integration-actions"><a class="btn solid" id="setGoogleAction" href="#">เชื่อมต่อ Google</a></div>
-        </div>
-        <div class="integration-card" id="financeIntegrationCard">
-          <div class="integration-top"><div class="integration-icon" style="background:#1d1d1f;color:#fff">฿</div><div class="integration-copy"><div class="integration-name">ช่องทางการเงิน</div><div class="integration-desc">กำหนดบัญชีธนาคาร พร้อมเพย์ หรือ e-Wallet ที่บริษัทใช้จ่ายและใช้กระทบยอด</div></div></div>
-          <div class="integration-state" id="setFinanceState"><span class="state-dot"></span><span>กำลังตรวจสถานะ</span></div>
-          <div class="integration-actions"><button class="btn solid" type="button" data-open-finance>จัดการช่องทางการเงิน</button></div>
-        </div>
-        <div class="integration-card" id="settingsGmailCard">
-          <div class="integration-top"><div class="integration-icon gmail">M</div><div class="integration-copy"><div class="integration-name">Gmail</div><div class="integration-desc">ค้นหาใบเสร็จ ใบกำกับภาษี และ Subscription จากอีเมลธุรกิจ</div></div></div>
-          <div class="integration-state" id="setGmailState"><span class="state-dot"></span><span>กำลังตรวจสถานะ</span></div>
-          <div class="integration-actions"><button class="btn solid" id="setGmailAction" type="button">จัดการ Gmail</button></div>
+        <div class="system-control-actions">
+          <span class="system-live"><i></i> Workspace online</span>
+          <button class="system-upgrade-btn" type="button" data-open-billing>ดูแพ็กเกจ</button>
         </div>
       </div>
-      <div class="connection-details">
-        <div class="card" style="margin:0">
-          <h3>ข้อมูลระบบ</h3><div class="cs">ข้อมูลอ้างอิงของ Workspace นี้</div>
-          <div class="system-facts">
-            <div class="system-fact"><span>รหัสกลุ่ม (tenant)</span><strong id="setTenant" style="font-family:monospace">—</strong></div>
-            <div class="system-fact"><span>จำนวนรายการที่โหลดได้</span><strong id="setRows">—</strong></div>
-            <div class="system-fact"><span>โครงสร้างวันที่</span><strong>วันที่รายการจริง + วันที่บันทึก</strong></div>
-            <div class="system-fact"><span>หมวดที่พบในระบบ</span><strong id="setCats">—</strong></div>
+
+      <div class="control-layout">
+        <div class="control-panel">
+          <div class="control-panel-head"><div><span>CONNECTIONS</span><h3>ระบบที่เชื่อมอยู่</h3></div><p>แต่ละบริการมีหน้าที่ต่างกัน แก้เฉพาะตัวที่มีปัญหาได้โดยไม่กระทบข้อมูลส่วนอื่น</p></div>
+          <div class="control-list">
+            <div class="control-row">
+              <div class="control-brand line">L</div>
+              <div class="control-copy"><strong>LINE Workspace</strong><span>รับเอกสารจากทีม ส่งสถานะ และแจ้งผลการเบิกจ่ายกลับเข้า LINE</span></div>
+              <div class="control-state integration-state ok" id="setLineState"><span class="state-dot"></span><span>เชื่อมต่อแล้ว</span></div>
+              <button class="control-action" id="showLineInfo" type="button">รายละเอียด</button>
+            </div>
+            <div class="control-row" id="googleIntegrationCard">
+              <div class="control-brand google">G</div>
+              <div class="control-copy"><strong>Google Workspace</strong><span>Drive สำหรับหลักฐานและ PDF · Sheets สำหรับข้อมูลบัญชีของบริษัท</span></div>
+              <div class="control-state integration-state" id="setGoogleState"><span class="state-dot"></span><span>กำลังตรวจสถานะ</span></div>
+              <a class="control-action primary" id="setGoogleAction" href="#">เชื่อมต่อ Google</a>
+            </div>
+            <div class="control-row" id="settingsGmailCard">
+              <div class="control-brand gmail">M</div>
+              <div class="control-copy"><strong>Gmail Inbox</strong><span>ค้นหาใบเสร็จ ใบกำกับภาษี Invoice และรายจ่ายประจำจากอีเมลธุรกิจ</span></div>
+              <div class="control-state integration-state" id="setGmailState"><span class="state-dot"></span><span>กำลังตรวจสถานะ</span></div>
+              <button class="control-action primary" id="setGmailAction" type="button">จัดการ Gmail</button>
+            </div>
+            <div class="control-row" id="financeIntegrationCard">
+              <div class="control-brand finance">฿</div>
+              <div class="control-copy"><strong>บัญชีและช่องทางการเงิน</strong><span>บัญชีธนาคาร พร้อมเพย์ หรือ e-Wallet ที่ใช้จ่ายและกระทบยอด</span></div>
+              <div class="control-state integration-state" id="setFinanceState"><span class="state-dot"></span><span>กำลังตรวจสถานะ</span></div>
+              <button class="control-action" type="button" data-open-finance>จัดการบัญชี</button>
+            </div>
           </div>
         </div>
-        <div class="card" style="margin:0">
-          <h3>การเก็บข้อมูล</h3><div class="cs">ออกแบบให้ธุรกิจเป็นเจ้าของข้อมูลของตัวเอง</div>
-          <div class="accounting-note" style="margin-top:14px"><span>✓</span><span>รูปหลักฐานและเอกสารอยู่ใน Google Drive ของบริษัท</span></div>
-          <div class="accounting-note"><span>✓</span><span>ข้อมูลรายการอยู่ใน Google Sheet ของบริษัท</span></div>
-          <div class="accounting-note" style="margin-bottom:0"><span>✓</span><span>ระบบใช้สิทธิ์ตามที่ผู้ใช้อนุญาตและสามารถยกเลิกได้</span></div>
-        </div>
+
+        <aside class="workspace-status-panel">
+          <div class="workspace-status-head"><span>WORKSPACE</span><h3>สถานะพื้นที่ทำงาน</h3></div>
+          <div class="workspace-status-facts">
+            <div><span>Tenant</span><strong id="setTenant" style="font-family:monospace">—</strong></div>
+            <div><span>รายการที่โหลด</span><strong id="setRows">—</strong></div>
+            <div><span>หมวดที่ใช้งาน</span><strong id="setCats">—</strong></div>
+          </div>
+          <div class="workspace-owner-note">
+            <strong>ข้อมูลเป็นของบริษัทคุณ</strong>
+            <p>รูปและ PDF เก็บใน Google Drive ส่วนข้อมูลรายการบัญชีอยู่ใน Google Sheet ของบริษัท ระบบใช้สิทธิ์เฉพาะที่ได้รับอนุญาต</p>
+          </div>
+          <div class="workspace-paths">
+            <span>วันที่รายการจริง</span><i>→</i><span>วันที่บันทึก</span><i>→</i><span>ประวัติการทำงาน</span>
+          </div>
+        </aside>
       </div>
       <span id="setConn" hidden>—</span>
     </section>
@@ -2130,6 +2235,10 @@ function renderOnboarding(){
   const done=order.filter(k=>st[k]).length;
   el("onboardingCount").textContent=`${done}/3`;
   el("onboardingBar").style.width=`${done/3*100}%`;
+  const onboardingCard=el("onboardingCard"),onboardingTitle=onboardingCard?.querySelector(".onboarding-head strong");
+  if(onboardingCard)onboardingCard.classList.toggle("complete",done===3);
+  if(onboardingTitle)onboardingTitle.textContent=done===3?"บริษัทพร้อมใช้งาน":"ตั้งค่าบริษัทก่อนใช้งาน";
+  if(done===3&&onboardingCard)onboardingCard.classList.add("closed");
   let foundNext=false;
   document.querySelectorAll(".onboard-step").forEach(b=>{
     const yes=st[b.dataset.step];b.classList.toggle("done",yes);b.classList.remove("next");
@@ -2334,7 +2443,7 @@ function openEmailEditor(id){
 
 /* ---------- REIMBURSEMENT BATCHES: ONE ACCOUNTING TABLE V4 ---------- */
 const BATCH_WEEKDAYS=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
-const DASHBOARD_UI_VERSION="ONBOARDING_FINANCE_V3_6_20260805";
+const DASHBOARD_UI_VERSION="SIDEBAR_WORKSPACE_CONTROL_V4_8_20260807";
 console.info("Dashboard UI",DASHBOARD_UI_VERSION);
 const EXPECTED_BATCH_CONTRACT="REIMBURSEMENT_ACCOUNTING_TABLE_V6";
 const BATCH_STATUS_META={
@@ -2867,7 +2976,7 @@ function download(name,text){
 }
 
 /* ---------- NAV / DRAW ---------- */
-const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"เบิกจ่าย",batches:"เบิกจ่าย",reconciliation:"กระทบยอดธนาคาร",reports:"รายงานและภาษี",bills:"ศูนย์เอกสารบัญชี",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",billing:"แพ็กเกจและอัปเกรด",settings:"ตั้งค่า",business:"จัดการธุรกิจ"};
+const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"เบิกจ่าย",batches:"เบิกจ่าย",reconciliation:"กระทบยอดธนาคาร",reports:"รายงานและภาษี",bills:"ศูนย์เอกสารบัญชี",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",billing:"แพ็กเกจและอัปเกรด",settings:"ระบบและการเชื่อมต่อ",business:"จัดการธุรกิจ"};
 document.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>openPage(b.dataset.p,b)));
 document.querySelectorAll("[data-plan-cycle]").forEach(b=>b.addEventListener("click",()=>{PLAN_CYCLE=b.dataset.planCycle==="annual"?"annual":"monthly";document.querySelectorAll("[data-plan-cycle]").forEach(x=>x.classList.toggle("on",x.dataset.planCycle===PLAN_CYCLE));renderPricing();}));
 document.addEventListener("click",e=>{const open=e.target.closest("[data-open-billing]");if(open){e.preventDefault();openPage("billing",document.querySelector('[data-p="billing"]'));window.scrollTo({top:0,behavior:"smooth"});return;}const select=e.target.closest("[data-select-plan]");if(select){e.preventDefault();requestUpgrade(select.dataset.selectPlan);}});

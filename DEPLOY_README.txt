@@ -1,18 +1,14 @@
-Company Setup Gmail return fix v4.6
+Dashboard Sidebar / Workspace Control v4.8
 
-แก้ปัญหา:
-- เชื่อม Gmail สำเร็จแล้ว แต่กลับ Dashboard แล้ว Company Setup ยังขึ้น "เชื่อม Gmail" ซ้ำ
-
-สาเหตุ:
-- Dashboard เดิมโหลด Gmail status + Email documents + Subscriptions เป็นชุดเดียว
-- ถ้า Email documents หรือ Subscriptions ช้าหรือ error จะไม่อัปเดต EMAIL_INFO แม้ Gmail OAuth สำเร็จแล้ว
+เปลี่ยนเฉพาะ deal-dashboard/index.html
 
 สิ่งที่แก้:
-- อ่าน /api/gmail-status แยกจาก Email Inbox APIs
-- เมื่อ OAuth callback กลับมาพร้อม ?gmail=connected จะ poll ยืนยันสถานะ Gmail สูงสุด 8 ครั้ง
-- เมื่อ connected=true จะอัปเดต Company Setup ทันทีและไม่ขอเชื่อมซ้ำ
-- Email documents / Subscriptions error ชั่วคราวจะไม่ทำให้ Gmail ถูกแสดงเป็น disconnected
+- จัด Sidebar ใหม่เป็น WORKSPACE / BUSINESS / SYSTEM
+- ย้าย Quick actions เข้า Workspace เป็นเครื่องมือ จับคู่หลักฐาน + เอกสารอัตโนมัติ
+- จัดเมนูธุรกิจใหม่: ข้อมูลบริษัท / ผู้อนุมัติ & ลายเซ็น / ทีม & ผู้ใช้งาน / บัญชีและช่องทางการเงิน / หมวดหมู่
+- แยก System: ระบบและการเชื่อมต่อ / แพ็กเกจและอัปเกรด / เชื่อม Google
+- เปลี่ยนหน้า Settings เป็น System Control Center โทนดำ-ขาว ไม่ใช้การ์ด 4 ช่องแบบเดิม
+- Setup 3/3 จะยุบเป็นสถานะ “บริษัทพร้อมใช้งาน” โดยอัตโนมัติ
+- รักษา id และ data-action เดิมเพื่อไม่ให้ workflow หลักพัง
 
-Deploy:
-- ทับ index.html ที่ root repo deal-dashboard
-- Deploy Dashboard เท่านั้น
+Deploy: เอา index.html ไปทับ root ของ repo deal-dashboard แล้ว Deploy Dashboard อย่างเดียว
