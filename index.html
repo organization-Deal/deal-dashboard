@@ -855,7 +855,7 @@
 
       <div class="onboarding" id="onboardingCard">
         <button class="onboarding-head" id="onboardingToggle" type="button">
-          <strong>ตั้งค่าบริษัทก่อนใช้งาน</strong><span class="count" id="onboardingCount">0/3</span><span class="chev">⌄</span>
+          <strong>ตั้งค่าบริษัท</strong><span class="count" id="onboardingCount">0/3</span><span class="chev">⌄</span>
         </button>
         <div class="onboarding-progress"><span id="onboardingBar"></span></div>
         <div class="onboarding-body" id="onboardingSteps">
@@ -2176,11 +2176,21 @@ function renderCompanySetupGate({force=false}={}){
   setCompanySetupStep("companySetupGmail",st.owner_gmail,gmailDetail,st.owner_gmail?"ตรวจสอบ":"เชื่อม Gmail");
   setCompanySetupStep("companySetupDocuments",st.company_documents,documentDetail,st.company_documents?"ตรวจสอบ":"ตั้งค่าเอกสาร");
   setCompanySetupStep("companySetupFinance",st.finance,financeDetail,st.finance?"ตรวจสอบ":"เพิ่มช่องทาง");
-  const show=!st.ready&&(force||!companySetupWorkspaceOpen());
-  gate.hidden=!show;
-  document.body.classList.toggle("company-setup-required",show);
-  if(st.ready){COMPANY_SETUP_ACTIVE="";localStorage.setItem(`company-setup-complete:${TENANT}`,"1");}
+
+  // v5.0: Company Setup is intentionally non-blocking.
+  // Never auto-open the full-screen gate from refresh, OAuth callback, sync or page navigation.
+  // The sidebar checklist remains the single setup entry point.
+  gate.hidden=true;
+  document.body.classList.remove("company-setup-required");
+  if(st.ready){
+    COMPANY_SETUP_ACTIVE="";
+    localStorage.setItem(`company-setup-complete:${TENANT}`,"1");
+  }else{
+    localStorage.removeItem(`company-setup-complete:${TENANT}`);
+  }
+  void force;
 }
+
 function openCompanySetupStep(step){
   COMPANY_SETUP_ACTIVE=step;
   const gate=el("companySetupGate");if(gate)gate.hidden=true;
@@ -2200,13 +2210,16 @@ function openCompanySetupStep(step){
   }
 }
 function requireCompanySetup(target=""){
-  if(companySetupState().ready)return false;
-  const allowedPages=new Set(["email","settings","billing"]);
-  if(allowedPages.has(target))return false;
-  COMPANY_SETUP_ACTIVE="";
-  renderCompanySetupGate({force:true});
-  return true;
+  // v5.0: Missing setup must never block Dashboard navigation.
+  // Keep the checklist visible so the owner can finish setup when convenient.
+  if(!companySetupState().ready){
+    const card=el("onboardingCard");
+    if(card)card.classList.remove("closed");
+  }
+  void target;
+  return false;
 }
+
 function syncSignatureReadyMarker(){
   if(approverSignatureUrl()) localStorage.setItem(SIGNATURE_READY_KEY,"1");
   LAST_SETTINGS_SIGNAL=localStorage.getItem(SETTINGS_SIGNAL_KEY)||"";
@@ -2320,7 +2333,7 @@ function renderOnboarding(){
   el("onboardingBar").style.width=`${done/3*100}%`;
   const onboardingCard=el("onboardingCard"),onboardingTitle=onboardingCard?.querySelector(".onboarding-head strong");
   if(onboardingCard)onboardingCard.classList.toggle("complete",done===3);
-  if(onboardingTitle)onboardingTitle.textContent=done===3?"บริษัทพร้อมใช้งาน":"ตั้งค่าบริษัทก่อนใช้งาน";
+  if(onboardingTitle)onboardingTitle.textContent=done===3?"บริษัทพร้อมใช้งาน":"ตั้งค่าบริษัท";
   if(done===3&&onboardingCard)onboardingCard.classList.add("closed");
   let foundNext=false;
   document.querySelectorAll(".onboard-step").forEach(b=>{
