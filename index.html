@@ -2,7 +2,7 @@
 <!-- REIMBURSEMENT_ACCOUNTING_TABLE_V3_2026-08-03 -->
 <!DOCTYPE html>
 <!-- DASHBOARD_UI_VERSION: INCOME_SME_TH_V1_20260808 -->
-<!-- DASHBOARD_UI_VERSION: EXPENSE_TABLE_V5_4_20260808 -->
+<!-- DASHBOARD_UI_VERSION: EXPENSE_ANALYTICS_V5_5_20260808 -->
 <!-- DASHBOARD_UI_VERSION: MOBILE_NAVIGATION_V5_3_20260808 -->
 <!-- DASHBOARD_UI_VERSION: MULTI_BUSINESS_PRO_V4_9_20260807 -->
 <!-- DASHBOARD_UI_VERSION: SIDEBAR_WORKSPACE_CONTROL_V4_8_20260807 -->
@@ -223,7 +223,7 @@
   .ramt a{font-size:10.5px;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:2px;margin-left:5px}
   .empty{display:grid;place-items:center;text-align:center;color:var(--muted);padding:48px 14px;font-size:13px;min-height:150px}
 
-  /* ── Expense register v5.4 ───────────────────────────── */
+  /* ── Expense register + analytics v5.5 ───────────────── */
   .expense-page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:2px 0 14px}
   .expense-page-head h3{margin:3px 0 4px;font-size:22px;letter-spacing:-.035em}
   .expense-page-head p{margin:0;color:var(--muted);font-size:11.5px;line-height:1.5}
@@ -293,6 +293,42 @@
   .expense-drawer-docs a{display:flex;align-items:center;justify-content:space-between;border:1px solid #e1e1e5;border-radius:11px;padding:10px 11px;color:#111;text-decoration:none;font-size:11px;font-weight:700}
   .expense-drawer-docs a:after{content:"↗";color:#999}
 
+  /* Expense analytics v5.5 */
+  .expense-kpis{display:grid;grid-template-columns:1.25fr repeat(4,1fr);gap:8px;padding:12px 17px 6px;background:#fff}
+  .expense-kpi{min-width:0;border:1px solid #e8e8eb;border-radius:14px;padding:11px 12px;background:#fafafb}
+  .expense-kpi.primary{background:#171719;color:#fff;border-color:#171719}
+  .expense-kpi .label{display:block;font-size:9.5px;font-weight:700;color:#8f8f95;margin-bottom:5px}
+  .expense-kpi.primary .label{color:#bdbdc2}
+  .expense-kpi .value{display:block;font-size:20px;line-height:1.05;font-weight:800;letter-spacing:-.035em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+  .expense-kpi .sub{display:block;margin-top:5px;font-size:9px;color:#9a9aa0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .expense-kpi.primary .sub{color:#cfcfd3}
+  .expense-insight-area{padding:6px 17px 12px;background:#fff;border-bottom:1px solid #ededf0}
+  .expense-insight-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 8px}
+  .expense-insight-head strong{font-size:11px;letter-spacing:-.01em}.expense-insight-head span{font-size:9.5px;color:#999;margin-left:6px;font-weight:500}
+  .expense-insight-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .expense-insight{display:block;width:100%;text-align:left;border:1px solid #e7e7ea;border-radius:13px;padding:10px 11px;background:#fff;cursor:pointer;color:#161618;min-width:0}
+  .expense-insight:hover{background:#fafafa;border-color:#d6d6da}
+  .expense-insight .eyebrow{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#8e8e94;font-size:9px;font-weight:700;margin-bottom:5px}
+  .expense-insight .name{display:block;font-size:11.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .expense-insight .amount{display:block;margin-top:3px;font-size:14px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .expense-insight .meta{display:block;margin-top:3px;color:#97979d;font-size:8.8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .expense-ranks-toggle{border:0;background:#f1f1f4;border-radius:9px;padding:6px 9px;font-size:9.5px;font-weight:750;color:#555;cursor:pointer;white-space:nowrap}
+  .expense-ranks-toggle:hover{background:#e7e7eb;color:#111}
+  .expense-rank-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+  .expense-rank-card{border:1px solid #e9e9ec;border-radius:13px;padding:9px 10px;background:#fbfbfc;min-width:0}
+  .expense-rank-card h4{margin:0 0 6px;font-size:9.5px;color:#777}
+  .expense-rank-list{display:grid;gap:3px}
+  .expense-rank-item{position:relative;display:grid;grid-template-columns:18px minmax(0,1fr) auto;align-items:center;gap:6px;border:0;background:transparent;border-radius:8px;padding:5px 4px;cursor:pointer;text-align:left;color:#222;overflow:hidden}
+  .expense-rank-item:hover{background:#f0f0f3}
+  .expense-rank-num{font-size:8.5px;color:#a0a0a5;font-weight:800;z-index:1}
+  .expense-rank-name{font-size:9.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:1}
+  .expense-rank-amount{font-size:9.5px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;z-index:1}
+  .expense-rank-bar{position:absolute;left:0;top:0;bottom:0;background:#f0f0f2;border-radius:7px;pointer-events:none}
+  .expense-table tfoot{position:sticky;bottom:0;z-index:3}
+  .expense-table tfoot td{background:rgba(249,249,250,.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid #dedee2;border-bottom:0!important;padding-top:10px;padding-bottom:10px;font-weight:800}
+  .expense-table tfoot .expense-footer-label{text-align:right;color:#666;font-size:10px}
+  .expense-table tfoot .expense-footer-total{font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+
   @media(max-width:1180px){
     .expense-toolbar{flex-wrap:wrap}.expense-toolbar input[type=text]{flex:1 1 320px}.expense-toolbar #expCsv{margin-left:0}
     .expense-table{min-width:930px}.expense-table th,.expense-table td{padding-left:9px;padding-right:9px}
@@ -315,6 +351,11 @@
     .expense-date-sub{display:none}.expense-category{max-width:100%}.expense-sender{max-width:140px;text-align:right}
     .expense-drawer{top:auto;bottom:0;width:100%;height:auto;max-height:88dvh;border-radius:24px 24px 0 0;transform:translateY(105%)}.expense-drawer.open{transform:translateY(0)}
     .expense-drawer-body{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+
+    .expense-kpis{grid-template-columns:1fr 1fr;padding:4px 0 8px;gap:7px}.expense-kpi{padding:10px}.expense-kpi.primary{grid-column:1/-1}.expense-kpi .value{font-size:18px}
+    .expense-insight-area{padding:0 0 10px;border:0;background:transparent}.expense-insight-head{margin:2px 1px 7px}.expense-insight-head span{display:none}
+    .expense-insight-cards{grid-template-columns:1fr}.expense-insight{padding:10px 11px}.expense-rank-grid{grid-template-columns:1fr}.expense-rank-card{background:#fff}
+    .expense-table tfoot{display:none}
   }
 
   /* tables */
@@ -1285,6 +1326,27 @@
       <div class="card expense-register-card">
         <div class="expense-status-tabs" id="expenseStatusTabs" role="tablist" aria-label="กรองสถานะรายจ่าย"></div>
         <input type="hidden" id="fStatus" value="">
+
+        <div class="expense-kpis" aria-label="สรุปรายจ่ายตามตัวกรอง">
+          <div class="expense-kpi primary"><span class="label">ยอดรวม</span><strong class="value" id="expKpiTotal">฿0</strong><span class="sub" id="expKpiTotalSub">0 รายการ</span></div>
+          <div class="expense-kpi"><span class="label">จ่ายแล้ว</span><strong class="value" id="expKpiPaid">฿0</strong><span class="sub" id="expKpiPaidSub">0 รายการ</span></div>
+          <div class="expense-kpi"><span class="label">รอดำเนินการ</span><strong class="value" id="expKpiPending">฿0</strong><span class="sub" id="expKpiPendingSub">0 รายการ</span></div>
+          <div class="expense-kpi"><span class="label">เฉลี่ย / รายการ</span><strong class="value" id="expKpiAvg">฿0</strong><span class="sub">ตามรายการที่กำลังแสดง</span></div>
+          <div class="expense-kpi"><span class="label">รายการสูงสุด</span><strong class="value" id="expKpiMax">฿0</strong><span class="sub" id="expKpiMaxSub">—</span></div>
+        </div>
+        <div class="expense-insight-area">
+          <div class="expense-insight-head"><div><strong>วิเคราะห์รายจ่าย</strong><span>คำนวณใหม่ตามช่วงเวลาและตัวกรองปัจจุบัน</span></div><button type="button" class="expense-ranks-toggle" id="expenseRanksToggle" aria-expanded="true">ซ่อนอันดับ Top 5</button></div>
+          <div class="expense-insight-cards">
+            <button type="button" class="expense-insight" id="expTopSender" data-exp-insight="sender"><span class="eyebrow"><span>ผู้เบิกเยอะสุด</span><span>กรองดู →</span></span><strong class="name" id="expTopSenderName">—</strong><span class="amount" id="expTopSenderAmount">฿0</span><span class="meta" id="expTopSenderMeta">ยังไม่มีข้อมูล</span></button>
+            <button type="button" class="expense-insight" id="expTopCategory" data-exp-insight="category"><span class="eyebrow"><span>ค่าใช้จ่ายหลัก</span><span>กรองดู →</span></span><strong class="name" id="expTopCategoryName">—</strong><span class="amount" id="expTopCategoryAmount">฿0</span><span class="meta" id="expTopCategoryMeta">ยังไม่มีข้อมูล</span></button>
+            <button type="button" class="expense-insight" id="expTopVendor" data-exp-insight="vendor"><span class="eyebrow"><span>ร้าน / ผู้รับสูงสุด</span><span>กรองดู →</span></span><strong class="name" id="expTopVendorName">—</strong><span class="amount" id="expTopVendorAmount">฿0</span><span class="meta" id="expTopVendorMeta">ยังไม่มีข้อมูล</span></button>
+          </div>
+          <div class="expense-rank-grid" id="expenseRankGrid">
+            <div class="expense-rank-card"><h4>Top 5 ผู้เบิกตามยอดเงิน</h4><div class="expense-rank-list" id="expSenderRanks"></div></div>
+            <div class="expense-rank-card"><h4>Top 5 หมวดค่าใช้จ่าย</h4><div class="expense-rank-list" id="expCategoryRanks"></div></div>
+            <div class="expense-rank-card"><h4>Top 5 ร้าน / ผู้รับ</h4><div class="expense-rank-list" id="expVendorRanks"></div></div>
+          </div>
+        </div>
         <div class="toolbar expense-toolbar">
           <input type="text" id="q" placeholder="ค้นหาร้าน รายละเอียด หรือผู้เบิก…" />
           <select id="fCat"></select>
@@ -1309,6 +1371,13 @@
               </tr>
             </thead>
             <tbody id="rows"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" class="expense-footer-label">รวมตามตัวกรอง</td>
+                <td class="num expense-footer-total" id="expFooterTotal">฿0</td>
+                <td colspan="3" id="expFooterMeta" style="color:#888;font-size:9.5px;font-weight:650">0 รายการ</td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
@@ -2358,10 +2427,66 @@ function expenseRowHTML(r){
     <td class="expense-detail-cell expense-detail-col"><button type="button" class="expense-more-btn" data-exp-open="${idx}">ดู</button></td>
   </tr>`;
 }
+
+function expenseGroup(list,keyFn){
+  const map=new Map();
+  list.forEach(r=>{
+    const name=String(keyFn(r)||"ไม่ระบุ").trim()||"ไม่ระบุ";
+    const cur=map.get(name)||{name,sum:0,count:0};
+    cur.sum+=Number(r.amount||0); cur.count++; map.set(name,cur);
+  });
+  return [...map.values()].sort((a,b)=>b.sum-a.sum||b.count-a.count||a.name.localeCompare(b.name,"th"));
+}
+function expenseShare(sum,total){return total>0?Math.round((sum/total)*100):0;}
+function setExpenseInsight(kind,item,total){
+  const cap=kind==="sender"?"Sender":kind==="category"?"Category":"Vendor";
+  const btn=el("expTop"+cap),name=el("expTop"+cap+"Name"),amount=el("expTop"+cap+"Amount"),meta=el("expTop"+cap+"Meta");
+  if(!btn||!name||!amount||!meta)return;
+  btn.dataset.expValue=item?.name||"";
+  name.textContent=item?.name||"—"; amount.textContent=baht(item?.sum||0);
+  meta.textContent=item?`${item.count.toLocaleString("th-TH")} รายการ · ${expenseShare(item.sum,total)}% ของยอดที่แสดง`:"ยังไม่มีข้อมูล";
+  btn.disabled=!item;
+}
+function expenseRankHTML(items,total,kind){
+  if(!items.length)return '<div style="padding:8px 4px;color:#aaa;font-size:9.5px">ยังไม่มีข้อมูล</div>';
+  const max=items[0]?.sum||1;
+  return items.slice(0,5).map((o,i)=>`<button type="button" class="expense-rank-item" data-exp-rank-kind="${escAttr(kind)}" data-exp-rank-value="${escAttr(o.name)}"><span class="expense-rank-bar" style="width:${Math.max(5,Math.round((o.sum/max)*100))}%"></span><span class="expense-rank-num">${i+1}</span><span class="expense-rank-name">${esc(o.name)}</span><span class="expense-rank-amount">${baht(o.sum)}</span></button>`).join("");
+}
+function renderExpenseAnalytics(list){
+  const total=list.reduce((s,r)=>s+Number(r.amount||0),0);
+  const paid=list.filter(r=>String(r.status)==="จ่ายแล้ว"),pending=list.filter(r=>String(r.status)!=="จ่ายแล้ว");
+  const paidTotal=paid.reduce((s,r)=>s+Number(r.amount||0),0),pendingTotal=pending.reduce((s,r)=>s+Number(r.amount||0),0);
+  const maxRow=list.reduce((m,r)=>!m||Number(r.amount||0)>Number(m.amount||0)?r:m,null);
+  const senderGroups=expenseGroup(list,r=>r.sender),categoryGroups=expenseGroup(list,r=>r.category),vendorGroups=expenseGroup(list,r=>r.vendor);
+  if(el("expKpiTotal"))el("expKpiTotal").textContent=baht(total);
+  if(el("expKpiTotalSub"))el("expKpiTotalSub").textContent=`${list.length.toLocaleString("th-TH")} รายการ`;
+  if(el("expKpiPaid"))el("expKpiPaid").textContent=baht(paidTotal);
+  if(el("expKpiPaidSub"))el("expKpiPaidSub").textContent=`${paid.length.toLocaleString("th-TH")} รายการ`;
+  if(el("expKpiPending"))el("expKpiPending").textContent=baht(pendingTotal);
+  if(el("expKpiPendingSub"))el("expKpiPendingSub").textContent=`${pending.length.toLocaleString("th-TH")} รายการ`;
+  if(el("expKpiAvg"))el("expKpiAvg").textContent=baht(list.length?total/list.length:0);
+  if(el("expKpiMax"))el("expKpiMax").textContent=baht(maxRow?.amount||0);
+  if(el("expKpiMaxSub"))el("expKpiMaxSub").textContent=maxRow?(maxRow.vendor||maxRow.note||"ไม่ระบุ"):"—";
+  setExpenseInsight("sender",senderGroups[0],total); setExpenseInsight("category",categoryGroups[0],total); setExpenseInsight("vendor",vendorGroups[0],total);
+  if(el("expSenderRanks"))el("expSenderRanks").innerHTML=expenseRankHTML(senderGroups,total,"sender");
+  if(el("expCategoryRanks"))el("expCategoryRanks").innerHTML=expenseRankHTML(categoryGroups,total,"category");
+  if(el("expVendorRanks"))el("expVendorRanks").innerHTML=expenseRankHTML(vendorGroups,total,"vendor");
+  if(el("expFooterTotal"))el("expFooterTotal").textContent=baht(total);
+  if(el("expFooterMeta"))el("expFooterMeta").textContent=`${list.length.toLocaleString("th-TH")} รายการ · จ่ายแล้ว ${paid.length.toLocaleString("th-TH")} · รอดำเนินการ ${pending.length.toLocaleString("th-TH")}`;
+}
+function applyExpenseDrill(kind,value){
+  if(!value)return;
+  if(kind==="sender"&&el("fSender")){el("fSender").value=value;}
+  else if(kind==="category"&&el("fCat")){el("fCat").value=value;}
+  else if(kind==="vendor"&&el("q")){el("q").value=value;}
+  renderExp();
+  const wrap=document.querySelector('.expense-table-wrap'); if(wrap)wrap.scrollTo({top:0,behavior:'smooth'});
+}
 function renderExp(){
   renderExpenseStatusTabs();
   const list=filteredExp(),sum=list.reduce((s,r)=>s+ +r.amount,0),paid=list.filter(r=>String(r.status)==="จ่ายแล้ว"),pending=list.filter(r=>String(r.status)!=="จ่ายแล้ว");
-  el("expSum").textContent=`แสดง ${list.length} รายการ · รวม ${baht(sum)} · รอดำเนินการ ${pending.length} · จ่ายแล้ว ${paid.length}`;
+  renderExpenseAnalytics(list);
+  el("expSum").textContent=`แสดง ${list.length.toLocaleString("th-TH")} รายการ · รวม ${baht(sum)} · รอดำเนินการ ${pending.length.toLocaleString("th-TH")} · จ่ายแล้ว ${paid.length.toLocaleString("th-TH")}`;
   el("rows").innerHTML=list.length?list.map(expenseRowHTML).join(""):'<tr class="expense-empty-row"><td colspan="8"><div class="expense-empty-state">ไม่พบรายการตามตัวกรองนี้</div></td></tr>';
 }
 function openExpenseDrawer(index){
@@ -3146,7 +3271,7 @@ function openEmailEditor(id){
 
 /* ---------- REIMBURSEMENT BATCHES: ONE ACCOUNTING TABLE V4 ---------- */
 const BATCH_WEEKDAYS=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
-const DASHBOARD_UI_VERSION="EXPENSE_TABLE_V5_4_ACCOUNT_DIRECTION_20260808";
+const DASHBOARD_UI_VERSION="EXPENSE_ANALYTICS_V5_5_ACCOUNT_DIRECTION_20260808";
 console.info("Dashboard UI",DASHBOARD_UI_VERSION);
 const EXPECTED_BATCH_CONTRACT="REIMBURSEMENT_ACCOUNTING_TABLE_V6";
 const BATCH_STATUS_META={
@@ -3826,6 +3951,19 @@ el("rangeSel").querySelectorAll("button").forEach(b=>b.addEventListener("click",
 ["q","fStatus","fCat","fSender","fDateBasis","fSort"].forEach(id=>{const e=el(id);if(e)e.addEventListener("input",renderExp);});
 el("expCsv").onclick=()=>download("expenses.csv",toCSV(filteredExp()));
 if(el("expenseStatusTabs"))el("expenseStatusTabs").addEventListener("click",e=>{const b=e.target.closest("[data-exp-status]");if(!b)return;el("fStatus").value=b.dataset.expStatus||"";renderExp();});
+if(el("page-expenses"))el("page-expenses").addEventListener("click",e=>{
+  const insight=e.target.closest("[data-exp-insight]");
+  if(insight){applyExpenseDrill(insight.dataset.expInsight,insight.dataset.expValue||"");return;}
+  const rank=e.target.closest("[data-exp-rank-kind]");
+  if(rank){applyExpenseDrill(rank.dataset.expRankKind,rank.dataset.expRankValue||"");return;}
+  const toggle=e.target.closest("#expenseRanksToggle");
+  if(toggle){
+    const grid=el("expenseRankGrid"),willShow=grid?.hidden===true;
+    if(grid)grid.hidden=!willShow;
+    toggle.setAttribute("aria-expanded",willShow?"true":"false");
+    toggle.textContent=willShow?"ซ่อนอันดับ Top 5":"ดูอันดับ Top 5";
+  }
+});
 if(el("rows"))el("rows").addEventListener("click",e=>{if(e.target.closest("a"))return;const open=e.target.closest("[data-exp-open]");if(open)openExpenseDrawer(open.dataset.expOpen);});
 if(el("expenseDrawerClose"))el("expenseDrawerClose").onclick=closeExpenseDrawer;
 if(el("expenseDrawerBackdrop"))el("expenseDrawerBackdrop").onclick=closeExpenseDrawer;
