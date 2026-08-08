@@ -1,6 +1,7 @@
 <!-- REIMBURSEMENT_DASHBOARD_v2.7_REVIEW_DIRECT_20260805 -->
 <!-- REIMBURSEMENT_ACCOUNTING_TABLE_V3_2026-08-03 -->
 <!DOCTYPE html>
+<!-- DASHBOARD_UI_VERSION: INCOME_SME_TH_V1_20260808 -->
 <!-- DASHBOARD_UI_VERSION: MOBILE_NAVIGATION_V5_3_20260808 -->
 <!-- DASHBOARD_UI_VERSION: MULTI_BUSINESS_PRO_V4_9_20260807 -->
 <!-- DASHBOARD_UI_VERSION: SIDEBAR_WORKSPACE_CONTROL_V4_8_20260807 -->
@@ -962,6 +963,41 @@
     /* Prevent accidental overflow */
     img,svg{max-width:100%}.main section{min-width:0}.card,.batch-section,.worktable-head,.recon-table-card{max-width:100%}
   }
+
+  /* ── Income / Accounts Receivable (SME Thailand) ───────────── */
+  .income-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+  .income-head h3{margin:3px 0 5px;font-size:26px;letter-spacing:-.5px}.income-head p{margin:0;color:var(--muted);font-size:13px;max-width:720px}
+  .income-head-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .income-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
+  .income-kpi{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:17px;min-width:0}
+  .income-kpi span{display:block;color:var(--muted);font-size:11px;font-weight:650}.income-kpi strong{display:block;margin-top:7px;font-size:22px;letter-spacing:-.6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.income-kpi small{display:block;color:var(--muted-2);font-size:10.5px;margin-top:5px}
+  .income-kpi.received{background:var(--green-soft);border-color:rgba(36,138,61,.12)}.income-kpi.received strong{color:var(--green)}
+  .income-kpi.overdue strong{color:var(--red)}
+  .income-toolbar{display:grid;grid-template-columns:minmax(220px,1.4fr) repeat(3,minmax(140px,.55fr)) auto auto;gap:8px;margin-bottom:13px}
+  .income-toolbar input,.income-toolbar select,.income-form input,.income-form select,.income-form textarea,.income-pay-form input,.income-pay-form select,.income-pay-form textarea{width:100%;border:1px solid var(--line-strong);background:#fff;border-radius:12px;padding:10px 11px;color:var(--ink);outline:none}
+  .income-toolbar input:focus,.income-toolbar select:focus,.income-form input:focus,.income-form select:focus,.income-form textarea:focus,.income-pay-form input:focus,.income-pay-form select:focus,.income-pay-form textarea:focus{border-color:#9b9ba1;box-shadow:0 0 0 3px rgba(0,0,0,.035)}
+  .income-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:#fff}
+  .income-table{width:100%;border-collapse:collapse;min-width:980px}.income-table th{font-size:10.5px;color:var(--muted);font-weight:700;padding:11px 12px;background:#fafafa;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}.income-table td{padding:12px;border-bottom:1px solid var(--line);font-size:12px;vertical-align:top}.income-table tr:last-child td{border-bottom:0}.income-table .main strong{display:block;font-size:13px}.income-table .main small,.income-table .doc small{display:block;color:var(--muted);margin-top:3px;line-height:1.45}.income-table .num{text-align:right;white-space:nowrap}.income-table .num strong{font-size:13px}.income-table .actions{white-space:nowrap;text-align:right}
+  .income-status{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:750;background:#f2f2f7;color:#5f5f66;white-space:nowrap}.income-status.paid{background:var(--green-soft);color:var(--green)}.income-status.partial{background:#f7f7f8;color:#444}.income-status.overdue{background:var(--red-soft);color:var(--red)}.income-status.cancelled{background:#f3f3f4;color:#8e8e93;text-decoration:line-through}
+  .income-action{border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 9px;font-size:10.5px;font-weight:700;cursor:pointer;margin-left:4px}.income-action.primary{background:var(--ink);border-color:var(--ink);color:#fff}.income-action.danger{color:var(--red)}
+  .income-tax-note{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:#fafafa;color:var(--muted);font-size:11px;line-height:1.55;margin-bottom:13px}.income-tax-note b{color:var(--ink)}
+  .income-empty{padding:36px;text-align:center;color:var(--muted)}
+  .income-modal{position:fixed;inset:0;background:rgba(0,0,0,.26);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);z-index:1000;display:none;align-items:flex-end;justify-content:center;padding:20px}.income-modal.show{display:flex}.income-modal-card{width:min(760px,100%);max-height:min(90vh,900px);overflow:auto;background:#fff;border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.22);padding:22px}.income-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}.income-modal-head h3{margin:0;font-size:22px}.income-modal-head p{margin:4px 0 0;color:var(--muted);font-size:11.5px}.income-modal-close{border:0;background:#f2f2f7;border-radius:50%;width:34px;height:34px;cursor:pointer;font-size:17px}
+  .income-form,.income-pay-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.income-form .full,.income-pay-form .full{grid-column:1/-1}.income-form label,.income-pay-form label{display:block;font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:5px}.income-form textarea,.income-pay-form textarea{min-height:76px;resize:vertical}
+  .income-form-section{grid-column:1/-1;border-top:1px solid var(--line);padding-top:14px;margin-top:2px}.income-form-section h4{margin:0 0 10px;font-size:13px}.income-preview{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#f7f7f8;border-radius:16px;padding:12px}.income-preview div{min-width:0}.income-preview span{display:block;color:var(--muted);font-size:9.5px}.income-preview strong{display:block;font-size:13px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.income-modal-actions{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--line);padding-top:14px;margin-top:4px}
+  .income-check{display:flex!important;align-items:center;gap:8px;background:#f7f7f8;border-radius:12px;padding:11px 12px;color:var(--ink)!important}.income-check input{width:auto!important;margin:0}.income-payment-fields[hidden]{display:none!important}
+  .income-pay-summary{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.income-pay-summary>div{border:1px solid var(--line);border-radius:13px;padding:10px}.income-pay-summary span{display:block;color:var(--muted);font-size:9.5px}.income-pay-summary strong{display:block;margin-top:4px;font-size:14px}
+  .income-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.income-detail-grid>div{border:1px solid var(--line);border-radius:12px;padding:10px}.income-detail-grid span{display:block;color:var(--muted);font-size:10px}.income-detail-grid strong{display:block;margin-top:3px;font-size:12px}.income-payment-history{display:grid;gap:8px;margin-top:10px}.income-payment-row{border:1px solid var(--line);border-radius:13px;padding:11px}.income-payment-row .top{display:flex;justify-content:space-between;gap:10px}.income-payment-row small{color:var(--muted)}
+  .income-recon-card{width:min(980px,100%)}.income-recon-import{display:grid;grid-template-columns:minmax(220px,1fr) auto auto;gap:9px;align-items:end;margin-bottom:12px}.income-recon-import label{display:block;font-size:10.5px;color:var(--muted);font-weight:700;margin-bottom:5px}.income-recon-import select{width:100%;border:1px solid var(--line-strong);background:#fff;border-radius:12px;padding:10px 11px}.income-recon-file{margin:0!important;text-align:center;white-space:nowrap}.income-recon-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.income-recon-summary>div{border:1px solid var(--line);border-radius:14px;padding:11px;background:#fafafa}.income-recon-summary span{display:block;color:var(--muted);font-size:9.5px}.income-recon-summary strong{display:block;font-size:18px;margin-top:4px}.income-recon-list{display:grid;gap:9px}.income-recon-row{border:1px solid var(--line);border-radius:16px;padding:12px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) auto;gap:12px;align-items:center}.income-recon-bank strong,.income-recon-match strong{display:block;font-size:12px}.income-recon-bank small,.income-recon-match small{display:block;color:var(--muted);font-size:10px;line-height:1.45;margin-top:3px}.income-recon-amount{font-size:15px!important}.income-recon-state{display:inline-flex;padding:4px 7px;border-radius:999px;background:#f2f2f7;color:#666;font-size:9px;font-weight:800;margin-bottom:5px}.income-recon-state.suggest{background:#eef8f0;color:var(--green)}.income-recon-state.done{background:var(--green-soft);color:var(--green)}.income-recon-state.review{background:#fff7e6;color:#9a6700}.income-recon-state.none{background:var(--red-soft);color:var(--red)}.income-recon-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}.income-recon-actions .btn{white-space:nowrap}.income-recon-manual{display:flex;gap:6px;margin-top:7px}.income-recon-manual select{min-width:220px;max-width:380px;border:1px solid var(--line);border-radius:9px;padding:7px;background:#fff;font-size:10px}
+  @media(max-width:1100px){.income-kpis{grid-template-columns:repeat(3,1fr)}.income-toolbar{grid-template-columns:1fr 1fr 1fr}.income-toolbar .wide{grid-column:1/-1}}
+  @media(max-width:760px){
+    .income-head{align-items:stretch}.income-head h3{font-size:22px}.income-head-actions{justify-content:stretch}.income-head-actions .btn{flex:1}
+    .income-kpis{grid-template-columns:1fr 1fr;gap:9px}.income-kpi{padding:14px;border-radius:17px}.income-kpi strong{font-size:18px}.income-kpi:last-child{grid-column:1/-1}
+    .income-toolbar{grid-template-columns:1fr 1fr}.income-toolbar .wide{grid-column:1/-1}.income-toolbar .btn{width:100%}
+    .income-table-wrap{border:0;background:transparent;overflow:visible}.income-table{min-width:0;display:block}.income-table thead{display:none}.income-table tbody{display:grid;gap:10px}.income-table tr{display:grid;grid-template-columns:1fr auto;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;gap:9px 12px}.income-table td{display:block;border:0;padding:0;font-size:11.5px}.income-table td[data-label]:before{content:attr(data-label);display:block;color:var(--muted);font-size:9.5px;margin-bottom:2px}.income-table .main{grid-column:1/2}.income-table .doc{grid-column:1/2}.income-table .num{text-align:right}.income-table .actions{grid-column:1/-1;text-align:left;padding-top:8px;border-top:1px solid var(--line)}.income-action{margin:0 5px 0 0;padding:8px 10px}.income-status{justify-self:end}
+    .income-modal{padding:0;align-items:flex-end}.income-modal-card{border-radius:24px 24px 0 0;max-height:92vh;padding:18px 14px calc(18px + env(safe-area-inset-bottom))}.income-form,.income-pay-form{grid-template-columns:1fr}.income-form .full,.income-pay-form .full,.income-form-section,.income-modal-actions,.income-preview,.income-pay-summary{grid-column:1}.income-preview{grid-template-columns:1fr 1fr}.income-pay-summary{grid-template-columns:1fr 1fr}.income-pay-summary>div:last-child{grid-column:1/-1}.income-modal-actions{position:sticky;bottom:0;background:#fff;padding-bottom:4px}.income-modal-actions .btn{flex:1}.income-detail-grid{grid-template-columns:1fr}
+    .income-recon-import{grid-template-columns:1fr 1fr}.income-recon-import>div:first-child{grid-column:1/-1}.income-recon-summary{grid-template-columns:1fr 1fr}.income-recon-row{grid-template-columns:1fr}.income-recon-actions{justify-content:flex-start}.income-recon-manual{display:grid;grid-template-columns:1fr auto}.income-recon-manual select{min-width:0;max-width:none;width:100%}
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -985,8 +1021,8 @@
       <button class="navlink active mobile-primary" data-p="overview"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></span><span>ภาพรวม</span></button>
       <button class="navlink mobile-primary" data-p="batches"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/><circle cx="18" cy="17" r="2"/></svg></span><span>เบิกจ่าย</span></button>
       <button class="navlink mobile-primary" data-p="expenses"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v13"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg></span><span>รายจ่าย</span></button>
-      <button class="navlink" data-p="income"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21V8"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span><span>รายรับ</span></button>
-      <button class="navlink mobile-primary" data-p="reconciliation"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h11"/><path d="M4 12h7"/><path d="M4 17h6"/><path d="m14 15 2 2 4-5"/><circle cx="17" cy="14" r="5"/></svg></span><span>กระทบยอด</span></button>
+      <button class="navlink mobile-primary" data-p="income"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21V8"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span><span>รายรับ</span></button>
+      <button class="navlink" data-p="reconciliation"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h11"/><path d="M4 12h7"/><path d="M4 17h6"/><path d="m14 15 2 2 4-5"/><circle cx="17" cy="14" r="5"/></svg></span><span>กระทบยอด</span></button>
       <button class="navlink mobile-primary mobile-more-nav" id="mobileMoreNav" type="button"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></span><span>เพิ่มเติม</span></button>
       <button class="navlink" data-p="reports"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19V3"/></svg></span><span>รายงานและภาษี</span></button>
 
@@ -1053,7 +1089,7 @@
       <div class="mobile-more-section">
         <div class="mobile-more-label">งานและรายงาน</div>
         <div class="mobile-more-grid">
-          <button type="button" data-mobile-page="income"><b>รายรับ</b><small>รายการรับเงิน</small></button>
+          <button type="button" data-mobile-page="reconciliation"><b>กระทบยอด</b><small>Statement และรายการธนาคาร</small></button>
           <button type="button" data-mobile-page="reports"><b>รายงานและภาษี</b><small>สรุปและส่งออก</small></button>
           <button type="button" data-mobile-page="bills"><b>เอกสาร</b><small>เอกสารทั้งหมด</small></button>
           <button type="button" data-mobile-page="activity"><b>ประวัติ</b><small>กิจกรรมล่าสุด</small></button>
@@ -1158,17 +1194,144 @@
       </div>
     </section>
 
-    <!-- INCOME -->
+    <!-- INCOME / ACCOUNTS RECEIVABLE -->
     <section class="page" id="page-income">
-      <div class="card">
-        <h3>รายรับ</h3><div class="cs">เงินเข้า / รายได้</div>
-        <div class="empty">
-          ยังไม่มีข้อมูลรายรับ<br><br>
-          <span style="font-size:13px">เร็ว ๆ นี้: ส่งสลิป "เงินเข้า" ในไลน์ แล้วระบบแยกเป็นรายรับให้อัตโนมัติ<br>
-          (ตอนนี้ระบบโฟกัสรายจ่าย/บิลก่อน)</span>
+      <div class="income-head">
+        <div>
+          <div class="head-kicker">SALES & ACCOUNTS RECEIVABLE</div>
+          <h3>รายรับและลูกหนี้</h3>
+          <p>บันทึกขายสด ใบแจ้งหนี้ รับเงินหลายงวด VAT และยอดหัก ณ ที่จ่าย โดยแยก “เงินเข้าจริง” ออกจาก “ยอดตัดลูกหนี้” ให้ฝ่ายบัญชีดูต่อได้ง่าย</p>
+        </div>
+        <div class="income-head-actions">
+          <button class="btn" id="incomeRefresh" type="button">อัปเดต</button>
+          <button class="btn" id="incomeReconBtn" type="button">กระทบเงินเข้า</button>
+          <button class="btn solid" id="incomeCreate" type="button">+ บันทึกรายรับ</button>
+        </div>
+      </div>
+
+      <div class="income-kpis">
+        <div class="income-kpi"><span>ยอดขาย / รายรับ</span><strong id="incomeKGross">฿0</strong><small id="incomeKCount">0 รายการ</small></div>
+        <div class="income-kpi received"><span>เงินเข้าจริง</span><strong id="incomeKCash">฿0</strong><small id="incomeKWht">WHT เครดิต ฿0</small></div>
+        <div class="income-kpi"><span>ลูกหนี้คงค้าง</span><strong id="incomeKOutstanding">฿0</strong><small id="incomeKWaiting">0 รายการรอรับ</small></div>
+        <div class="income-kpi"><span>VAT ขายตามที่บันทึก</span><strong id="incomeKVat">฿0</strong><small>เฉพาะรายการที่เลือก VAT</small></div>
+        <div class="income-kpi overdue"><span>เกินกำหนด</span><strong id="incomeKOverdue">฿0</strong><small id="incomeKOverdueCount">0 รายการ</small></div>
+      </div>
+
+      <div class="income-tax-note">
+        <span>ℹ️</span>
+        <span><b>สำหรับ SME ไทย:</b> ระบบแยกยอดตามเอกสาร, เงินที่เข้าบัญชีจริง และยอดหัก ณ ที่จ่ายออกจากกัน จึงรองรับกรณีลูกค้าโอนน้อยกว่ายอด Invoice เพราะมีหนังสือรับรองหัก ณ ที่จ่าย รวมถึงรับชำระหลายงวดได้ — VAT ให้เลือกเฉพาะรายการที่ธุรกิจต้องออกเอกสาร VAT จริง <b>ภาษีขาย CSV เป็นข้อมูลช่วยฝ่ายบัญชี ไม่ใช่ไฟล์ยื่น ภ.พ.30 หรือ e-Tax โดยตรง</b></span>
+      </div>
+
+      <div class="card" style="margin:0">
+        <div class="income-toolbar">
+          <input class="wide" id="incomeQ" type="search" placeholder="ค้นหาลูกค้า เลข Invoice เลขใบกำกับ หรือรายละเอียด…">
+          <select id="incomeStatus"><option value="">ทุกสถานะ</option><option>รอรับเงิน</option><option>รับบางส่วน</option><option>รับครบแล้ว</option><option value="overdue">เกินกำหนด</option><option>ยกเลิก</option></select>
+          <select id="incomeCategory"><option value="">ทุกประเภทรายได้</option></select>
+          <select id="incomeMonth"><option value="">ทุกเดือน</option></select>
+          <button class="btn" id="incomeCsv" type="button">ส่งออก CSV</button>
+          <button class="btn" id="incomeVatCsv" type="button">ภาษีขาย CSV</button>
+        </div>
+        <div class="cs" id="incomeTableMeta" style="margin-bottom:10px">กำลังโหลดข้อมูลรายรับ…</div>
+        <div class="income-table-wrap">
+          <table class="income-table">
+            <thead><tr><th>วันที่ / ลูกค้า</th><th>เอกสาร</th><th class="num">ยอดตามเอกสาร</th><th class="num">รับแล้ว + WHT</th><th class="num">คงค้าง</th><th>สถานะ</th><th>ดำเนินการ</th></tr></thead>
+            <tbody id="incomeBody"><tr><td colspan="7"><div class="income-empty">กำลังโหลดรายรับ…</div></td></tr></tbody>
+          </table>
         </div>
       </div>
     </section>
+
+    <div class="income-modal" id="incomeEditor" aria-hidden="true">
+      <div class="income-modal-card" role="dialog" aria-modal="true" aria-labelledby="incomeEditorTitle">
+        <div class="income-modal-head"><div><h3 id="incomeEditorTitle">บันทึกรายรับ</h3><p>สร้างรายการขาย/ลูกหนี้ และเลือกรับเงินทันทีได้ในครั้งเดียว</p></div><button class="income-modal-close" type="button" data-income-close="editor">×</button></div>
+        <form class="income-form" id="incomeForm">
+          <div><label>วันที่ขาย / วันที่ออกเอกสาร *</label><input id="incIssueDate" type="date" required></div>
+          <div><label>วันครบกำหนดรับเงิน</label><input id="incDueDate" type="date"></div>
+          <div><label>ลูกค้า / ผู้จ่าย *</label><input id="incCustomer" maxlength="180" placeholder="เช่น บริษัท ลูกค้า จำกัด" required></div>
+          <div><label>เลขผู้เสียภาษีลูกค้า</label><input id="incCustomerTaxId" inputmode="numeric" maxlength="13" placeholder="13 หลัก (ถ้ามี)"></div>
+          <div><label>สาขาลูกค้า</label><input id="incCustomerBranch" maxlength="80" value="สำนักงานใหญ่" placeholder="สำนักงานใหญ่ / 00000"></div>
+          <div><label>ประเภทรายได้ *</label><select id="incCategory" required></select></div>
+          <div class="full"><label>รายละเอียดรายการ</label><input id="incDescription" maxlength="300" placeholder="สินค้าหรือบริการที่ขาย"></div>
+          <div><label>ประเภทเอกสารขาย</label><select id="incDocumentType"><option>ขายสด</option><option>ใบแจ้งหนี้</option><option>ใบวางบิล</option><option>ใบกำกับภาษี</option><option>ใบเสร็จรับเงิน</option><option>ใบกำกับภาษี/ใบเสร็จรับเงิน</option><option>รายรับทั่วไป</option></select></div>
+          <div><label>เลข Invoice / ใบวางบิล</label><input id="incInvoiceNo" maxlength="80" placeholder="INV-2026-001"></div>
+          <div><label>เลขใบกำกับภาษี</label><input id="incTaxInvoiceNo" maxlength="80"></div>
+          <div><label>เลขใบเสร็จรับเงิน</label><input id="incReceiptNo" maxlength="80"></div>
+
+          <div class="income-form-section"><h4>ยอดและภาษี</h4></div>
+          <div><label>ยอดที่กรอก *</label><input id="incAmount" type="number" min="0" step="0.01" inputmode="decimal" required placeholder="0.00"></div>
+          <div><label>รูปแบบราคา</label><select id="incPriceMode"><option value="no_vat">ไม่มี VAT</option><option value="inclusive">รวม VAT แล้ว</option><option value="exclusive">ยังไม่รวม VAT</option></select></div>
+          <div><label>VAT %</label><input id="incVatRate" type="number" min="0" max="100" step="0.01" value="7" inputmode="decimal"></div>
+          <div><label>คาดว่าลูกค้าหัก ณ ที่จ่าย %</label><input id="incExpectedWht" type="number" min="0" max="100" step="0.01" value="0" inputmode="decimal" list="incWhtRates"><datalist id="incWhtRates"><option value="1"><option value="2"><option value="3"><option value="5"><option value="10"></datalist></div>
+          <div class="income-preview">
+            <div><span>ฐานก่อน VAT</span><strong id="incPreviewBase">฿0.00</strong></div>
+            <div><span>VAT</span><strong id="incPreviewVat">฿0.00</strong></div>
+            <div><span>ยอดตามเอกสาร</span><strong id="incPreviewGross">฿0.00</strong></div>
+            <div><span>คาดว่าเงินจะเข้า</span><strong id="incPreviewCash">฿0.00</strong></div>
+          </div>
+
+          <div class="income-form-section"><h4>การรับเงิน</h4></div>
+          <label class="income-check full"><input id="incPaidNow" type="checkbox"> <span>รับเงินแล้วตอนนี้ — บันทึกยอดรับชำระพร้อมรายการนี้</span></label>
+          <div class="income-payment-fields full" id="incInitialPayment" hidden>
+            <div class="income-pay-form">
+              <div><label>วันที่รับเงิน</label><input id="incReceivedDate" type="date"></div>
+              <div><label>ช่องทางรับเงิน</label><select id="incPaymentChannel"></select></div>
+              <div><label>เงินเข้าจริง</label><input id="incCashAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+              <div><label>ยอดหัก ณ ที่จ่ายจริง</label><input id="incWhtAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+              <div class="full"><label>เลขอ้างอิงการรับเงิน</label><input id="incPaymentRef" maxlength="120" placeholder="เลขรายการธนาคาร / เลขอ้างอิง"></div>
+              <div><label>สลิป / หลักฐานรับเงิน</label><input id="incInitialSlip" type="file" accept="image/*,.pdf,application/pdf"></div>
+              <div><label>หนังสือรับรองหัก ณ ที่จ่าย (50 ทวิ)</label><input id="incInitialWhtCert" type="file" accept="image/*,.pdf,application/pdf"></div>
+            </div>
+          </div>
+
+          <div class="full"><label>หมายเหตุ</label><textarea id="incNote" maxlength="500" placeholder="ข้อมูลเพิ่มเติมสำหรับฝ่ายบัญชี"></textarea></div>
+          <div class="income-modal-actions"><button class="btn" type="button" data-income-close="editor">ยกเลิก</button><button class="btn solid" type="submit">บันทึกรายรับ</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="income-modal" id="incomePaymentModal" aria-hidden="true">
+      <div class="income-modal-card" role="dialog" aria-modal="true" aria-labelledby="incomePaymentTitle">
+        <div class="income-modal-head"><div><h3 id="incomePaymentTitle">รับชำระเงิน</h3><p id="incomePaymentSubtitle">บันทึกเงินเข้าจริงและหัก ณ ที่จ่าย เพื่อให้ยอดลูกหนี้ถูกตัดตรงกับบัญชี</p></div><button class="income-modal-close" type="button" data-income-close="payment">×</button></div>
+        <form class="income-pay-form" id="incomePaymentForm">
+          <input id="incomePaymentId" type="hidden">
+          <div class="income-pay-summary">
+            <div><span>ยอดตามเอกสาร</span><strong id="incomePayGross">฿0</strong></div>
+            <div><span>รับ/ตัดแล้ว</span><strong id="incomePaySettled">฿0</strong></div>
+            <div><span>คงค้าง</span><strong id="incomePayOutstanding">฿0</strong></div>
+          </div>
+          <div><label>วันที่รับเงิน *</label><input id="incomePayDate" type="date" required></div>
+          <div><label>ช่องทางรับเงิน</label><select id="incomePayChannel"></select></div>
+          <div><label>เงินเข้าจริง *</label><input id="incomePayCash" type="number" min="0" step="0.01" inputmode="decimal" value="0"></div>
+          <div><label>หัก ณ ที่จ่าย *</label><input id="incomePayWht" type="number" min="0" step="0.01" inputmode="decimal" value="0"></div>
+          <div class="full"><label>เลขอ้างอิง</label><input id="incomePayRef" maxlength="120" placeholder="เลขรายการธนาคาร / เลขอ้างอิง"></div>
+          <div><label>สลิป / หลักฐานรับเงิน</label><input id="incomePaySlip" type="file" accept="image/*,.pdf,application/pdf"></div>
+          <div><label>หนังสือรับรองหัก ณ ที่จ่าย (50 ทวิ)</label><input id="incomePayWhtCert" type="file" accept="image/*,.pdf,application/pdf"></div>
+          <div class="full"><label>หมายเหตุ</label><textarea id="incomePayNote" maxlength="300"></textarea></div>
+          <div class="income-tax-note full" style="margin:0"><span>ตรวจยอด</span><span id="incomePayPreview">ยอดตัดลูกหนี้ = เงินเข้าจริง + หัก ณ ที่จ่าย</span></div>
+          <div class="income-modal-actions"><button class="btn" type="button" data-income-close="payment">ยกเลิก</button><button class="btn solid" type="submit">บันทึกรับชำระ</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="income-modal" id="incomeReconModal" aria-hidden="true">
+      <div class="income-modal-card income-recon-card" role="dialog" aria-modal="true" aria-labelledby="incomeReconTitle">
+        <div class="income-modal-head"><div><h3 id="incomeReconTitle">กระทบยอดเงินเข้า</h3><p>นำเข้า Statement ฝั่งเงินเข้า แล้วจับคู่กับรายการ “รับชำระ” — รองรับหนึ่งยอดโอนปิดหลาย Invoice</p></div><button class="income-modal-close" type="button" data-income-close="recon">×</button></div>
+        <div class="income-recon-import">
+          <div><label>บัญชี / ช่องทางรับเงิน</label><select id="incomeReconChannel"></select></div>
+          <label class="btn solid income-recon-file">เลือก Statement<input id="incomeReconFile" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden></label>
+          <button class="btn" id="incomeReconConfirmAll" type="button">ยืนยันรายการแนะนำ</button>
+        </div>
+        <div class="income-recon-summary">
+          <div><span>Statement เงินเข้า</span><strong id="incomeReconKRows">0</strong></div>
+          <div><span>ระบบแนะนำ</span><strong id="incomeReconKSuggest">0</strong></div>
+          <div><span>กระทบแล้ว</span><strong id="incomeReconKDone">0</strong></div>
+          <div><span>รับชำระรอกระทบ</span><strong id="incomeReconKWaiting">0</strong></div>
+        </div>
+        <div class="income-tax-note"><span>หลักการ</span><span>Statement เทียบกับ <b>เงินเข้าจริง</b> เท่านั้น ไม่เอายอด WHT มารวมกับยอดธนาคาร เพราะ WHT เป็นเครดิตภาษี ไม่ใช่เงินที่เข้าบัญชี</span></div>
+        <div class="income-recon-list" id="incomeReconList"><div class="income-empty">ยังไม่มี Statement เงินเข้า</div></div>
+        <div class="income-modal-actions"><button class="btn" type="button" data-income-close="recon">ปิด</button></div>
+      </div>
+    </div>
 
     <!-- REIMBURSE -->
     <section class="page" id="page-reimburse">
@@ -1741,6 +1904,9 @@ let EMAIL_LOADING = false;
 let EMAIL_SYNCING = false;
 let BATCH_DATA = {pending:{groups:[],itemCount:0,total:0,urgentCount:0,people:0},batches:[],settings:{}};
 let RECON_DATA = {rows:[],paidBatches:[],summary:{}};
+let INCOME_DATA = {ok:true,records:[],payments:[],reconciliation:[],reconciliationSummary:{},summary:{},categories:[]};
+let INCOME_LOADING = false;
+let ACTIVE_INCOME_ID = "";
 let RECON_LOADING = false;
 let RECON_FILTER = "all";
 let ACTIVE_RECON_ID = "";
@@ -2470,7 +2636,7 @@ function openPage(p,source=null){
   COMPANY_SETUP_ACTIVE=(p==="email"||p==="settings"||p==="billing")?p:"";
   document.querySelectorAll(".navlink,.subnavlink").forEach(x=>x.classList.remove("active"));
   if(source)source.classList.add("active");
-  if(el("mobileMoreNav")&&!['overview','batches','expenses','reconciliation'].includes(p))el("mobileMoreNav").classList.add("active");
+  if(el("mobileMoreNav")&&!['overview','batches','expenses','income'].includes(p))el("mobileMoreNav").classList.add("active");
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
   const page=el("page-"+p);if(page)page.classList.add("show");
   el("pageTitle").textContent=TITLES[p]||"จัดการธุรกิจ";
@@ -2767,7 +2933,7 @@ function openEmailEditor(id){
 
 /* ---------- REIMBURSEMENT BATCHES: ONE ACCOUNTING TABLE V4 ---------- */
 const BATCH_WEEKDAYS=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
-const DASHBOARD_UI_VERSION="SIDEBAR_WORKSPACE_CONTROL_V4_8_20260807";
+const DASHBOARD_UI_VERSION="INCOME_SME_TH_V1_20260808";
 console.info("Dashboard UI",DASHBOARD_UI_VERSION);
 const EXPECTED_BATCH_CONTRACT="REIMBURSEMENT_ACCOUNTING_TABLE_V6";
 const BATCH_STATUS_META={
@@ -3464,6 +3630,296 @@ function drawAll(){buildCatFilter();buildRepMonths();drawScoped();renderReim();r
   el("connBtn").style.display=CONNECTED?"none":"flex";
 }
 
+/* ---------- INCOME / ACCOUNTS RECEIVABLE ---------- */
+function incomeNum(v){const n=Number(String(v??0).replace(/,/g,""));return Number.isFinite(n)?n:0;}
+function incomeRound(v){return Math.round((incomeNum(v)+Number.EPSILON)*100)/100;}
+function incomeToday(){const d=new Date();const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`;}
+function incomeDateLabel(v){const d=pdate(v);return d?fmtDate(d):"—";}
+function incomeMonthKey(v){const m=String(v||"").match(/^(\d{4})-(\d{2})/);return m?`${m[1]}-${m[2]}`:"";}
+function incomeMonthLabel(key){const d=pdate(`${key}-01`);return d?d.toLocaleDateString("th-TH",{month:"long",year:"numeric"}):key;}
+function incomeIsOverdue(r){return r&&r.status!=="ยกเลิก"&&incomeNum(r.outstanding)>.009&&r.dueDate&&String(r.dueDate)<incomeToday();}
+function incomeChannelsOptions(selected=""){const list=financeChannels(true);return `<option value="">เลือกช่องทางรับเงิน</option>${list.map(x=>`<option value="${escAttr(x.id)}" ${String(x.id)===String(selected)?"selected":""}>${esc(financeChannelTitle(x))} · ${esc(financeChannelDetail(x))}</option>`).join("")}`;}
+function incomeChannelName(id){const c=financeChannels(false).find(x=>String(x.id)===String(id));return c?`${financeChannelTitle(c)}${financeChannelDetail(c)?` · ${financeChannelDetail(c)}`:""}`:(id||"—");}
+function incomeStatusBadge(r){
+  let label=String(r.status||"รอรับเงิน"),cls="";
+  if(label==="รับครบแล้ว")cls="paid";
+  else if(label==="รับบางส่วน")cls="partial";
+  else if(label==="ยกเลิก")cls="cancelled";
+  else if(incomeIsOverdue(r)){label="เกินกำหนด";cls="overdue";}
+  return `<span class="income-status ${cls}">${esc(label)}</span>`;
+}
+function incomeCategoryOptions(selected=""){
+  const cats=Array.from(new Set([...(INCOME_DATA.categories||[]),"ขายสินค้า","ค่าบริการ","ค่าสมาชิก / Subscription","ค่าเช่า","ค่าคอมมิชชั่น / ค่านายหน้า","ค่าธรรมเนียม","รายได้จากโครงการ","ดอกเบี้ย / รายได้ทางการเงิน","รายได้อื่น"]));
+  return cats.map(c=>`<option value="${escAttr(c)}" ${c===selected?"selected":""}>${esc(c)}</option>`).join("");
+}
+function incomeRecordById(id){return (INCOME_DATA.records||[]).find(r=>String(r.id)===String(id))||null;}
+function incomePaymentsFor(id){return (INCOME_DATA.payments||[]).filter(p=>String(p.incomeId)===String(id)).sort((a,b)=>String(b.receivedDate||b.createdAt||"").localeCompare(String(a.receivedDate||a.createdAt||"")));}
+function incomeFilterRows(){
+  const q=String(el("incomeQ")?.value||"").trim().toLowerCase();
+  const status=String(el("incomeStatus")?.value||"");
+  const cat=String(el("incomeCategory")?.value||"");
+  const month=String(el("incomeMonth")?.value||"");
+  let rows=[...(INCOME_DATA.records||[])];
+  if(month)rows=rows.filter(r=>incomeMonthKey(r.issueDate)===month);
+  if(cat)rows=rows.filter(r=>String(r.category||"")===cat);
+  if(status==="overdue")rows=rows.filter(incomeIsOverdue);
+  else if(status)rows=rows.filter(r=>String(r.status||"")===status);
+  if(q)rows=rows.filter(r=>[r.customer,r.customerTaxId,r.description,r.category,r.invoiceNo,r.taxInvoiceNo,r.receiptNo,r.referenceNo].join(" ").toLowerCase().includes(q));
+  return rows.sort((a,b)=>String(b.issueDate||b.createdAt||"").localeCompare(String(a.issueDate||a.createdAt||""))||String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+}
+function incomeKpiRows(){
+  const month=String(el("incomeMonth")?.value||"");
+  return (INCOME_DATA.records||[]).filter(r=>r.status!=="ยกเลิก"&&(!month||incomeMonthKey(r.issueDate)===month));
+}
+function incomeTotals(rows){
+  const sum=k=>incomeRound(rows.reduce((a,r)=>a+incomeNum(r[k]),0));
+  const overdue=rows.filter(incomeIsOverdue);
+  return {gross:sum("grossAmount"),cash:sum("cashReceived"),wht:sum("whtCreditReceived"),outstanding:sum("outstanding"),vat:sum("vatAmount"),waiting:rows.filter(r=>["รอรับเงิน","รับบางส่วน"].includes(r.status)).length,overdue:incomeRound(overdue.reduce((a,r)=>a+incomeNum(r.outstanding),0)),overdueCount:overdue.length};
+}
+function buildIncomeFilters(){
+  const catSel=el("incomeCategory"),monthSel=el("incomeMonth");
+  if(catSel){const cur=catSel.value;catSel.innerHTML='<option value="">ทุกประเภทรายได้</option>'+incomeCategoryOptions(cur);if([...catSel.options].some(o=>o.value===cur))catSel.value=cur;}
+  if(monthSel){const cur=monthSel.value;const keys=Array.from(new Set((INCOME_DATA.records||[]).map(r=>incomeMonthKey(r.issueDate)).filter(Boolean))).sort().reverse();monthSel.innerHTML='<option value="">ทุกเดือน</option>'+keys.map(k=>`<option value="${k}">${esc(incomeMonthLabel(k))}</option>`).join("");if(keys.includes(cur))monthSel.value=cur;}
+}
+function renderIncome(){
+  buildIncomeFilters();
+  const base=incomeKpiRows(),t=incomeTotals(base),rows=incomeFilterRows();
+  if(el("incomeKGross"))el("incomeKGross").textContent=baht(t.gross);
+  if(el("incomeKCount"))el("incomeKCount").textContent=`${base.length.toLocaleString("th-TH")} รายการ`;
+  if(el("incomeKCash"))el("incomeKCash").textContent=baht(t.cash);
+  if(el("incomeKWht"))el("incomeKWht").textContent=`WHT เครดิต ${baht(t.wht)}`;
+  if(el("incomeKOutstanding"))el("incomeKOutstanding").textContent=baht(t.outstanding);
+  if(el("incomeKWaiting"))el("incomeKWaiting").textContent=`${t.waiting.toLocaleString("th-TH")} รายการรอรับ`;
+  if(el("incomeKVat"))el("incomeKVat").textContent=baht(t.vat);
+  if(el("incomeKOverdue"))el("incomeKOverdue").textContent=baht(t.overdue);
+  if(el("incomeKOverdueCount"))el("incomeKOverdueCount").textContent=`${t.overdueCount.toLocaleString("th-TH")} รายการ`;
+  if(el("incomeTableMeta"))el("incomeTableMeta").textContent=`แสดง ${rows.length.toLocaleString("th-TH")} จาก ${(INCOME_DATA.records||[]).length.toLocaleString("th-TH")} รายการ · ยอดตัดลูกหนี้นับเงินเข้าจริง + เครดิตหัก ณ ที่จ่าย`;
+  const body=el("incomeBody");if(!body)return;
+  if(!rows.length){body.innerHTML='<tr><td colspan="7"><div class="income-empty">ยังไม่มีรายการตามตัวกรองนี้<br><small>กด “+ บันทึกรายรับ” หรือส่งหลักฐานเงินเข้าใน LINE แล้วเลือกประเภทรายการเป็น “รายรับ”</small></div></td></tr>';return;}
+  body.innerHTML=rows.map(r=>{
+    const docs=[r.invoiceNo&&`INV ${r.invoiceNo}`,r.taxInvoiceNo&&`Tax ${r.taxInvoiceNo}`,r.receiptNo&&`Receipt ${r.receiptNo}`].filter(Boolean);
+    const received=incomeNum(r.cashReceived),wht=incomeNum(r.whtCreditReceived),out=incomeNum(r.outstanding);
+    const canReceive=r.status!=="ยกเลิก"&&out>.009;
+    const canCancel=r.status!=="ยกเลิก"&&incomeNum(r.settledAmount)<=.009;
+    return `<tr>
+      <td class="main" data-label="วันที่ / ลูกค้า"><strong>${esc(r.customer||"ลูกค้าทั่วไป")}</strong><small>${incomeDateLabel(r.issueDate)}${r.dueDate?` · ครบกำหนด ${incomeDateLabel(r.dueDate)}`:""}</small><small>${esc(r.category||"รายได้อื่น")}</small></td>
+      <td class="doc" data-label="เอกสาร"><strong>${esc(r.documentType||"รายรับทั่วไป")}</strong><small>${docs.length?esc(docs.join(" · ")):"ยังไม่ระบุเลขเอกสาร"}</small></td>
+      <td class="num" data-label="ยอดตามเอกสาร"><strong>${baht(r.grossAmount)}</strong><small>ฐาน ${baht(r.subtotal)}${incomeNum(r.vatAmount)>0?` + VAT ${baht(r.vatAmount)}`:""}</small></td>
+      <td class="num" data-label="รับแล้ว + WHT"><strong>${baht(received+wht)}</strong><small>เงินเข้า ${baht(received)}${wht>0?` · WHT ${baht(wht)}`:""}</small></td>
+      <td class="num" data-label="คงค้าง"><strong>${baht(out)}</strong>${incomeNum(r.expectedWhtAmount)>0?`<small>คาด WHT ${baht(r.expectedWhtAmount)}</small>`:""}</td>
+      <td data-label="สถานะ">${incomeStatusBadge(r)}</td>
+      <td class="actions"><button class="income-action" type="button" onclick="showIncomeDetail('${escAttr(r.id)}')">รายละเอียด</button>${canReceive?`<button class="income-action primary" type="button" onclick="openIncomePayment('${escAttr(r.id)}')">รับเงิน</button>`:""}<button class="income-action" type="button" onclick="openIncomeEdit('${escAttr(r.id)}')">แก้ข้อมูล</button>${canCancel?`<button class="income-action danger" type="button" onclick="cancelIncome('${escAttr(r.id)}')">ยกเลิก</button>`:""}</td>
+    </tr>`;
+  }).join("");
+  if(incomeReconModalOpen())renderIncomeRecon();
+}
+async function refreshIncome({quiet=false}={}){
+  if(INCOME_LOADING)return false;
+  INCOME_LOADING=true;
+  if(!quiet&&el("incomeTableMeta"))el("incomeTableMeta").textContent="กำลังโหลดข้อมูลรายรับ…";
+  try{
+    const res=await fetch(apiUrl("/api/income")+`&_=${Date.now()}`,{cache:"no-store",headers:{accept:"application/json","cache-control":"no-cache"}});
+    const data=await res.json().catch(()=>({}));
+    if(res.status===401||res.status===403){fatal("🔒","<b>ลิงก์นี้ใช้ไม่ได้แล้ว</b><br><br>พิมพ์ <b>แดชบอร์ด</b> ในกลุ่ม LINE เพื่อขอลิงก์ใหม่");return false;}
+    if(!res.ok||data.ok===false)throw new Error(data.message||data.error||`HTTP ${res.status}`);
+    INCOME_DATA={ok:true,records:Array.isArray(data.records)?data.records:[],payments:Array.isArray(data.payments)?data.payments:[],reconciliation:Array.isArray(data.reconciliation)?data.reconciliation:[],reconciliationSummary:data.reconciliationSummary||{},summary:data.summary||{},categories:Array.isArray(data.categories)?data.categories:[]};
+    renderIncome();return true;
+  }catch(err){console.error("income refresh",err);if(el("incomeTableMeta"))el("incomeTableMeta").textContent="โหลดรายรับไม่สำเร็จ — กดอัปเดตเพื่อลองใหม่";return false;}
+  finally{INCOME_LOADING=false;}
+}
+function incomeCalcPreview(){
+  const amount=Math.max(0,incomeNum(el("incAmount")?.value)),mode=el("incPriceMode")?.value||"no_vat",rate=mode==="no_vat"?0:Math.max(0,incomeNum(el("incVatRate")?.value));
+  let base=amount,vat=0,gross=amount;
+  if(mode==="inclusive"&&rate>0){gross=amount;base=gross/(1+rate/100);vat=gross-base;}
+  else if(mode==="exclusive"&&rate>0){base=amount;vat=base*rate/100;gross=base+vat;}
+  base=incomeRound(base);vat=incomeRound(vat);gross=incomeRound(gross);
+  const wr=Math.max(0,incomeNum(el("incExpectedWht")?.value)),wht=incomeRound(base*wr/100),cash=incomeRound(Math.max(0,gross-wht));
+  if(el("incPreviewBase"))el("incPreviewBase").textContent=baht(base);
+  if(el("incPreviewVat"))el("incPreviewVat").textContent=baht(vat);
+  if(el("incPreviewGross"))el("incPreviewGross").textContent=baht(gross);
+  if(el("incPreviewCash"))el("incPreviewCash").textContent=baht(cash);
+  return {base,vat,gross,wht,cash};
+}
+function resetIncomeEditor(){
+  const today=incomeToday();el("incomeForm")?.reset();
+  if(el("incIssueDate"))el("incIssueDate").value=today;if(el("incReceivedDate"))el("incReceivedDate").value=today;
+  if(el("incCustomerBranch"))el("incCustomerBranch").value="สำนักงานใหญ่";
+  if(el("incPriceMode"))el("incPriceMode").value="no_vat";if(el("incVatRate"))el("incVatRate").value="7";if(el("incExpectedWht"))el("incExpectedWht").value="0";
+  if(el("incCategory"))el("incCategory").innerHTML=incomeCategoryOptions("รายได้อื่น");
+  if(el("incPaymentChannel"))el("incPaymentChannel").innerHTML=incomeChannelsOptions();
+  if(el("incInitialPayment"))el("incInitialPayment").hidden=true;
+  incomeCalcPreview();
+}
+function openIncomeEditor(){resetIncomeEditor();const m=el("incomeEditor");if(m){m.classList.add("show");m.setAttribute("aria-hidden","false");}setTimeout(()=>el("incCustomer")?.focus(),50);}
+function closeIncomeEditor(){const m=el("incomeEditor");if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true");}}
+function toggleIncomePaidNow(){const checked=!!el("incPaidNow")?.checked,box=el("incInitialPayment"),calc=incomeCalcPreview();if(box)box.hidden=!checked;if(checked){if(el("incReceivedDate")&&!el("incReceivedDate").value)el("incReceivedDate").value=incomeToday();if(el("incCashAmount")&&!incomeNum(el("incCashAmount").value))el("incCashAmount").value=calc.cash.toFixed(2);if(el("incWhtAmount")&&!incomeNum(el("incWhtAmount").value)&&calc.wht>0)el("incWhtAmount").value=calc.wht.toFixed(2);}}
+async function incomeFileToPayload(file){
+  if(!file)return null;if(file.size>8*1024*1024)throw new Error(`ไฟล์ ${file.name} ใหญ่เกิน 8 MB`);
+  const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result||""));r.onerror=()=>reject(new Error("อ่านไฟล์ไม่สำเร็จ"));r.readAsDataURL(file);});
+  const base64=data.includes(",")?data.split(",").pop():data;
+  return {base64,mediaType:file.type||"application/octet-stream",name:file.name||`income-${Date.now()}`};
+}
+async function uploadIncomeFile(file){
+  if(!file)return "";const payload=await incomeFileToPayload(file);
+  const res=await fetch(apiUrl("/api/income-upload"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
+  const data=await res.json().catch(()=>({}));if(!res.ok||data.ok!==true)throw new Error(data.message||data.error||"อัปโหลดไฟล์ไม่สำเร็จ");return data.url||"";
+}
+async function saveIncome(event){
+  event?.preventDefault();
+  const customer=String(el("incCustomer")?.value||"").trim(),amount=incomeNum(el("incAmount")?.value),taxId=String(el("incCustomerTaxId")?.value||"").replace(/\D/g,"");
+  if(!customer)return alert("กรอกชื่อลูกค้า / ผู้จ่ายก่อน");if(!(amount>0))return alert("กรอกยอดรายรับก่อน");if(taxId&&taxId.length!==13)return alert("เลขผู้เสียภาษีลูกค้าต้องมี 13 หลัก หรือเว้นว่างถ้าไม่มี");
+  try{
+    const payload={issueDate:el("incIssueDate").value,dueDate:el("incDueDate").value,customer,customerTaxId:taxId,customerBranch:el("incCustomerBranch").value.trim(),category:el("incCategory").value,description:el("incDescription").value.trim(),documentType:el("incDocumentType").value,invoiceNo:el("incInvoiceNo").value.trim(),taxInvoiceNo:el("incTaxInvoiceNo").value.trim(),receiptNo:el("incReceiptNo").value.trim(),amount,priceMode:el("incPriceMode").value,vatRate:incomeNum(el("incVatRate").value),expectedWhtRate:incomeNum(el("incExpectedWht").value),note:el("incNote").value.trim(),source:"Dashboard"};
+    if(el("incPaidNow").checked){
+      const cash=incomeNum(el("incCashAmount").value),wht=incomeNum(el("incWhtAmount").value);if(!(cash>0||wht>0))throw new Error("กรอกเงินเข้าจริงหรือยอดหัก ณ ที่จ่ายก่อน");
+      const [slipUrl,whtCertificateUrl]=await Promise.all([uploadIncomeFile(el("incInitialSlip")?.files?.[0]),uploadIncomeFile(el("incInitialWhtCert")?.files?.[0])]);
+      payload.initialPayment={cashAmount:cash,whtAmount:wht,receivedDate:el("incReceivedDate").value||incomeToday(),paymentChannelId:el("incPaymentChannel").value,referenceNo:el("incPaymentRef").value.trim(),slipUrl,whtCertificateUrl,source:"Dashboard"};
+    }
+    const res=await fetch(apiUrl("/api/income-create"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});const data=await res.json().catch(()=>({}));if(!res.ok||data.ok!==true)throw new Error(data.message||data.error||"บันทึกรายรับไม่สำเร็จ");
+    closeIncomeEditor();await refreshIncome();
+  }catch(err){console.error(err);alert(err.message||"บันทึกรายรับไม่สำเร็จ");}
+}
+function openIncomePayment(id){
+  const r=incomeRecordById(id);if(!r)return;ACTIVE_INCOME_ID=id;
+  el("incomePaymentId").value=id;el("incomePaymentTitle").textContent=`รับชำระ · ${r.customer||"ลูกค้า"}`;el("incomePaymentSubtitle").textContent=[r.invoiceNo&&`INV ${r.invoiceNo}`,r.description].filter(Boolean).join(" · ")||"บันทึกเงินเข้าจริงและหัก ณ ที่จ่าย";
+  el("incomePayGross").textContent=baht(r.grossAmount);el("incomePaySettled").textContent=baht(r.settledAmount);el("incomePayOutstanding").textContent=baht(r.outstanding);el("incomePayDate").value=incomeToday();el("incomePayChannel").innerHTML=incomeChannelsOptions(r.paymentChannelId||"");el("incomePayRef").value="";el("incomePayNote").value="";el("incomePaySlip").value="";el("incomePayWhtCert").value="";
+  const outstanding=incomeNum(r.outstanding),expectedRemaining=Math.min(outstanding,Math.max(0,incomeNum(r.expectedWhtAmount)-incomeNum(r.whtCreditReceived)));el("incomePayWht").value=expectedRemaining>0?expectedRemaining.toFixed(2):"0";el("incomePayCash").value=Math.max(0,outstanding-expectedRemaining).toFixed(2);incomePaymentPreview();
+  const m=el("incomePaymentModal");m.classList.add("show");m.setAttribute("aria-hidden","false");
+}
+function closeIncomePayment(){const m=el("incomePaymentModal");if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true");}ACTIVE_INCOME_ID="";}
+function incomePaymentPreview(){const r=incomeRecordById(el("incomePaymentId")?.value),cash=Math.max(0,incomeNum(el("incomePayCash")?.value)),wht=Math.max(0,incomeNum(el("incomePayWht")?.value)),settled=incomeRound(cash+wht),out=incomeNum(r?.outstanding);if(el("incomePayPreview"))el("incomePayPreview").textContent=`ยอดตัดลูกหนี้ ${baht(settled)} = เงินเข้าจริง ${baht(cash)} + WHT ${baht(wht)}${r?` · หลังบันทึกคงเหลือ ${baht(Math.max(0,out-settled))}`:""}`;return {cash,wht,settled,out};}
+async function saveIncomePayment(event){
+  event?.preventDefault();const id=el("incomePaymentId").value,r=incomeRecordById(id);if(!r)return;
+  const p=incomePaymentPreview();if(!(p.settled>0))return alert("กรอกเงินเข้าจริงหรือยอดหัก ณ ที่จ่ายก่อน");if(p.settled>p.out+.01)return alert(`ยอดที่ตัด ${baht(p.settled)} มากกว่ายอดค้าง ${baht(p.out)}`);
+  try{
+    const [slipUrl,whtCertificateUrl]=await Promise.all([uploadIncomeFile(el("incomePaySlip")?.files?.[0]),uploadIncomeFile(el("incomePayWhtCert")?.files?.[0])]);
+    const body={incomeId:id,cashAmount:p.cash,whtAmount:p.wht,receivedDate:el("incomePayDate").value||incomeToday(),paymentChannelId:el("incomePayChannel").value,referenceNo:el("incomePayRef").value.trim(),slipUrl,whtCertificateUrl,note:el("incomePayNote").value.trim(),source:"Dashboard"};
+    const res=await fetch(apiUrl("/api/income-payment"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});const data=await res.json().catch(()=>({}));if(!res.ok||data.ok!==true)throw new Error(data.message||data.error||"บันทึกรับชำระไม่สำเร็จ");closeIncomePayment();await refreshIncome();showIncomeDetail(id);
+  }catch(err){console.error(err);alert(err.message||"บันทึกรับชำระไม่สำเร็จ");}
+}
+function showIncomeDetail(id){
+  const r=incomeRecordById(id);if(!r)return;const payments=incomePaymentsFor(id),docs=[r.invoiceNo&&`Invoice ${r.invoiceNo}`,r.taxInvoiceNo&&`ใบกำกับ ${r.taxInvoiceNo}`,r.receiptNo&&`ใบเสร็จ ${r.receiptNo}`].filter(Boolean);
+  el("modalBody").innerHTML=`<div class="cs">รายรับ / ลูกหนี้</div><h2 style="margin:5px 0 4px">${esc(r.customer||"ลูกค้าทั่วไป")}</h2><div class="cs">${esc(r.description||r.category||"รายรับ")}</div>
+    <div class="income-detail-grid"><div><span>วันที่ขาย / เอกสาร</span><strong>${incomeDateLabel(r.issueDate)}</strong></div><div><span>ครบกำหนด</span><strong>${incomeDateLabel(r.dueDate)}</strong></div><div><span>ยอดตามเอกสาร</span><strong>${baht(r.grossAmount)}</strong></div><div><span>ลูกหนี้คงค้าง</span><strong>${baht(r.outstanding)}</strong></div><div><span>ฐาน / VAT</span><strong>${baht(r.subtotal)} / ${baht(r.vatAmount)}</strong></div><div><span>WHT ที่ได้รับ</span><strong>${baht(r.whtCreditReceived)}</strong></div><div><span>เลขเอกสาร</span><strong>${esc(docs.join(" · ")||"—")}</strong></div><div><span>สถานะ</span><strong>${incomeStatusBadge(r)}</strong></div></div>
+    ${r.customerTaxId?`<div class="note" style="margin:10px 0">เลขผู้เสียภาษีลูกค้า ${esc(r.customerTaxId)} · ${esc(r.customerBranch||"สำนักงานใหญ่")}</div>`:""}
+    ${r.note?`<div class="note" style="margin:10px 0"><b>หมายเหตุ</b><br>${esc(r.note)}</div>`:""}
+    ${r.attachmentUrl?`<p><a class="btn" href="${escAttr(r.attachmentUrl)}" target="_blank" rel="noopener">เปิดเอกสารต้นทาง ↗</a></p>`:""}
+    <h3 style="margin-top:20px">ประวัติรับชำระ</h3><div class="income-payment-history">${payments.length?payments.map(p=>`<div class="income-payment-row"><div><strong>${incomeDateLabel(p.receivedDate)} · ตัดลูกหนี้ ${baht(p.settledAmount)}</strong><small>เงินเข้าจริง ${baht(p.cashAmount)}${incomeNum(p.whtAmount)>0?` · WHT ${baht(p.whtAmount)}`:""}${p.paymentChannelId?` · ${esc(incomeChannelName(p.paymentChannelId))}`:""}</small>${p.referenceNo?`<small>อ้างอิง ${esc(p.referenceNo)}</small>`:""}</div><div>${p.slipUrl?`<a class="income-action" href="${escAttr(p.slipUrl)}" target="_blank" rel="noopener">สลิป</a>`:`<button class="income-action" onclick="attachIncomePaymentFile('${escAttr(p.paymentId)}','slipUrl')">+ สลิป</button>`}${incomeNum(p.whtAmount)>0?(p.whtCertificateUrl?`<a class="income-action" href="${escAttr(p.whtCertificateUrl)}" target="_blank" rel="noopener">50 ทวิ</a>`:`<button class="income-action" onclick="attachIncomePaymentFile('${escAttr(p.paymentId)}','whtCertificateUrl')">+ 50 ทวิ</button>`):""}</div></div>`).join(""):'<div class="income-empty" style="padding:18px">ยังไม่มีการรับชำระ</div>'}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px"><button class="btn" onclick="openIncomeEdit('${escAttr(r.id)}')">แก้ข้อมูลลูกค้า/เอกสาร</button>${r.status!=="ยกเลิก"&&incomeNum(r.outstanding)>.009?`<button class="btn solid" onclick="document.getElementById('modal').classList.remove('show');openIncomePayment('${escAttr(r.id)}')">+ รับชำระ</button>`:""}</div>`;
+  el("modal").classList.add("show");
+}
+function openIncomeEdit(id){
+  const r=incomeRecordById(id);if(!r)return;
+  el("modalBody").innerHTML=`<div class="cs">แก้ข้อมูลรายรับ</div><h2 style="margin:5px 0 14px">${esc(r.customer||"รายรับ")}</h2><form id="incomeEditForm" class="income-form"><input type="hidden" id="incomeEditId" value="${escAttr(r.id)}"><div><label>ลูกค้า / ผู้จ่าย</label><input id="incomeEditCustomer" value="${escAttr(r.customer||"")}"></div><div><label>เลขผู้เสียภาษี</label><input id="incomeEditTaxId" value="${escAttr(r.customerTaxId||"")}" maxlength="13"></div><div><label>สาขา</label><input id="incomeEditBranch" value="${escAttr(r.customerBranch||"")}"></div><div><label>วันครบกำหนด</label><input id="incomeEditDue" type="date" value="${escAttr(r.dueDate||"")}"></div><div><label>ประเภทรายได้</label><select id="incomeEditCategory">${incomeCategoryOptions(r.category)}</select></div><div><label>ประเภทเอกสาร</label><input id="incomeEditDocType" value="${escAttr(r.documentType||"")}"></div><div><label>Invoice / ใบวางบิล</label><input id="incomeEditInvoice" value="${escAttr(r.invoiceNo||"")}"></div><div><label>เลขใบกำกับภาษี</label><input id="incomeEditTaxInvoice" value="${escAttr(r.taxInvoiceNo||"")}"></div><div><label>เลขใบเสร็จ</label><input id="incomeEditReceipt" value="${escAttr(r.receiptNo||"")}"></div><div class="full"><label>รายละเอียด</label><input id="incomeEditDescription" value="${escAttr(r.description||"")}"></div><div class="full"><label>หมายเหตุ</label><textarea id="incomeEditNote">${esc(r.note||"")}</textarea></div><div class="income-tax-note full" style="margin:0"><span>ล็อกยอด</span><span>ยอด, VAT และยอดรับชำระไม่แก้จากหน้านี้เพื่อรักษาประวัติทางบัญชี ถ้ายอดต้นฉบับผิดและยังไม่รับเงิน ให้ยกเลิกรายการแล้วสร้างใหม่</span></div><div class="income-modal-actions"><button class="btn" type="button" onclick="showIncomeDetail('${escAttr(r.id)}')">ยกเลิก</button><button class="btn solid" type="submit">บันทึกการแก้ไข</button></div></form>`;
+  el("modal").classList.add("show");el("incomeEditForm").addEventListener("submit",saveIncomeEdit);
+}
+async function saveIncomeEdit(event){
+  event.preventDefault();const id=el("incomeEditId").value,tax=String(el("incomeEditTaxId").value||"").replace(/\D/g,"");if(tax&&tax.length!==13)return alert("เลขผู้เสียภาษีต้องมี 13 หลัก หรือเว้นว่าง");
+  const patch={customer:el("incomeEditCustomer").value.trim(),customerTaxId:tax,customerBranch:el("incomeEditBranch").value.trim(),dueDate:el("incomeEditDue").value,category:el("incomeEditCategory").value,documentType:el("incomeEditDocType").value.trim(),invoiceNo:el("incomeEditInvoice").value.trim(),taxInvoiceNo:el("incomeEditTaxInvoice").value.trim(),receiptNo:el("incomeEditReceipt").value.trim(),description:el("incomeEditDescription").value.trim(),note:el("incomeEditNote").value.trim()};
+  try{const res=await fetch(apiUrl("/api/income-update"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id,patch})});const data=await res.json().catch(()=>({}));if(!res.ok||data.ok!==true)throw new Error(data.message||data.error||"แก้ไขไม่สำเร็จ");await refreshIncome({quiet:true});showIncomeDetail(id);}catch(err){alert(err.message||"แก้ไขไม่สำเร็จ");}
+}
+async function cancelIncome(id){const r=incomeRecordById(id);if(!r)return;if(!confirm(`ยกเลิกรายการของ ${r.customer||"ลูกค้า"} ยอด ${baht(r.grossAmount)}?\n\nใช้ได้เฉพาะรายการที่ยังไม่รับชำระ`))return;try{const res=await fetch(apiUrl("/api/income-update"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({id,patch:{status:"ยกเลิก"}})});const data=await res.json().catch(()=>({}));if(!res.ok||data.ok!==true)throw new Error(data.message||data.error||"ยกเลิกไม่สำเร็จ");await refreshIncome();}catch(err){alert(err.message||"ยกเลิกไม่สำเร็จ");}}
+async function attachIncomePaymentFile(paymentId,field){
+  const input=document.createElement("input");input.type="file";input.accept="image/*,.pdf,application/pdf";input.onchange=async()=>{const file=input.files?.[0];if(!file)return;try{const url=await uploadIncomeFile(file);const res=await fetch(apiUrl("/api/income-payment-update"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({paymentId,patch:{[field]:url}})});const data=await res.json().catch(()=>({}));if(!res.ok||data.ok!==true)throw new Error(data.message||data.error||"บันทึกไฟล์ไม่สำเร็จ");const payment=(INCOME_DATA.payments||[]).find(x=>x.paymentId===paymentId);await refreshIncome({quiet:true});if(payment)showIncomeDetail(payment.incomeId);}catch(err){alert(err.message||"อัปโหลดไม่สำเร็จ");}};input.click();
+}
+function csvCell(v){const s=String(v??"");return `"${s.replace(/"/g,'""')}"`;}
+function downloadCsv(name,headers,rows){const text='\uFEFF'+[headers,...rows].map(r=>r.map(csvCell).join(",")).join("\r\n"),blob=new Blob([text],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
+function exportIncomeCsv(){const rows=incomeFilterRows();downloadCsv(`income-${incomeToday()}.csv`,["วันที่ขาย","วันครบกำหนด","ลูกค้า","เลขผู้เสียภาษี","สาขา","ประเภทรายได้","รายละเอียด","ประเภทเอกสาร","Invoice","เลขใบกำกับภาษี","เลขใบเสร็จ","ฐานก่อน VAT","VAT %","VAT","ยอดตามเอกสาร","คาด WHT %","คาด WHT","เงินเข้าจริง","WHT ที่ได้รับ","ยอดตัดแล้ว","คงค้าง","สถานะ"],rows.map(r=>[r.issueDate,r.dueDate,r.customer,r.customerTaxId,r.customerBranch,r.category,r.description,r.documentType,r.invoiceNo,r.taxInvoiceNo,r.receiptNo,r.subtotal,r.vatRate,r.vatAmount,r.grossAmount,r.expectedWhtRate,r.expectedWhtAmount,r.cashReceived,r.whtCreditReceived,r.settledAmount,r.outstanding,r.status]));}
+function exportIncomeVatCsv(){const rows=incomeFilterRows().filter(r=>r.status!=="ยกเลิก"&&incomeNum(r.vatAmount)>0);downloadCsv(`sales-vat-${incomeToday()}.csv`,["วันที่","เลขใบกำกับภาษี","ลูกค้า","เลขผู้เสียภาษี","สาขา","รายละเอียด","ฐานภาษี","VAT","ยอดรวม"],rows.map(r=>[r.issueDate,r.taxInvoiceNo,r.customer,r.customerTaxId,r.customerBranch,r.description,r.subtotal,r.vatAmount,r.grossAmount]));}
+function incomeReconModalOpen(){return el("incomeReconModal")?.classList.contains("show");}
+function incomeReconRows(){
+  const channel=String(el("incomeReconChannel")?.value||"");
+  return (INCOME_DATA.reconciliation||[]).filter(r=>!channel||String(r.paymentChannelId||"")===channel);
+}
+function incomeReconStateMeta(status){
+  const s=String(status||"");
+  if(s==="กระทบยอดแล้ว")return {label:"กระทบแล้ว",cls:"done"};
+  if(s==="แนะนำอัตโนมัติ")return {label:"ระบบแนะนำ",cls:"suggest"};
+  if(s==="ต้องตรวจ")return {label:"ต้องตรวจ",cls:"review"};
+  if(s==="ข้าม")return {label:"ข้าม",cls:""};
+  return {label:"ยังไม่พบคู่",cls:"none"};
+}
+function incomeReconCandidateLabel(c){
+  if(!c)return "—";
+  const count=Number(c.count||c.paymentIds?.length||1);
+  const docs=String(c.invoiceNo||"").trim();
+  return `${c.customer||"ลูกค้า"}${docs?` · ${docs}`:""}${count>1?` · ${count} รายการ`:""}`;
+}
+function incomeUnreconciledPayments(row){
+  const linked=new Set((INCOME_DATA.reconciliation||[]).filter(x=>String(x.status||"")==="กระทบยอดแล้ว").flatMap(x=>String(x.paymentId||"").split(",").map(v=>v.trim()).filter(Boolean)));
+  return (INCOME_DATA.payments||[]).filter(p=>incomeNum(p.cashAmount)>0&&!linked.has(String(p.paymentId||""))&&String(p.reconcileStatus||"")!=="กระทบยอดแล้ว"&&(!row.paymentChannelId||!p.paymentChannelId||String(row.paymentChannelId)===String(p.paymentChannelId))).map(p=>{const inc=incomeRecordById(p.incomeId)||{};return {...p,customer:inc.customer||"ลูกค้า",invoiceNo:inc.invoiceNo||inc.taxInvoiceNo||inc.receiptNo||"",diff:Math.abs(incomeNum(row.amount)-incomeNum(p.cashAmount))};}).sort((a,b)=>a.diff-b.diff||String(b.receivedDate||"").localeCompare(String(a.receivedDate||""))).slice(0,30);
+}
+function renderIncomeRecon(){
+  const modal=el("incomeReconModal");if(!modal)return;
+  const channelSel=el("incomeReconChannel"),current=String(channelSel?.value||"");
+  if(channelSel){channelSel.innerHTML=incomeChannelsOptions(current);if(current&&[...channelSel.options].some(o=>o.value===current))channelSel.value=current;else if(!channelSel.value){const first=financeChannels(true)[0];if(first)channelSel.value=first.id;}}
+  const rows=incomeReconRows(),summary={suggested:0,reconciled:0,review:0,unmatched:0},channel=String(channelSel?.value||"");
+  for(const r of rows){if(r.displayStatus==="แนะนำอัตโนมัติ")summary.suggested++;if(r.displayStatus==="กระทบยอดแล้ว")summary.reconciled++;if(r.displayStatus==="ต้องตรวจ")summary.review++;if(r.displayStatus==="ไม่พบคู่")summary.unmatched++;}
+  const waiting=(INCOME_DATA.payments||[]).filter(p=>incomeNum(p.cashAmount)>0&&String(p.reconcileStatus||"")!=="กระทบยอดแล้ว"&&(!channel||!p.paymentChannelId||String(p.paymentChannelId)===channel));
+  if(el("incomeReconKRows"))el("incomeReconKRows").textContent=rows.length.toLocaleString("th-TH");
+  if(el("incomeReconKSuggest"))el("incomeReconKSuggest").textContent=summary.suggested.toLocaleString("th-TH");
+  if(el("incomeReconKDone"))el("incomeReconKDone").textContent=summary.reconciled.toLocaleString("th-TH");
+  if(el("incomeReconKWaiting"))el("incomeReconKWaiting").textContent=waiting.length.toLocaleString("th-TH");
+  if(el("incomeReconConfirmAll"))el("incomeReconConfirmAll").disabled=!summary.suggested;
+  const list=el("incomeReconList");if(!list)return;
+  if(!rows.length){list.innerHTML='<div class="income-empty">ยังไม่มี Statement เงินเข้าของบัญชีนี้<br><small>เลือกบัญชี แล้วกด “เลือก Statement” เพื่อเริ่มกระทบยอด</small></div>';return;}
+  list.innerHTML=rows.map(row=>{
+    const meta=incomeReconStateMeta(row.displayStatus),best=row.suggestion?.best||null,linked=Array.isArray(row.linkedPayments)?row.linkedPayments:[],manual=incomeUnreconciledPayments(row);
+    let matchHtml="";
+    if(row.displayStatus==="กระทบยอดแล้ว"){
+      const label=linked.length?linked.map(p=>`${p.customer||"ลูกค้า"}${p.invoiceNo?` · ${p.invoiceNo}`:""}`).join(" + "):"รายการรับชำระ";
+      matchHtml=`<strong>${esc(label)}</strong><small>${linked.length} รายการรับชำระ · เงินเข้ารวม ${baht(linked.reduce((a,p)=>a+incomeNum(p.cashAmount),0))}</small>`;
+    }else if(best){
+      matchHtml=`<strong>${esc(incomeReconCandidateLabel(best))}</strong><small>เงินเข้าที่บันทึก ${baht(best.cashAmount)} · วันที่ ${incomeDateLabel(best.receivedDate)}${best.whtAmount?` · WHT ${baht(best.whtAmount)}`:""}</small>`;
+    }else matchHtml='<strong>ยังไม่พบคู่ที่ยอดตรง</strong><small>เลือกจากรายการรับชำระด้านล่างได้</small>';
+    const manualOptions=manual.map(p=>`<option value="${escAttr(p.paymentId)}">${esc(p.customer)}${p.invoiceNo?` · ${esc(p.invoiceNo)}`:""} · ${baht(p.cashAmount)} · ${incomeDateLabel(p.receivedDate)}${p.diff>.01?` · ต่าง ${baht(p.diff)}`:""}</option>`).join("");
+    const action=row.displayStatus==="กระทบยอดแล้ว"?`<button class="btn small" type="button" onclick="unlinkIncomeRecon('${escAttr(row.id)}')">ยกเลิกจับคู่</button>`:`${best?`<button class="btn small solid" type="button" onclick="confirmIncomeRecon('${escAttr(row.id)}','${escAttr((best.paymentIds||[best.paymentId]).join(','))}',false)">ยืนยันคู่</button>`:""}<button class="btn small" type="button" onclick="ignoreIncomeRecon('${escAttr(row.id)}')">ข้าม</button>`;
+    return `<div class="income-recon-row"><div class="income-recon-bank"><span class="income-recon-state ${meta.cls}">${esc(meta.label)}</span><strong class="income-recon-amount">${baht(row.amount)}</strong><small>${incomeDateLabel(row.transactionDate)} · ${esc(row.description||"ไม่ระบุรายละเอียด")}${row.reference?`<br>อ้างอิง ${esc(row.reference)}`:""}${row.sourceFile?` · ${esc(row.sourceFile)}`:""}</small></div><div class="income-recon-match">${matchHtml}${row.displayStatus!=="กระทบยอดแล้ว"&&manualOptions?`<div class="income-recon-manual"><select id="incomeReconPick_${escAttr(row.id)}"><option value="">เลือกจับคู่เอง…</option>${manualOptions}</select><button class="btn small" type="button" onclick="confirmIncomeReconManual('${escAttr(row.id)}')">จับคู่</button></div>`:""}</div><div class="income-recon-actions">${action}</div></div>`;
+  }).join("");
+}
+function openIncomeRecon(){
+  if(!financeChannels(true).length)return alert("ยังไม่มีช่องทางการเงิน กรุณาเพิ่มบัญชีธนาคาร/ช่องทางรับเงินในตั้งค่าก่อน");
+  const modal=el("incomeReconModal");if(!modal)return;modal.classList.add("show");modal.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";renderIncomeRecon();
+}
+function closeIncomeRecon(){const modal=el("incomeReconModal");if(!modal)return;modal.classList.remove("show");modal.setAttribute("aria-hidden","true");document.body.style.overflow="";}
+function findIncomeStatementColumns(rows){
+  const aliases={date:["วันที่","date","transactiondate","postingdate","valuedate","วันทำรายการ"],debit:["ถอน","เงินออก","debit","debitamount","withdrawal","จ่ายออก"],credit:["ฝาก","เงินเข้า","credit","creditamount","deposit","รับเงิน"],amount:["จำนวนเงิน","amount","ยอดเงิน","transactionamount"],description:["รายการ","รายละเอียด","description","particulars","memo","narrative","transactiondetail"],reference:["เลขอ้างอิง","อ้างอิง","reference","referenceno","ref","transactionid"],type:["ประเภท","type","direction","transactiontype","drcr"]};
+  let best=null;for(let r=0;r<Math.min(rows.length,30);r++){const hdr=(rows[r]||[]).map(normalizeStatementHeader),cols={};let score=0;for(const [key,names] of Object.entries(aliases)){const idx=hdr.findIndex(h=>names.some(n=>h===n||h.includes(n)));if(idx>=0){cols[key]=idx;score++;}}if(cols.date>=0&&(cols.credit>=0||cols.amount>=0)&&score>(best?.score||0))best={row:r,cols,score};}return best;
+}
+function normalizeIncomingStatementRows(rows){
+  const found=findIncomeStatementColumns(rows);if(!found)throw new Error("หาแถวหัวตารางไม่เจอ ต้องมีคอลัมน์วันที่และเงินเข้า/ฝาก/Credit");const out=[];
+  for(let i=found.row+1;i<rows.length;i++){const cells=rows[i]||[],date=statementDateValue(cells[found.cols.date]);if(!date)continue;const debit=found.cols.debit>=0?Math.abs(statementNumber(cells[found.cols.debit])):0,credit=found.cols.credit>=0?Math.abs(statementNumber(cells[found.cols.credit])):0,generic=found.cols.amount>=0?statementNumber(cells[found.cols.amount]):0,type=found.cols.type>=0?String(cells[found.cols.type]||""):"";if(debit>0&&!credit)continue;let amount=credit;if(!amount&&generic){if(/เงินเข้า|credit|deposit|รับเงิน|\bcr\b/i.test(type))amount=Math.abs(generic);else if(/เงินออก|debit|withdraw|จ่ายออก|\bdr\b/i.test(type))continue;else if(generic>0)amount=generic;}if(!(amount>0))continue;out.push({transactionDate:date,amount,direction:"เงินเข้า",description:found.cols.description>=0?String(cells[found.cols.description]||"").trim():"",reference:found.cols.reference>=0?String(cells[found.cols.reference]||"").trim():"",raw:{row:i+1,values:cells.map(v=>v instanceof Date?v.toISOString():v)}});}return out;
+}
+async function parseIncomingStatementFile(file){
+  const ext=String(file.name||"").split(".").pop().toLowerCase();let rows;if(ext==="csv"||file.type.includes("csv"))rows=parseCsvRows(await file.text());else{if(typeof XLSX==="undefined")throw new Error("โหลดตัวอ่าน Excel ไม่สำเร็จ กรุณาบันทึกไฟล์เป็น CSV แล้วลองใหม่");const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true}),ws=wb.Sheets[wb.SheetNames[0]];rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:""});}return normalizeIncomingStatementRows(rows);
+}
+async function incomeReconPost(path,payload){const res=await fetch(apiUrl(path),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload||{})}),data=await res.json().catch(()=>({}));if(!res.ok||data.ok!==true)throw new Error(data.message||data.error||data.reason||`HTTP ${res.status}`);return data;}
+async function importIncomeStatementFile(file){
+  if(!file)return;const channel=String(el("incomeReconChannel")?.value||"");if(!channel){alert("เลือกบัญชี/ช่องทางรับเงินก่อน");el("incomeReconFile").value="";return;}
+  try{const rows=await parseIncomingStatementFile(file);if(!rows.length)throw new Error("ไม่พบรายการเงินเข้าในไฟล์นี้");const total=rows.reduce((s,r)=>s+incomeNum(r.amount),0);if(!confirm(`พบเงินเข้า ${rows.length} รายการ รวม ${baht(total)}\n\nนำเข้าเพื่อกระทบยอดกับรายการรับชำระไหม?`))return;const out=await incomeReconPost("/api/income-reconciliation-import",{fileName:file.name,paymentChannelId:channel,rows});await refreshIncome({quiet:true});renderIncomeRecon();alert(`นำเข้าแล้ว ${out.imported||0} รายการ${out.skippedDuplicate?`\nข้ามรายการซ้ำ ${out.skippedDuplicate}`:""}${out.skippedInvalid?`\nข้ามข้อมูลไม่ครบ ${out.skippedInvalid}`:""}`);}catch(err){alert("นำเข้า Statement เงินเข้าไม่สำเร็จ: "+err.message);}finally{el("incomeReconFile").value="";}
+}
+async function confirmIncomeRecon(rowId,paymentIdsCsv,force=false){
+  const ids=String(paymentIdsCsv||"").split(",").map(x=>x.trim()).filter(Boolean);if(!ids.length)return;const row=(INCOME_DATA.reconciliation||[]).find(r=>String(r.id)===String(rowId));const ps=ids.map(id=>(INCOME_DATA.payments||[]).find(p=>String(p.paymentId)===id)).filter(Boolean);const total=ps.reduce((a,p)=>a+incomeNum(p.cashAmount),0);if(row&&Math.abs(incomeNum(row.amount)-total)>.01&&!force){if(!confirm(`ยอด Statement ${baht(row.amount)} ไม่เท่ากับยอดรับชำระ ${baht(total)}\nยืนยันจับคู่แบบ manual ใช่ไหม?`))return;force=true;}
+  try{await incomeReconPost("/api/income-reconciliation-confirm",{pairs:[{reconciliationId:rowId,paymentIds:ids}],force,matchedBy:"Dashboard"});await refreshIncome({quiet:true});renderIncomeRecon();}catch(err){alert("กระทบยอดไม่สำเร็จ: "+err.message);}
+}
+function confirmIncomeReconManual(rowId){const sel=el(`incomeReconPick_${rowId}`);if(!sel?.value)return alert("เลือกรายการรับชำระก่อน");confirmIncomeRecon(rowId,sel.value,false);}
+async function confirmIncomeReconSuggestedAll(){
+  const pairs=incomeReconRows().filter(r=>r.displayStatus==="แนะนำอัตโนมัติ"&&r.suggestion?.best).map(r=>({reconciliationId:r.id,paymentIds:r.suggestion.best.paymentIds||[r.suggestion.best.paymentId],score:r.suggestion.best.score}));if(!pairs.length)return alert("ไม่มีรายการที่ระบบมั่นใจพอให้ยืนยัน");if(!confirm(`ยืนยันกระทบยอดเงินเข้า ${pairs.length} รายการที่ระบบแนะนำ?`))return;try{const out=await incomeReconPost("/api/income-reconciliation-confirm",{pairs,matchedBy:"Dashboard"});await refreshIncome({quiet:true});renderIncomeRecon();alert(`กระทบยอดสำเร็จ ${out.confirmed||pairs.length} รายการ`);}catch(err){alert("ยืนยันไม่สำเร็จ: "+err.message);}
+}
+async function ignoreIncomeRecon(id){if(!confirm("ข้ามรายการเงินเข้านี้จากการกระทบยอด?"))return;try{await incomeReconPost("/api/income-reconciliation-ignore",{reconciliationId:id});await refreshIncome({quiet:true});renderIncomeRecon();}catch(err){alert(err.message||"ข้ามรายการไม่สำเร็จ");}}
+async function unlinkIncomeRecon(id){if(!confirm("ยกเลิกการจับคู่รายการเงินเข้านี้?"))return;try{await incomeReconPost("/api/income-reconciliation-unlink",{reconciliationId:id});await refreshIncome({quiet:true});renderIncomeRecon();}catch(err){alert(err.message||"ยกเลิกการจับคู่ไม่สำเร็จ");}}
+
+function bindIncomeUi(){
+  el("incomeCreate")?.addEventListener("click",openIncomeEditor);el("incomeRefresh")?.addEventListener("click",()=>refreshIncome());el("incomeReconBtn")?.addEventListener("click",openIncomeRecon);el("incomeForm")?.addEventListener("submit",saveIncome);el("incomePaymentForm")?.addEventListener("submit",saveIncomePayment);
+  ["incAmount","incPriceMode","incVatRate","incExpectedWht"].forEach(id=>el(id)?.addEventListener("input",()=>{incomeCalcPreview();if(el("incPaidNow")?.checked)toggleIncomePaidNow();}));el("incPaidNow")?.addEventListener("change",toggleIncomePaidNow);["incomePayCash","incomePayWht"].forEach(id=>el(id)?.addEventListener("input",incomePaymentPreview));
+  document.querySelectorAll("[data-income-close]").forEach(b=>b.addEventListener("click",()=>{const mode=b.dataset.incomeClose;if(mode==="payment")closeIncomePayment();else if(mode==="recon")closeIncomeRecon();else closeIncomeEditor();}));
+  ["incomeQ","incomeStatus","incomeCategory","incomeMonth"].forEach(id=>{el(id)?.addEventListener(id==="incomeQ"?"input":"change",renderIncome);});el("incomeCsv")?.addEventListener("click",exportIncomeCsv);el("incomeVatCsv")?.addEventListener("click",exportIncomeVatCsv);
+  el("incomeReconChannel")?.addEventListener("change",renderIncomeRecon);el("incomeReconFile")?.addEventListener("change",e=>importIncomeStatementFile(e.target.files?.[0]));el("incomeReconConfirmAll")?.addEventListener("click",confirmIncomeReconSuggestedAll);
+  ["incomeEditor","incomePaymentModal","incomeReconModal"].forEach(id=>el(id)?.addEventListener("click",e=>{if(e.target!==e.currentTarget)return;if(id==="incomeEditor")closeIncomeEditor();else if(id==="incomePaymentModal")closeIncomePayment();else closeIncomeRecon();}));
+}
+bindIncomeUi();
+
+
 /* ---------- REALTIME LOAD ---------- */
 function fatal(icon,msg){
   if(REFRESH_TIMER) clearInterval(REFRESH_TIMER);
@@ -3554,6 +4010,7 @@ function refreshVisiblePage({manual=false}={}){
 
   const batchOpen=el("page-batches")?.classList.contains("show");
   const reconciliationOpen=el("page-reconciliation")?.classList.contains("show");
+  const incomeOpen=el("page-income")?.classList.contains("show");
   const emailOpen=el("page-email")?.classList.contains("show")||el("page-subscriptions")?.classList.contains("show");
   const billingOpen=el("page-billing")?.classList.contains("show");
 
@@ -3562,6 +4019,8 @@ function refreshVisiblePage({manual=false}={}){
     if(BATCH_SELECTED.size===0&&REVIEW_BATCH_SELECTED.size===0&&TRANSFER_SELECTED.size===0)refreshBatchData({quiet:true});
   }else if(reconciliationOpen){
     refreshReconciliation({quiet:true});
+  }else if(incomeOpen){
+    refreshIncome({quiet:true});
   }else{
     refreshData({manual});
   }
@@ -3595,7 +4054,7 @@ async function load(){
     startRealtime();let target=QS.get("page");if(target==="reimburse")target="batches";if(target&&el("page-"+target)){const b=document.querySelector(`[data-p="${target}"]`);openPage(target,b);}}
 }
 
-el("syncBtn").addEventListener("click",async()=>{const reconOpen=el("page-reconciliation")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");const billingOpen=el("page-billing")?.classList.contains("show");if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings(),refreshWorkspaceLinks()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings(),refreshWorkspaceLinks()]);else if(billingOpen)await Promise.all([refreshSubscription(),refreshBusinesses(),refreshSettings(),refreshWorkspaceLinks()]);else await Promise.all([refreshData({manual:true}),refreshSettings(),refreshWorkspaceLinks(),refreshSubscription({quiet:true})]);});
+el("syncBtn").addEventListener("click",async()=>{const reconOpen=el("page-reconciliation")?.classList.contains("show");const incomeOpen=el("page-income")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");const billingOpen=el("page-billing")?.classList.contains("show");if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings(),refreshWorkspaceLinks()]);else if(incomeOpen)await Promise.all([refreshIncome(),refreshSettings(),refreshWorkspaceLinks()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings(),refreshWorkspaceLinks()]);else if(billingOpen)await Promise.all([refreshSubscription(),refreshBusinesses(),refreshSettings(),refreshWorkspaceLinks()]);else await Promise.all([refreshData({manual:true}),refreshSettings(),refreshWorkspaceLinks(),refreshSubscription({quiet:true})]);});
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden&&HAS_LOADED){refreshVisiblePage();refreshSettingsIfAssetChanged();}
 });
