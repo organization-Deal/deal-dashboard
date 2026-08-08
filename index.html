@@ -65,6 +65,12 @@
     -webkit-backdrop-filter:saturate(180%) blur(24px);z-index:20;
   }
   .brand{display:flex;align-items:center;gap:12px;padding:24px 22px 22px}
+  .business-switcher-primary{padding:22px 14px 14px;border-bottom:1px solid rgba(0,0,0,.055);margin-bottom:2px}
+  .business-switcher-primary .business-switcher-btn{min-height:56px;border-radius:16px;padding:8px 10px;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.04)}
+  .business-switcher-primary .business-switcher-avatar{width:36px;height:36px;border-radius:11px}
+  .business-switcher-primary .business-switcher-copy strong{font-size:13.5px}
+  .business-switcher-primary .business-switcher-copy span{font-size:10.5px}
+  @media(max-width:860px){.business-switcher-primary{display:none!important}}
   .logo{
     width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,#171719,#000);
     display:grid;place-items:center;font-weight:700;font-size:16px;color:#fff;
@@ -1103,11 +1109,7 @@
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand">
-      <div class="logo" id="brandLogo">บ</div>
-      <div><h1 id="brandName">บริษัทของคุณ</h1><div class="sub" id="brandSub"></div></div>
-    </div>
-    <div class="business-switcher" id="businessSwitcher">
+    <div class="business-switcher business-switcher-primary" id="businessSwitcher">
       <button class="business-switcher-btn" id="businessSwitcherBtn" type="button" aria-haspopup="true" aria-expanded="false">
         <span class="business-switcher-avatar" id="businessSwitcherAvatar">D</span>
         <span class="business-switcher-copy"><strong id="businessSwitcherName">ธุรกิจปัจจุบัน</strong><span id="businessSwitcherMeta">กำลังโหลด Workspace…</span></span>
