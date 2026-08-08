@@ -1,54 +1,53 @@
-รับจ่ายแบบไม่จำกัด — Dashboard Mobile UX v5.3
-Date: 2026-08-08
+Dashboard v6.0 — Route-Isolated / Low-Memory Architecture
+Date: 2026-08-09
 
-Base:
-- deal-dashboard-main (3).zip
+WHY
+Previous dashboard kept all features in one long-lived renderer and could grow to ~1.4 GB in Chrome.
+This version changes frontend architecture without changing accounting data or Google Sheet schemas.
 
-Changed file:
-- index.html
+WHAT CHANGED
+1) index.html is now an app shell. CSS and JS are external assets:
+   - assets/dashboard.css
+   - assets/dashboard.js
+2) Main workspace navigation uses full-document route changes (?page=...).
+   This intentionally lets Chrome destroy the previous page renderer, DOM, decoded images, timers, and page caches.
+3) Initial loading is route-aware:
+   - Overview/Expenses/Reports/Documents/Activity/Settings/Business: compact expenses only
+   - Batches: batch API only
+   - Reconciliation: reconciliation API only
+   - Income: income API only (reconciliation rows lazy-loaded only when opened)
+   - Email: email documents only
+   - Subscriptions: subscriptions only
+   - Billing: no expense preload
+4) Gmail documents and recurring subscriptions are no longer fetched together unless explicitly requested.
+5) Expense API requests use view=dashboard. Worker returns a compact projection and does NOT send duplicated attachment arrays/batch internals to the browser.
+6) Tables/lists have bounded DOM rendering:
+   - expenses 100/page
+   - income 100/page
+   - accounting documents 100/page
+   - batches 100/page
+   - reconciliation 100/page
+   - Gmail documents 100/page
+   - activity 150 at a time
+7) CSV Object URLs are revoked after download.
+8) Income reconciliation data is released from browser memory when its modal closes.
+9) Persistent sidebar backdrop blur is disabled to reduce compositor/GPU surfaces.
 
-What changed:
-1) Removed the mobile business/company selector from the fixed/floating area.
-   - It now appears as a compact card in normal page flow above the page header.
-   - It can never cover content at the bottom of the screen.
+DATA SAFETY
+- No Google Sheet schema was changed.
+- No row is deleted or migrated.
+- Existing Worker endpoints remain compatible.
+- view=dashboard is optional; callers without it still receive the existing full expense payload.
+- Income reconciliation query is optional; existing callers still get the full response.
 
-2) Bottom navigation is always visible on phones / Fold portrait up to 820px.
-   Tabs:
-   - ภาพรวม
-   - เบิกจ่าย
-   - รายจ่าย
-   - กระทบยอด
-   - เพิ่มเติม
+DEPLOY ORDER
+1) Deploy deal-line-bot v6.0 first (adds compact dashboard projection + optional lightweight Income response).
+2) Deploy dashboard v6.0 second.
+3) Close the old Dashboard browser tab completely, then open a fresh link from LINE.
 
-3) "เพิ่มเติม" now exposes desktop-parity navigation, including:
-   - รายรับ
-   - รายงานและภาษี
-   - เอกสารทั้งหมด
-   - ประวัติ
-   - เอกสารจากอีเมล
-   - รายจ่ายประจำ
-   - จับคู่หลักฐาน
-   - เอกสารอัตโนมัติ
-   - ข้อมูลบริษัท
-   - ผู้อนุมัติและลายเซ็น
-   - บัญชีและช่องทางการเงิน
-   - ทีมและผู้ใช้งาน
-   - หมวดหมู่
-   - ตั้งค่าการใช้งาน
-   - แพ็กเกจ
-   - เชื่อมต่อ Google
-   - Google Sheet
-   - Google Drive
-
-4) Overview mobile hierarchy improved:
-   - KPI numbers first
-   - accounting note second
-   - package/beta card reduced and moved below the important numbers
-
-Deploy:
-- Replace index.html in the dashboard repository with this index.html.
-- Commit/push to the branch connected to Cloudflare Pages/Workers deployment.
-- Hard refresh / open a fresh LINE in-app browser after deploy.
-
-Important:
-- This patch only changes dashboard front-end UX. It does not change the LINE bot backend.
+TEST
+- Open Overview, note Chrome Task Manager memory.
+- Navigate to Expenses, Income, Batches, Reconciliation, Gmail and back.
+- Navigation intentionally reloads the document while retaining tenant/k/page in the URL.
+- Verify filters, exports, review/payment actions, business settings, and mobile navigation.
+- In Console, dashboardMemoryReport() remains available for JS heap/data counters.
