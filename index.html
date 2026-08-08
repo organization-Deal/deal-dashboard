@@ -1,6 +1,7 @@
 <!-- REIMBURSEMENT_DASHBOARD_v2.7_REVIEW_DIRECT_20260805 -->
 <!-- REIMBURSEMENT_ACCOUNTING_TABLE_V3_2026-08-03 -->
 <!DOCTYPE html>
+<!-- DASHBOARD_UI_VERSION: ACCOUNTING_SUITE_V7_1_20260809 -->
 <!-- DASHBOARD_UI_VERSION: INCOME_SME_TH_V1_20260808 -->
 <!-- DASHBOARD_UI_VERSION: EXPENSE_TABLE_V5_4_20260808 -->
 <!-- DASHBOARD_UI_VERSION: MOBILE_NAVIGATION_V5_3_20260808 -->
@@ -11,7 +12,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dashboard · ภาพรวมการเงิน</title>
-<link rel="stylesheet" href="./assets/dashboard.css?v=6.0">
+<link rel="stylesheet" href="./assets/dashboard.css?v=7.0">
+<link rel="stylesheet" href="./assets/accounting-suite.css?v=7.1">
 </head>
 <body>
 <div class="app">
@@ -30,9 +32,23 @@
       <button class="navlink mobile-primary" data-p="batches"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/><circle cx="18" cy="17" r="2"/></svg></span><span>เบิกจ่าย</span></button>
       <button class="navlink mobile-primary" data-p="expenses"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v13"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg></span><span>รายจ่าย</span></button>
       <button class="navlink mobile-primary" data-p="income"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21V8"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span><span>รายรับ</span></button>
+      <button class="navlink" data-p="payables"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 3h14v18H5z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span><span>เจ้าหนี้</span></button>
       <button class="navlink" data-p="reconciliation"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h11"/><path d="M4 12h7"/><path d="M4 17h6"/><path d="m14 15 2 2 4-5"/><circle cx="17" cy="14" r="5"/></svg></span><span>กระทบยอด</span></button>
       <button class="navlink mobile-primary mobile-more-nav" id="mobileMoreNav" type="button"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></span><span>เพิ่มเติม</span></button>
       <button class="navlink" data-p="reports"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19V3"/></svg></span><span>รายงานและภาษี</span></button>
+
+      <details class="sidebar-fold accounting-nav-fold">
+        <summary><span class="fold-icon"><svg viewBox="0 0 24 24"><path d="M4 20h16M6 17V8m4 9V8m4 9V8m4 9V8M4 8h16l-8-5z"/></svg></span><span>บัญชี SME</span><b>⌄</b></summary>
+        <div class="sidebar-fold-body">
+          <button class="subnavlink" data-p="search">ค้นหาทั้งระบบ</button>
+          <button class="subnavlink" data-p="contacts">ลูกค้าและผู้ขาย</button>
+          <button class="subnavlink" data-p="period-close">ปิดงวดบัญชี</button>
+          <button class="subnavlink" data-p="tax-center">ศูนย์ภาษี</button>
+          <button class="subnavlink" data-p="ledger">สมุดบัญชี</button>
+          <button class="subnavlink" data-p="migration">ย้ายข้อมูล</button>
+          <button class="subnavlink" data-p="audit">Audit & สิทธิ์</button>
+        </div>
+      </details>
 
       <details class="sidebar-fold">
         <summary><span class="fold-icon"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5"/></svg></span><span>เอกสารและอัตโนมัติ</span><b>⌄</b></summary>
@@ -113,6 +129,19 @@
         </div>
       </div>
       <div class="mobile-more-section">
+        <div class="mobile-more-label">บัญชี SME</div>
+        <div class="mobile-more-list">
+          <button type="button" data-mobile-page="search"><span>ค้นหาทั้งระบบ</span><b>›</b></button>
+          <button type="button" data-mobile-page="payables"><span>เจ้าหนี้และบิลค้างจ่าย</span><b>›</b></button>
+          <button type="button" data-mobile-page="contacts"><span>ลูกค้าและผู้ขาย</span><b>›</b></button>
+          <button type="button" data-mobile-page="period-close"><span>ปิดงวดบัญชี</span><b>›</b></button>
+          <button type="button" data-mobile-page="tax-center"><span>ศูนย์ภาษี</span><b>›</b></button>
+          <button type="button" data-mobile-page="ledger"><span>สมุดบัญชี</span><b>›</b></button>
+          <button type="button" data-mobile-page="migration"><span>ย้ายข้อมูลจากระบบเดิม</span><b>›</b></button>
+          <button type="button" data-mobile-page="audit"><span>Audit & สิทธิ์</span><b>›</b></button>
+        </div>
+      </div>
+      <div class="mobile-more-section">
         <div class="mobile-more-label">ธุรกิจและระบบ</div>
         <div class="mobile-more-list">
           <button type="button" data-mobile-biz="profile"><span>ข้อมูลบริษัท</span><b>›</b></button>
@@ -163,6 +192,7 @@
 
     <!-- OVERVIEW -->
     <section class="page show" id="page-overview">
+      <div id="accountingTodayMount" class="acct7-today-mount"></div>
       <div class="beta-plan-banner" id="betaPlanBanner" hidden>
         <div class="beta-plan-copy"><span class="beta-plan-badge" id="betaPlanBadge">BETA FREE</span><div class="beta-plan-text"><strong id="betaPlanTitle">กำลังโหลดแพ็กเกจ…</strong><span id="betaPlanSub">ตรวจสิทธิ์การใช้งานของบริษัทนี้</span></div></div>
         <button class="btn solid" type="button" data-open-billing>ดูแพ็กเกจ / อัปเกรด</button>
@@ -714,6 +744,16 @@
       <div class="subscription-grid" id="subscriptionList"><div class="email-empty">ยังไม่พบรายจ่ายประจำ</div></div>
     </section>
 
+    <!-- ACCOUNTING SUITE V7 -->
+    <section class="page accounting-suite-page" id="page-search"><div id="acct7Search"></div></section>
+    <section class="page accounting-suite-page" id="page-payables"><div id="acct7Payables"></div></section>
+    <section class="page accounting-suite-page" id="page-contacts"><div id="acct7Contacts"></div></section>
+    <section class="page accounting-suite-page" id="page-period-close"><div id="acct7Period"></div></section>
+    <section class="page accounting-suite-page" id="page-tax-center"><div id="acct7Tax"></div></section>
+    <section class="page accounting-suite-page" id="page-ledger"><div id="acct7Ledger"></div></section>
+    <section class="page accounting-suite-page" id="page-migration"><div id="acct7Migration"></div></section>
+    <section class="page accounting-suite-page" id="page-audit"><div id="acct7Audit"></div></section>
+
     <!-- BUSINESS MANAGEMENT -->
     <section class="page" id="page-business">
       <div class="business-tab show" id="biz-profile">
@@ -925,6 +965,7 @@
 
 <div class="modal" id="modal"><div class="box"><button class="x" onclick="closeGlobalModal()">✕</button><div id="modalBody"></div></div></div>
 
-<script src="./assets/dashboard.js?v=6.0"></script>
+<script src="./assets/dashboard.js?v=7.0"></script>
+<script src="./assets/accounting-suite.js?v=7.1"></script>
 </body>
 </html>
