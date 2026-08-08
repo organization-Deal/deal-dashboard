@@ -2,6 +2,7 @@
 <!-- REIMBURSEMENT_ACCOUNTING_TABLE_V3_2026-08-03 -->
 <!DOCTYPE html>
 <!-- DASHBOARD_UI_VERSION: INCOME_SME_TH_V1_20260808 -->
+<!-- DASHBOARD_UI_VERSION: EXPENSE_TABLE_V5_4_20260808 -->
 <!-- DASHBOARD_UI_VERSION: MOBILE_NAVIGATION_V5_3_20260808 -->
 <!-- DASHBOARD_UI_VERSION: MULTI_BUSINESS_PRO_V4_9_20260807 -->
 <!-- DASHBOARD_UI_VERSION: SIDEBAR_WORKSPACE_CONTROL_V4_8_20260807 -->
@@ -221,6 +222,100 @@
   .ramt .n{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;letter-spacing:-.015em}
   .ramt a{font-size:10.5px;color:var(--ink);cursor:pointer;text-decoration:underline;text-underline-offset:2px;margin-left:5px}
   .empty{display:grid;place-items:center;text-align:center;color:var(--muted);padding:48px 14px;font-size:13px;min-height:150px}
+
+  /* ── Expense register v5.4 ───────────────────────────── */
+  .expense-page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:2px 0 14px}
+  .expense-page-head h3{margin:3px 0 4px;font-size:22px;letter-spacing:-.035em}
+  .expense-page-head p{margin:0;color:var(--muted);font-size:11.5px;line-height:1.5}
+  .expense-register-card{padding:0;margin:0;overflow:visible}
+  .expense-status-tabs{display:flex;align-items:center;gap:5px;padding:15px 17px 10px;border-bottom:1px solid #ededf0;overflow-x:auto;scrollbar-width:none}
+  .expense-status-tabs::-webkit-scrollbar{display:none}
+  .expense-status-tab{border:0;background:transparent;color:#737379;border-radius:9px;padding:8px 10px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}
+  .expense-status-tab:hover{background:#f3f3f5;color:#111}
+  .expense-status-tab.active{background:#111;color:#fff}
+  .expense-status-tab .count{font-size:9px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;display:grid;place-items:center;background:rgba(0,0,0,.06);color:#777}
+  .expense-status-tab.active .count{background:rgba(255,255,255,.16);color:#fff}
+  .expense-toolbar{padding:12px 17px;margin:0;border-bottom:1px solid #ededf0;gap:7px;flex-wrap:nowrap}
+  .expense-toolbar input[type=text]{min-width:230px}
+  .expense-toolbar select{min-width:128px;max-width:190px}
+  .expense-toolbar #fDateBasis{min-width:174px}
+  .expense-toolbar #fSort{min-width:128px}
+  .expense-toolbar #expCsv{margin-left:auto;white-space:nowrap}
+  .expense-list-meta{padding:10px 17px;font-size:10.8px;color:var(--muted);border-bottom:1px solid #ededf0;background:#fbfbfc}
+  .expense-table-wrap{max-height:calc(100vh - 315px);min-height:300px;overflow:auto;border-radius:0 0 var(--radius-xl) var(--radius-xl);background:#fff}
+  .expense-table{min-width:1020px;font-size:12px}
+  .expense-table thead{position:sticky;top:0;z-index:4}
+  .expense-table th{padding:10px 12px;background:rgba(250,250,251,.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-size:10px;letter-spacing:.01em;color:#7a7a80;white-space:nowrap}
+  .expense-table td{padding:12px;border-bottom:1px solid #efeff2;vertical-align:middle;background:#fff}
+  .expense-table tbody tr{cursor:pointer}
+  .expense-table tbody tr:hover td{background:#fafafa}
+  .expense-date-main{display:block;font-weight:700;font-size:11.8px;white-space:nowrap}
+  .expense-date-sub{display:block;margin-top:3px;color:#96969b;font-size:9.5px;white-space:nowrap}
+  .expense-vendor{min-width:0}
+  .expense-vendor strong{display:block;max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;letter-spacing:-.01em}
+  .expense-vendor small{display:block;max-width:390px;margin-top:3px;color:#8a8a90;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
+  .expense-category{display:inline-flex;max-width:150px;border-radius:999px;padding:4px 8px;background:#f2f2f5;color:#626268;font-size:9.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .expense-sender{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#444}
+  .expense-amount{font-size:12.5px;font-weight:750;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .expense-state{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 8px;font-size:9.5px;font-weight:750;background:#f1f1f4;color:#65656b;white-space:nowrap}
+  .expense-state:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+  .expense-state.paid{background:#edf8ef;color:#237a3b}
+  .expense-state.needs-action{background:#fff3f1;color:#b42318}
+  .expense-docs{display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:150px}
+  .expense-doc-link{display:inline-flex;align-items:center;gap:4px;border:1px solid #e2e2e6;border-radius:8px;padding:5px 7px;background:#fff;color:#333;text-decoration:none;font-size:9.5px;font-weight:650;white-space:nowrap}
+  .expense-doc-link:hover{border-color:#bdbdc3;background:#f8f8fa}
+  .expense-doc-empty{font-size:10px;color:#aaa}
+  .expense-detail-col{width:78px;text-align:right!important}
+  .expense-more-btn{border:1px solid #dfdfe3;background:#fff;border-radius:9px;padding:6px 9px;font-size:10px;font-weight:700;color:#333;cursor:pointer;white-space:nowrap}
+  .expense-more-btn:hover{background:#f5f5f7;border-color:#c9c9ce}
+  .expense-empty-row td{padding:0!important}
+  .expense-empty-state{min-height:260px;display:grid;place-items:center;text-align:center;color:#8d8d93;font-size:12px}
+
+  .expense-drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.22);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:1190}
+  .expense-drawer{position:fixed;z-index:1200;top:0;right:0;width:min(430px,94vw);height:100dvh;background:#fff;box-shadow:-18px 0 60px rgba(0,0,0,.15);transform:translateX(105%);transition:transform .22s ease;display:flex;flex-direction:column}
+  .expense-drawer.open{transform:translateX(0)}
+  .expense-drawer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 20px 15px;border-bottom:1px solid #ededf0}
+  .expense-drawer-head span{display:block;font-size:9px;color:#999;letter-spacing:.08em;font-weight:750}
+  .expense-drawer-head h3{margin:4px 0 0;font-size:20px;letter-spacing:-.03em}
+  .expense-drawer-close{width:34px;height:34px;border:0;border-radius:50%;background:#f1f1f4;color:#333;font-size:20px;cursor:pointer}
+  .expense-drawer-body{padding:18px 20px 28px;overflow:auto}
+  .expense-drawer-amount{font-size:31px;font-weight:800;letter-spacing:-.045em;margin-bottom:6px}
+  .expense-drawer-vendor{font-size:15px;font-weight:750;margin-bottom:4px}
+  .expense-drawer-note{color:var(--muted);font-size:11px;line-height:1.55;margin-bottom:15px}
+  .expense-detail-grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid #e7e7ea;border-radius:15px;overflow:hidden;margin:15px 0}
+  .expense-detail-grid>div{padding:11px 12px;border-bottom:1px solid #ededf0;border-right:1px solid #ededf0;min-width:0}
+  .expense-detail-grid>div:nth-child(2n){border-right:0}.expense-detail-grid>div:nth-last-child(-n+2){border-bottom:0}
+  .expense-detail-grid span{display:block;color:#96969c;font-size:9px;margin-bottom:4px}
+  .expense-detail-grid strong{display:block;font-size:11.5px;overflow-wrap:anywhere}
+  .expense-drawer-section{padding-top:14px;margin-top:14px;border-top:1px solid #ededf0}
+  .expense-drawer-section h4{margin:0 0 9px;font-size:11px;color:#777}
+  .expense-drawer-docs{display:grid;grid-template-columns:1fr;gap:7px}
+  .expense-drawer-docs a{display:flex;align-items:center;justify-content:space-between;border:1px solid #e1e1e5;border-radius:11px;padding:10px 11px;color:#111;text-decoration:none;font-size:11px;font-weight:700}
+  .expense-drawer-docs a:after{content:"↗";color:#999}
+
+  @media(max-width:1180px){
+    .expense-toolbar{flex-wrap:wrap}.expense-toolbar input[type=text]{flex:1 1 320px}.expense-toolbar #expCsv{margin-left:0}
+    .expense-table{min-width:930px}.expense-table th,.expense-table td{padding-left:9px;padding-right:9px}
+  }
+  @media(max-width:820px){
+    .expense-page-head{display:none}
+    .expense-register-card{background:transparent;border:0;box-shadow:none;padding:0;overflow:visible}
+    .expense-status-tabs{margin:0 -1px 9px;padding:3px;background:#e9e9ec;border:0;border-radius:12px;gap:2px}
+    .expense-status-tab{flex:0 0 auto;padding:7px 9px;font-size:10.5px}.expense-status-tab.active{background:#fff;color:#111;box-shadow:0 1px 5px rgba(0,0,0,.08)}.expense-status-tab.active .count{background:#efeff2;color:#666}
+    .expense-toolbar{display:grid;grid-template-columns:1fr 1fr;padding:0 0 10px;border:0;gap:7px}
+    .expense-toolbar input[type=text]{grid-column:1/-1;min-width:0;width:100%}.expense-toolbar select,.expense-toolbar #fDateBasis,.expense-toolbar #fSort{min-width:0;max-width:none;width:100%}.expense-toolbar #expCsv{width:100%;justify-content:center;margin:0}
+    .expense-list-meta{padding:7px 2px 10px;border:0;background:transparent}
+    .expense-table-wrap{max-height:none;min-height:0;overflow:visible;background:transparent;border-radius:0}
+    .expense-table{display:block;min-width:0}.expense-table thead{display:none}.expense-table tbody{display:grid;gap:9px}
+    .expense-table tr:not(.expense-empty-row){display:grid;grid-template-columns:minmax(0,1fr) auto;background:#fff;border:1px solid #e5e5e8;border-radius:17px;padding:13px;gap:9px 12px;box-shadow:none}
+    .expense-table td{display:block;border:0!important;padding:0!important;background:transparent!important;min-width:0}.expense-table tr:hover td{background:transparent!important}
+    .expense-table td[data-label]:before{content:attr(data-label);display:block;color:#9a9aa0;font-size:8.8px;margin-bottom:3px;font-weight:650}
+    .expense-table .expense-date-cell{grid-column:1/2}.expense-table .expense-vendor-cell{grid-column:1/-1;grid-row:2}.expense-table .expense-category-cell{grid-column:1/2}.expense-table .expense-sender-cell{grid-column:2/3}.expense-table .expense-amount-cell{grid-column:2/3;grid-row:1;text-align:right}.expense-table .expense-status-cell{grid-column:1/2}.expense-table .expense-doc-cell{grid-column:1/-1;padding-top:8px!important;border-top:1px solid #ededf0!important}.expense-table .expense-detail-cell{display:none}
+    .expense-vendor strong{max-width:none;font-size:13px}.expense-vendor small{max-width:none;white-space:normal;line-height:1.4}.expense-docs{min-width:0}.expense-doc-link{padding:7px 8px}
+    .expense-date-sub{display:none}.expense-category{max-width:100%}.expense-sender{max-width:140px;text-align:right}
+    .expense-drawer{top:auto;bottom:0;width:100%;height:auto;max-height:88dvh;border-radius:24px 24px 0 0;transform:translateY(105%)}.expense-drawer.open{transform:translateY(0)}
+    .expense-drawer-body{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+  }
 
   /* tables */
   table{width:100%;border-collapse:separate;border-spacing:0;font-size:12.8px}
@@ -1180,19 +1275,53 @@
 
     <!-- EXPENSES -->
     <section class="page" id="page-expenses">
-      <div class="card">
-        <div class="toolbar">
-          <input type="text" id="q" placeholder="ค้นหาร้าน / รายละเอียด…" />
-          <select id="fStatus"><option value="">ทุกสถานะ</option><option>รอเบิก</option><option>จ่ายแล้ว</option></select>
+      <div class="expense-page-head">
+        <div>
+          <div class="head-kicker">EXPENSE REGISTER</div>
+          <h3>ทะเบียนรายจ่าย</h3>
+          <p>ดูรายจ่ายเป็นตารางเดียว ค้นหา กรอง และเปิดเอกสารได้จากแถวเดียวกัน</p>
+        </div>
+      </div>
+      <div class="card expense-register-card">
+        <div class="expense-status-tabs" id="expenseStatusTabs" role="tablist" aria-label="กรองสถานะรายจ่าย"></div>
+        <input type="hidden" id="fStatus" value="">
+        <div class="toolbar expense-toolbar">
+          <input type="text" id="q" placeholder="ค้นหาร้าน รายละเอียด หรือผู้เบิก…" />
           <select id="fCat"></select>
+          <select id="fSender"><option value="">ผู้เบิกทั้งหมด</option></select>
           <select id="fDateBasis"><option value="transaction">ช่วงเดือน: วันที่รายการ</option><option value="recorded">ช่วงเดือน: วันที่บันทึก</option></select>
           <select id="fSort"><option value="new">ล่าสุดก่อน</option><option value="old">เก่าสุดก่อน</option><option value="hi">ยอดมาก→น้อย</option><option value="lo">ยอดน้อย→มาก</option></select>
           <button class="btn" id="expCsv">ส่งออก CSV</button>
         </div>
-        <div class="cs" id="expSum" style="margin-bottom:10px"></div>
-        <div id="rows"></div>
+        <div class="expense-list-meta" id="expSum"></div>
+        <div class="expense-table-wrap">
+          <table class="expense-table" aria-label="ตารางรายจ่าย">
+            <thead>
+              <tr>
+                <th>วันที่รายการ</th>
+                <th>ร้านค้า / รายละเอียด</th>
+                <th>หมวด</th>
+                <th>ผู้เบิก</th>
+                <th class="num">ยอดสุทธิ</th>
+                <th>สถานะ</th>
+                <th>เอกสาร</th>
+                <th class="expense-detail-col">รายละเอียด</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
       </div>
     </section>
+
+    <div class="expense-drawer-backdrop" id="expenseDrawerBackdrop" hidden></div>
+    <aside class="expense-drawer" id="expenseDrawer" aria-hidden="true" aria-labelledby="expenseDrawerTitle">
+      <div class="expense-drawer-head">
+        <div><span>EXPENSE DETAIL</span><h3 id="expenseDrawerTitle">รายละเอียดรายจ่าย</h3></div>
+        <button type="button" class="expense-drawer-close" id="expenseDrawerClose" aria-label="ปิด">×</button>
+      </div>
+      <div class="expense-drawer-body" id="expenseDrawerBody"></div>
+    </aside>
 
     <!-- INCOME / ACCOUNTS RECEIVABLE -->
     <section class="page" id="page-income">
@@ -2153,15 +2282,52 @@ function rowHTML(r,{primary="transaction"}={}){
 
 /* ---------- EXPENSES ---------- */
 function buildCatFilter(){
-  const current=el("fCat").value;
-  const cats=[...new Set(ALL.map(r=>r.category).filter(Boolean))];
-  el("fCat").innerHTML='<option value="">ทุกหมวด</option>'+cats.map(c=>`<option>${c}</option>`).join("");
-  if([...el("fCat").options].some(o=>o.value===current)) el("fCat").value=current;
+  const node=el("fCat"); if(!node)return;
+  const current=node.value;
+  const cats=[...new Set(ALL.map(r=>r.category).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),"th"));
+  node.innerHTML='<option value="">ทุกหมวด</option>'+cats.map(c=>`<option value="${escAttr(c)}">${esc(c)}</option>`).join("");
+  if([...node.options].some(o=>o.value===current)) node.value=current;
+}
+function buildSenderFilter(){
+  const node=el("fSender"); if(!node)return;
+  const current=node.value;
+  const senders=[...new Set(ALL.map(r=>String(r.sender||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"th"));
+  node.innerHTML='<option value="">ผู้เบิกทั้งหมด</option>'+senders.map(v=>`<option value="${escAttr(v)}">${esc(v)}</option>`).join("");
+  if([...node.options].some(o=>o.value===current)) node.value=current;
+}
+function expenseStatusClass(status){
+  const s=String(status||"รอเบิก");
+  if(s==="จ่ายแล้ว")return "paid";
+  if(/ต้องแก้|ตีกลับ|ไม่ผ่าน|ยกเลิก|ปฏิเสธ/.test(s))return "needs-action";
+  return "";
+}
+function renderExpenseStatusTabs(){
+  const node=el("expenseStatusTabs"); if(!node)return;
+  const basis=el("fDateBasis")?.value||"transaction";
+  const rows=scoped(basis);
+  const counts={}; rows.forEach(r=>{const st=String(r.status||"รอเบิก");counts[st]=(counts[st]||0)+1;});
+  const preferred=["รอเบิก","จ่ายแล้ว"];
+  const rest=Object.keys(counts).filter(x=>!preferred.includes(x)).sort((a,b)=>a.localeCompare(b,"th"));
+  const statuses=["",...preferred,...rest];
+  const active=el("fStatus")?.value||"";
+  node.innerHTML=statuses.map(st=>{
+    const label=st||"ทั้งหมด",count=st?(counts[st]||0):rows.length;
+    return `<button type="button" class="expense-status-tab ${active===st?"active":""}" data-exp-status="${escAttr(st)}" role="tab" aria-selected="${active===st?"true":"false"}"><span>${esc(label)}</span><span class="count">${count}</span></button>`;
+  }).join("");
 }
 function filteredExp(){
-  const q=el("q").value.trim().toLowerCase(),st=el("fStatus").value,ct=el("fCat").value,so=el("fSort")?el("fSort").value:"new";
+  const q=(el("q")?.value||"").trim().toLowerCase(),st=el("fStatus")?.value||"",ct=el("fCat")?.value||"",sender=el("fSender")?.value||"",so=el("fSort")?.value||"new";
   const basis=el("fDateBasis")?.value||"transaction";
-  let list=scoped(basis).filter(r=>(!st||r.status===st)&&(!ct||r.category===ct)&&(!q||((r.vendor||"")+(r.note||"")+(r.sender||"")).toLowerCase().includes(q)));
+  let list=scoped(basis).filter(r=>{
+    if(st&&String(r.status||"รอเบิก")!==st)return false;
+    if(ct&&String(r.category||"")!==ct)return false;
+    if(sender&&String(r.sender||"")!==sender)return false;
+    if(q){
+      const hay=[r.vendor,r.note,r.sender,r.category,r.status,r.amount].filter(v=>v!=null).join(" ").toLowerCase();
+      if(!hay.includes(q))return false;
+    }
+    return true;
+  });
   list.sort((a,b)=>{
     if(so==="hi")return +b.amount- +a.amount;
     if(so==="lo")return +a.amount- +b.amount;
@@ -2170,11 +2336,58 @@ function filteredExp(){
   });
   return list;
 }
+function expenseDocsHTML(r,{drawer=false}={}){
+  const docs=[];
+  if(r.img)docs.push(["หลักฐาน",r.img]);
+  if(r.claimPdfUrl)docs.push(["ใบขอเบิก",r.claimPdfUrl]);
+  if(r.receiptPdfUrl)docs.push(["ใบแทน",r.receiptPdfUrl]);
+  if(!docs.length)return drawer?'<div class="expense-doc-empty">ยังไม่มีเอกสารแนบ</div>':'<span class="expense-doc-empty">—</span>';
+  if(drawer)return docs.map(([label,url])=>`<a href="${escAttr(url)}" target="_blank" rel="noopener">${esc(label)}</a>`).join("");
+  return docs.map(([label,url])=>`<a class="expense-doc-link" href="${escAttr(url)}" target="_blank" rel="noopener">${esc(label)}</a>`).join("");
+}
+function expenseRowHTML(r){
+  const idx=ALL.indexOf(r),tx=pdate(r.dateISO||r.date),cr=cdate(r.createdAt),status=String(r.status||"รอเบิก");
+  return `<tr data-exp-open="${idx}">
+    <td class="expense-date-cell" data-label="วันที่รายการ"><span class="expense-date-main">${fmtDate(tx)}</span><span class="expense-date-sub">บันทึก ${fmtDate(cr,true)}</span>${gapBadge(r)}</td>
+    <td class="expense-vendor-cell"><div class="expense-vendor"><strong>${esc(r.vendor||"ไม่ระบุร้านค้า")}</strong><small>${esc(r.note||"ไม่มีรายละเอียด")}</small></div></td>
+    <td class="expense-category-cell" data-label="หมวด"><span class="expense-category">${esc(r.category||"ไม่ระบุ")}</span></td>
+    <td class="expense-sender-cell" data-label="ผู้เบิก"><span class="expense-sender">${esc(r.sender||"—")}</span></td>
+    <td class="num expense-amount-cell" data-label="ยอดสุทธิ"><span class="expense-amount">${baht(r.amount)}</span></td>
+    <td class="expense-status-cell" data-label="สถานะ"><span class="expense-state ${expenseStatusClass(status)}">${esc(status)}</span></td>
+    <td class="expense-doc-cell" data-label="เอกสาร"><div class="expense-docs">${expenseDocsHTML(r)}</div></td>
+    <td class="expense-detail-cell expense-detail-col"><button type="button" class="expense-more-btn" data-exp-open="${idx}">ดู</button></td>
+  </tr>`;
+}
 function renderExp(){
-  const list=filteredExp();
-  const sum=list.reduce((s,r)=>s+ +r.amount,0);
-  el("expSum").textContent=`พบ ${list.length} รายการ · รวม ${baht(sum)}`;
-  el("rows").innerHTML=list.length?list.map(rowHTML).join(""):'<div class="empty">ไม่พบรายการที่ค้นหา</div>';
+  renderExpenseStatusTabs();
+  const list=filteredExp(),sum=list.reduce((s,r)=>s+ +r.amount,0),paid=list.filter(r=>String(r.status)==="จ่ายแล้ว"),pending=list.filter(r=>String(r.status)!=="จ่ายแล้ว");
+  el("expSum").textContent=`แสดง ${list.length} รายการ · รวม ${baht(sum)} · รอดำเนินการ ${pending.length} · จ่ายแล้ว ${paid.length}`;
+  el("rows").innerHTML=list.length?list.map(expenseRowHTML).join(""):'<tr class="expense-empty-row"><td colspan="8"><div class="expense-empty-state">ไม่พบรายการตามตัวกรองนี้</div></td></tr>';
+}
+function openExpenseDrawer(index){
+  const r=ALL[Number(index)]; if(!r)return;
+  const tx=pdate(r.dateISO||r.date),cr=cdate(r.createdAt),status=String(r.status||"รอเบิก");
+  el("expenseDrawerTitle").textContent=r.vendor||"รายละเอียดรายจ่าย";
+  el("expenseDrawerBody").innerHTML=`
+    <div class="expense-drawer-amount">${baht(r.amount)}</div>
+    <div class="expense-drawer-vendor">${esc(r.vendor||"ไม่ระบุร้านค้า")}</div>
+    <div class="expense-drawer-note">${esc(r.note||"ไม่มีรายละเอียดเพิ่มเติม")}</div>
+    <span class="expense-state ${expenseStatusClass(status)}">${esc(status)}</span>
+    <div class="expense-detail-grid">
+      <div><span>วันที่รายการ</span><strong>${fmtDate(tx)}</strong></div>
+      <div><span>วันที่บันทึก</span><strong>${fmtDate(cr,true)}</strong></div>
+      <div><span>หมวด</span><strong>${esc(r.category||"—")}</strong></div>
+      <div><span>ผู้เบิก</span><strong>${esc(r.sender||"—")}</strong></div>
+    </div>
+    <div class="expense-drawer-section"><h4>เอกสารประกอบ</h4><div class="expense-drawer-docs">${expenseDocsHTML(r,{drawer:true})}</div></div>`;
+  const drawer=el("expenseDrawer"),backdrop=el("expenseDrawerBackdrop");
+  backdrop.hidden=false; drawer.setAttribute("aria-hidden","false");
+  requestAnimationFrame(()=>drawer.classList.add("open"));
+}
+function closeExpenseDrawer(){
+  const drawer=el("expenseDrawer"),backdrop=el("expenseDrawerBackdrop"); if(!drawer)return;
+  drawer.classList.remove("open"); drawer.setAttribute("aria-hidden","true");
+  setTimeout(()=>{if(backdrop&&!drawer.classList.contains("open"))backdrop.hidden=true;},220);
 }
 
 /* ---------- REIMBURSE ---------- */
@@ -2933,7 +3146,7 @@ function openEmailEditor(id){
 
 /* ---------- REIMBURSEMENT BATCHES: ONE ACCOUNTING TABLE V4 ---------- */
 const BATCH_WEEKDAYS=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
-const DASHBOARD_UI_VERSION="INCOME_SME_TH_V1_20260808";
+const DASHBOARD_UI_VERSION="EXPENSE_TABLE_V5_4_ACCOUNT_DIRECTION_20260808";
 console.info("Dashboard UI",DASHBOARD_UI_VERSION);
 const EXPECTED_BATCH_CONTRACT="REIMBURSEMENT_ACCOUNTING_TABLE_V6";
 const BATCH_STATUS_META={
@@ -3610,8 +3823,13 @@ document.addEventListener("click",e=>{const finance=e.target.closest("[data-open
 el("rangeSel").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
   el("rangeSel").querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");RANGE=b.dataset.r;drawScoped();
 }));
-["q","fStatus","fCat","fDateBasis","fSort"].forEach(id=>{const e=el(id);if(e)e.addEventListener("input",renderExp);});
+["q","fStatus","fCat","fSender","fDateBasis","fSort"].forEach(id=>{const e=el(id);if(e)e.addEventListener("input",renderExp);});
 el("expCsv").onclick=()=>download("expenses.csv",toCSV(filteredExp()));
+if(el("expenseStatusTabs"))el("expenseStatusTabs").addEventListener("click",e=>{const b=e.target.closest("[data-exp-status]");if(!b)return;el("fStatus").value=b.dataset.expStatus||"";renderExp();});
+if(el("rows"))el("rows").addEventListener("click",e=>{if(e.target.closest("a"))return;const open=e.target.closest("[data-exp-open]");if(open)openExpenseDrawer(open.dataset.expOpen);});
+if(el("expenseDrawerClose"))el("expenseDrawerClose").onclick=closeExpenseDrawer;
+if(el("expenseDrawerBackdrop"))el("expenseDrawerBackdrop").onclick=closeExpenseDrawer;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&el("expenseDrawer")?.classList.contains("open"))closeExpenseDrawer();});
 el("repMonth").onchange=renderReport;
 el("repCsv").onclick=()=>download("report.csv",toCSV(repData()));
 el("repPrint").onclick=()=>window.print();
@@ -3619,7 +3837,7 @@ el("repPrint").onclick=()=>window.print();
 if(el("docCsv"))el("docCsv").onclick=exportDocumentCSV;
 
 function drawScoped(){renderKPIs();renderTrend();renderCats();renderVendors();renderRecent();renderExp();}
-function drawAll(){buildCatFilter();buildRepMonths();drawScoped();renderReim();renderReport();renderBills();renderActivity();renderSettings();renderBusiness();renderOnboarding();renderEmailInbox();renderSubscriptions();renderBatches();renderReconciliation();
+function drawAll(){buildCatFilter();buildSenderFilter();buildRepMonths();drawScoped();renderReim();renderReport();renderBills();renderActivity();renderSettings();renderBusiness();renderOnboarding();renderEmailInbox();renderSubscriptions();renderBatches();renderReconciliation();
   el("coName").textContent=SETTINGS.company_name||CONAME;
   // ส่ง k ต่อไปทุกลิงก์ ไม่งั้นหน้าปลายทางจะโดน 401
   const qs="?tenant="+encodeURIComponent(TENANT)+"&k="+encodeURIComponent(K);
