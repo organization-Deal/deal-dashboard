@@ -8,6 +8,7 @@ const ROUTE_PAGE_RAW = QS.get("page") || "overview";
 const ROUTE_PAGE = ROUTE_PAGE_RAW === "reimburse" ? "batches" : ROUTE_PAGE_RAW;
 const ROUTE_BIZ = QS.get("biz") || "profile";
 const EXPENSE_DATA_PAGES = new Set(["overview","expenses","reports","bills","activity","settings","business"]);
+const ACCOUNTING_SUITE_PAGES = new Set(["search","payables","contacts","period-close","tax-center","ledger","migration","audit"]);
 let ROUTE_BOOTSTRAPPING = true;
 let CONNECTED = false;
 let SETTINGS = {};
@@ -1826,7 +1827,7 @@ function download(name,text){
 }
 
 /* ---------- NAV / DRAW ---------- */
-const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"เบิกจ่าย",batches:"เบิกจ่าย",reconciliation:"กระทบยอดธนาคาร",reports:"รายงานและภาษี",bills:"ศูนย์เอกสารบัญชี",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",billing:"แพ็กเกจ",settings:"ตั้งค่าการใช้งาน",business:"จัดการธุรกิจ"};
+const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",search:"ค้นหาทั้งระบบ",payables:"เจ้าหนี้",contacts:"ลูกค้าและผู้ขาย","period-close":"ปิดงวดบัญชี","tax-center":"ศูนย์ภาษี",ledger:"สมุดบัญชี",migration:"ย้ายข้อมูล",audit:"Audit & สิทธิ์",reimburse:"เบิกจ่าย",batches:"เบิกจ่าย",reconciliation:"กระทบยอดธนาคาร",reports:"รายงานและภาษี",bills:"ศูนย์เอกสารบัญชี",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",billing:"แพ็กเกจ",settings:"ตั้งค่าการใช้งาน",business:"จัดการธุรกิจ"};
 
 function closeMobileMore(){const box=el("mobileMoreBackdrop");if(box)box.hidden=true;document.body.classList.remove("mobile-more-open");}
 function openMobileMore(){const box=el("mobileMoreBackdrop");if(!box)return;closeBusinessSwitcher();box.hidden=false;document.body.classList.add("mobile-more-open");}
@@ -2387,9 +2388,12 @@ function refreshVisiblePage({manual=false}={}){
   const incomeOpen=el("page-income")?.classList.contains("show");
   const emailOpen=el("page-email")?.classList.contains("show")||el("page-subscriptions")?.classList.contains("show");
   const billingOpen=el("page-billing")?.classList.contains("show");
+  const currentKey=currentPageKey();
 
-  // หน้าเบิกจ่ายและกระทบยอดใช้ API ของตัวเอง ไม่ยิง /api/expenses ซ้ำ
-  if(batchOpen){
+  // หน้าเบิกจ่าย/บัญชี v7 ใช้ API ของตัวเอง ไม่ยิง /api/expenses ซ้ำ
+  if(ACCOUNTING_SUITE_PAGES.has(currentKey)){
+    if(manual)window.AccountingSuiteRefresh?.(currentKey);
+  }else if(batchOpen){
     if(BATCH_SELECTED.size===0&&REVIEW_BATCH_SELECTED.size===0&&TRANSFER_SELECTED.size===0)refreshBatchData({quiet:true});
   }else if(reconciliationOpen){
     refreshReconciliation({quiet:true});
@@ -2461,7 +2465,7 @@ async function load(){
   if(primaryOk!==false)startRealtime();
 }
 
-el("syncBtn").addEventListener("click",async()=>{const reconOpen=el("page-reconciliation")?.classList.contains("show");const incomeOpen=el("page-income")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");const billingOpen=el("page-billing")?.classList.contains("show");if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings(),refreshWorkspaceLinks()]);else if(incomeOpen)await Promise.all([refreshIncome({withReconciliation:incomeReconModalOpen()}),refreshSettings(),refreshWorkspaceLinks()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings(),refreshWorkspaceLinks()]);else if(billingOpen)await Promise.all([refreshSubscription(),refreshBusinesses(),refreshSettings(),refreshWorkspaceLinks()]);else await Promise.all([refreshData({manual:true}),refreshSettings(),refreshWorkspaceLinks()]);});
+el("syncBtn").addEventListener("click",async()=>{const current=currentPageKey();const reconOpen=el("page-reconciliation")?.classList.contains("show");const incomeOpen=el("page-income")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");const billingOpen=el("page-billing")?.classList.contains("show");if(ACCOUNTING_SUITE_PAGES.has(current)){await Promise.all([window.AccountingSuiteRefresh?.(current),refreshSettings(),refreshWorkspaceLinks()]);}else if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings(),refreshWorkspaceLinks()]);else if(incomeOpen)await Promise.all([refreshIncome({withReconciliation:incomeReconModalOpen()}),refreshSettings(),refreshWorkspaceLinks()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings(),refreshWorkspaceLinks()]);else if(billingOpen)await Promise.all([refreshSubscription(),refreshBusinesses(),refreshSettings(),refreshWorkspaceLinks()]);else await Promise.all([refreshData({manual:true}),refreshSettings(),refreshWorkspaceLinks()]);});
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden&&HAS_LOADED){refreshVisiblePage();refreshSettingsIfAssetChanged();}
 });
