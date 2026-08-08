@@ -65,6 +65,8 @@
     -webkit-backdrop-filter:saturate(180%) blur(24px);z-index:20;
   }
   .brand{display:flex;align-items:center;gap:12px;padding:24px 22px 22px}
+  .perf-pager{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:10px 2px 0;color:var(--muted);font-size:11px}
+  .perf-pager[hidden]{display:none!important}.perf-pager button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 10px;cursor:pointer;color:var(--ink);font-weight:650}.perf-pager button:disabled{opacity:.35;cursor:default}.perf-pager .page-info{min-width:120px;text-align:center}
   .business-switcher-primary{padding:22px 14px 14px;border-bottom:1px solid rgba(0,0,0,.055);margin-bottom:2px}
   .business-switcher-primary .business-switcher-btn{min-height:56px;border-radius:16px;padding:8px 10px;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.04)}
   .business-switcher-primary .business-switcher-avatar{width:36px;height:36px;border-radius:11px}
@@ -1104,7 +1106,6 @@
     .income-recon-import{grid-template-columns:1fr 1fr}.income-recon-import>div:first-child{grid-column:1/-1}.income-recon-summary{grid-template-columns:1fr 1fr}.income-recon-row{grid-template-columns:1fr}.income-recon-actions{justify-content:flex-start}.income-recon-manual{display:grid;grid-template-columns:1fr auto}.income-recon-manual select{min-width:0;max-width:none;width:100%}
   }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -1317,6 +1318,7 @@
             <tbody id="rows"></tbody>
           </table>
         </div>
+        <div class="perf-pager" id="expensePager" hidden></div>
       </div>
     </section>
 
@@ -1373,6 +1375,7 @@
             <tbody id="incomeBody"><tr><td colspan="7"><div class="income-empty">กำลังโหลดรายรับ…</div></td></tr></tbody>
           </table>
         </div>
+        <div class="perf-pager" id="incomePager" hidden></div>
       </div>
     </section>
 
@@ -2014,7 +2017,7 @@
   </div>
 </div>
 
-<div class="modal" id="modal"><div class="box"><button class="x" onclick="document.getElementById('modal').classList.remove('show')">✕</button><div id="modalBody"></div></div></div>
+<div class="modal" id="modal"><div class="box"><button class="x" onclick="closeGlobalModal()">✕</button><div id="modalBody"></div></div></div>
 
 <script>
 const API = "https://accoutingsuppor02.organization-23c.workers.dev/api/expenses";
@@ -2056,10 +2059,15 @@ const BATCH_SELECTED = new Set();
 const REVIEW_BATCH_SELECTED = new Set();
 const TRANSFER_SELECTED = new Set();
 
-// ลดการอ่าน Google Sheets: ซิงก์อัตโนมัติทุก 30 วินาที และอ่านเฉพาะหน้าที่กำลังเปิด
-// ปุ่ม “อัปเดต” ยังสั่งซิงก์ทันทีได้
-const REFRESH_MS = 30000;
-const FOREGROUND_DEBOUNCE_MS = 5000;
+// Performance v5.8: ยังซิงก์อัตโนมัติ แต่ลด request/render churn ที่ไม่จำเป็น
+// ปุ่ม “อัปเดต” ยังสั่งซิงก์ทันทีได้เหมือนเดิม
+const REFRESH_MS = 60000;
+const FOREGROUND_DEBOUNCE_MS = 15000;
+const EXPENSE_PAGE_SIZE = 100;
+const INCOME_PAGE_SIZE = 100;
+let EXPENSE_PAGE = 1;
+let INCOME_PAGE = 1;
+let XLSX_LOADING_PROMISE = null;
 let ALL = [];
 let LAST_SIGNATURE = "";
 let REFRESH_TIMER = null;
@@ -2074,6 +2082,49 @@ let COMPANY_SETUP_ACTIVE="";
 
 
 const el=id=>document.getElementById(id);
+
+function currentPageKey(){
+  const node=document.querySelector(".page.show");
+  return node?.id?.replace(/^page-/,"")||"overview";
+}
+function releasePageDom(page){
+  const ids={expenses:["rows","expenseDrawerBody"],income:["incomeBody","incomeReconList"],bills:["billGrid"],activity:["activityRows"],email:["emailList"],subscriptions:["subscriptionList"],batches:["batchMasterBody","batchDrawerBody"],reconciliation:["reconBody","reconDrawerBody"],reports:["repCatBody"]}[page]||[];
+  ids.forEach(id=>{const node=el(id);if(node)node.replaceChildren();});
+}
+function renderLocalPage(page=currentPageKey()){
+  if(page==="overview"){renderKPIs();renderTrend();renderCats();renderVendors();renderRecent();return;}
+  if(page==="expenses"){renderExp();return;}
+  if(page==="reports"){buildRepMonths();renderReport();return;}
+  if(page==="bills"){renderBills();return;}
+  if(page==="activity"){renderActivity();return;}
+  if(page==="settings"){renderSettings();return;}
+  if(page==="business"){renderBusiness();return;}
+  if(page==="reimburse"){renderReim();return;}
+  if(page==="email"){renderEmailInbox();return;}
+  if(page==="subscriptions"){renderSubscriptions();return;}
+  if(page==="batches"){renderBatches();return;}
+  if(page==="reconciliation"){renderReconciliation();return;}
+  if(page==="income"){renderIncome();return;}
+  if(page==="billing"){renderSubscription();return;}
+}
+function closeGlobalModal(){
+  const modal=el("modal"),body=el("modalBody");
+  if(modal)modal.classList.remove("show");
+  setTimeout(()=>{if(body&&(!modal||!modal.classList.contains("show")))body.replaceChildren();},80);
+}
+function ensureXlsx(){
+  if(window.XLSX)return Promise.resolve(window.XLSX);
+  if(XLSX_LOADING_PROMISE)return XLSX_LOADING_PROMISE;
+  XLSX_LOADING_PROMISE=new Promise((resolve,reject)=>{
+    const s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+    s.async=true;
+    s.onload=()=>window.XLSX?resolve(window.XLSX):reject(new Error("โหลดตัวอ่าน Excel ไม่สำเร็จ"));
+    s.onerror=()=>reject(new Error("โหลดตัวอ่าน Excel ไม่สำเร็จ กรุณาลองใหม่หรือใช้ CSV"));
+    document.head.appendChild(s);
+  }).catch(err=>{XLSX_LOADING_PROMISE=null;throw err;});
+  return XLSX_LOADING_PROMISE;
+}
 
 // แสดงสถานะรอสำหรับทุกคำสั่ง POST และกันการกดซ้ำระหว่างระบบทำงาน
 let OPERATION_DEPTH=0;
@@ -2367,9 +2418,13 @@ function expenseRowHTML(r){
 function renderExp(){
   renderExpenseStatusTabs();
   const list=filteredExp(),sum=list.reduce((s,r)=>s+ +r.amount,0),paid=list.filter(r=>String(r.status)==="จ่ายแล้ว"),pending=list.filter(r=>String(r.status)!=="จ่ายแล้ว");
-  el("expSum").textContent=`แสดง ${list.length} รายการ · รวม ${baht(sum)} · รอดำเนินการ ${pending.length} · จ่ายแล้ว ${paid.length}`;
-  el("rows").innerHTML=list.length?list.map(expenseRowHTML).join(""):'<tr class="expense-empty-row"><td colspan="8"><div class="expense-empty-state">ไม่พบรายการตามตัวกรองนี้</div></td></tr>';
+  const pages=Math.max(1,Math.ceil(list.length/EXPENSE_PAGE_SIZE));EXPENSE_PAGE=Math.min(Math.max(1,EXPENSE_PAGE),pages);
+  const start=(EXPENSE_PAGE-1)*EXPENSE_PAGE_SIZE,end=Math.min(list.length,start+EXPENSE_PAGE_SIZE),visible=list.slice(start,end);
+  el("expSum").textContent=`แสดง ${list.length?start+1:0}-${end} จาก ${list.length} รายการ · รวม ${baht(sum)} · รอดำเนินการ ${pending.length} · จ่ายแล้ว ${paid.length}`;
+  el("rows").innerHTML=visible.length?visible.map(expenseRowHTML).join(""):'<tr class="expense-empty-row"><td colspan="8"><div class="expense-empty-state">ไม่พบรายการตามตัวกรองนี้</div></td></tr>';
+  const pager=el("expensePager");if(pager){pager.hidden=list.length<=EXPENSE_PAGE_SIZE;pager.innerHTML=`<button type="button" onclick="changeExpensePage(-1)" ${EXPENSE_PAGE<=1?"disabled":""}>‹ ก่อนหน้า</button><span class="page-info">หน้า ${EXPENSE_PAGE}/${pages}</span><button type="button" onclick="changeExpensePage(1)" ${EXPENSE_PAGE>=pages?"disabled":""}>ถัดไป ›</button>`;}
 }
+function changeExpensePage(delta){EXPENSE_PAGE+=Number(delta||0);renderExp();el("page-expenses")?.scrollIntoView({block:"start",behavior:"smooth"});}
 function openExpenseDrawer(index){
   const r=ALL[Number(index)]; if(!r)return;
   const tx=pdate(r.dateISO||r.date),cr=cdate(r.createdAt),status=String(r.status||"รอเบิก");
@@ -2584,7 +2639,7 @@ function businessManagerHtml(){
 function openBusinessManager(){el("modalBody").innerHTML=businessManagerHtml();el("modal").classList.add("show");}
 async function startAddBusiness(){
   if(!BUSINESS_INFO.canAddBusiness){
-    closeBusinessSwitcher();el("modal").classList.remove("show");openPage("billing",document.querySelector('[data-p="billing"]'));window.scrollTo({top:0,behavior:"smooth"});
+    closeBusinessSwitcher();closeGlobalModal();openPage("billing",document.querySelector('[data-p="billing"]'));window.scrollTo({top:0,behavior:"smooth"});
     setTimeout(()=>alert("การเพิ่มธุรกิจที่ 2–3 ใช้แพ็กเกจ Pro ขึ้นไป"),100);return;
   }
   try{
@@ -2875,6 +2930,7 @@ function setBusinessTab(tab){
   renderBusiness();
 }
 function openPage(p,source=null){
+  const previous=currentPageKey();
   if(p==="reimburse")p="batches";
   if(requireCompanySetup(p))return;
   COMPANY_SETUP_ACTIVE=(p==="email"||p==="settings"||p==="billing")?p:"";
@@ -2883,18 +2939,22 @@ function openPage(p,source=null){
   if(el("mobileMoreNav")&&!['overview','batches','expenses','income'].includes(p))el("mobileMoreNav").classList.add("active");
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
   const page=el("page-"+p);if(page)page.classList.add("show");
+  if(previous&&previous!==p)releasePageDom(previous);
   el("pageTitle").textContent=TITLES[p]||"จัดการธุรกิจ";
   el("rangeSel").style.display=(p==="overview"||p==="expenses")?"flex":"none";
   if(p==="expenses"){
     localStorage.setItem(`sheet-checked:${TENANT}`,"1");
     renderOnboarding();
   }
+  renderLocalPage(p);
   if(p==="email"||p==="subscriptions") refreshEmailData();
   if(p==="billing") Promise.all([refreshSubscription({quiet:true}),refreshBusinesses({quiet:true})]);
   if(p==="batches") refreshBatchData();
   if(p==="reconciliation") refreshReconciliation();
+  if(p==="income") refreshIncome({quiet:true});
 }
 function openBusiness(tab,source=null){
+  const previous=currentPageKey();
   if(!["profile","approver","finance"].includes(tab)&&requireCompanySetup("business"))return;
   COMPANY_SETUP_ACTIVE=tab;
   const gate=el("companySetupGate");if(gate)gate.hidden=true;
@@ -2904,6 +2964,7 @@ function openBusiness(tab,source=null){
   if(el("mobileMoreNav"))el("mobileMoreNav").classList.add("active");
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
   el("page-business").classList.add("show");
+  if(previous&&previous!=="business")releasePageDom(previous);
   el("pageTitle").textContent={profile:"ข้อมูลธุรกิจ",approver:"ผู้อนุมัติค่าใช้จ่าย",categories:"หมวดหมู่",finance:"ช่องทางการเงิน",team:"ทีมของฉัน"}[tab]||"จัดการธุรกิจ";
   el("rangeSel").style.display="none";
   setBusinessTab(tab);
@@ -3131,7 +3192,8 @@ async function syncGmail({manual=true}={}){
   try{
     const {res,data}=await emailPost("/api/gmail-sync",{maxMessages:manual?20:8,notify:true});
     if(!res.ok){if(data.reconnectRequired){EMAIL_INFO=data;renderEmailInbox();}throw new Error(data.reason||data.detail||"ซิงก์ไม่สำเร็จ");}
-    await refreshEmailData();
+    const emailPageOpen=el("page-email")?.classList.contains("show")||el("page-subscriptions")?.classList.contains("show");
+    if(manual||emailPageOpen)await refreshEmailData();else await refreshGmailConnectionStatus({retries:1});
     if(manual&&data.imported===0)alert("ซิงก์เรียบร้อย ยังไม่พบเอกสารใหม่");
     return true;
   }catch(err){console.error(err);if(manual)alert("ซิงก์ Gmail ไม่สำเร็จ: "+String(err.message||err));return false;}
@@ -3167,17 +3229,17 @@ function openEmailEditor(id){
     </div>
     <div style="display:flex;gap:9px;justify-content:flex-end;margin-top:18px"><button class="btn" id="emCancel">ยกเลิก</button><button class="btn solid" id="emSave">บันทึกการแก้ไข</button></div>`;
   el("modal").classList.add("show");
-  el("emCancel").onclick=()=>el("modal").classList.remove("show");
+  el("emCancel").onclick=closeGlobalModal;
   el("emSave").onclick=async()=>{
     const patch={vendor:el("emVendor").value.trim(),invoiceNo:el("emInvoice").value.trim(),documentDate:el("emDate").value,dueDate:el("emDue").value,amount:+el("emAmount").value||0,currency:el("emCurrency").value.trim().toUpperCase(),subtotal:+el("emSubtotal").value||0,vatAmount:+el("emVat").value||0,category:el("emCategory").value.trim(),servicePeriod:el("emPeriod").value.trim(),note:el("emNote").value.trim(),isSubscription:el("emSubscription").checked,subscriptionName:el("emSubscriptionName").value.trim()};
-    const {res,data}=await emailPost("/api/email-update",{id,patch});if(!res.ok){alert(data.reason||"บันทึกไม่สำเร็จ");return;}el("modal").classList.remove("show");await refreshEmailData();
+    const {res,data}=await emailPost("/api/email-update",{id,patch});if(!res.ok){alert(data.reason||"บันทึกไม่สำเร็จ");return;}closeGlobalModal();await refreshEmailData();
   };
 }
 
 
 /* ---------- REIMBURSEMENT BATCHES: ONE ACCOUNTING TABLE V4 ---------- */
 const BATCH_WEEKDAYS=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
-const DASHBOARD_UI_VERSION="EXPENSE_TABLE_V5_4_ACCOUNT_DIRECTION_20260808";
+const DASHBOARD_UI_VERSION="PERFORMANCE_V5_8_LOW_MEMORY_20260808";
 console.info("Dashboard UI",DASHBOARD_UI_VERSION);
 const EXPECTED_BATCH_CONTRACT="REIMBURSEMENT_ACCOUNTING_TABLE_V6";
 const BATCH_STATUS_META={
@@ -3671,7 +3733,7 @@ function statementDateValue(v){if(v instanceof Date&&!Number.isNaN(v.getTime()))
 function statementNumber(v){if(typeof v==="number")return Number.isFinite(v)?v:0;let raw=String(v??"").trim();if(!raw)return 0;const neg=/^\(.*\)$/.test(raw);raw=raw.replace(/[(),฿\s]/g,"").replace(/[^0-9+\-.]/g,"");const n=Number(raw);return Number.isFinite(n)?(neg?-Math.abs(n):n):0;}
 function findStatementColumns(rows){const aliases={date:["วันที่","date","transactiondate","postingdate","valuedate","วันทำรายการ"],debit:["ถอน","เงินออก","debit","debitamount","withdrawal","จ่ายออก"],credit:["ฝาก","เงินเข้า","credit","creditamount","deposit"],amount:["จำนวนเงิน","amount","ยอดเงิน","transactionamount"],description:["รายการ","รายละเอียด","description","particulars","memo","narrative","transactiondetail"],reference:["เลขอ้างอิง","อ้างอิง","reference","referenceno","ref","transactionid"],type:["ประเภท","type","direction","transactiontype","drcr"]};let best=null;for(let r=0;r<Math.min(rows.length,30);r++){const hdr=(rows[r]||[]).map(normalizeStatementHeader),cols={};let score=0;for(const [key,names] of Object.entries(aliases)){const idx=hdr.findIndex(h=>names.some(n=>h===n||h.includes(n)));if(idx>=0){cols[key]=idx;score++;}}if(cols.date>=0&&(cols.debit>=0||cols.amount>=0)&&score>(best?.score||0))best={row:r,cols,score};}return best;}
 function normalizeStatementRows(rows,sourceAccount=""){const found=findStatementColumns(rows);if(!found)throw new Error("หาแถวหัวตารางไม่เจอ ต้องมีคอลัมน์วันที่และยอดเงินออก/ถอน");const out=[];for(let i=found.row+1;i<rows.length;i++){const cells=rows[i]||[],date=statementDateValue(cells[found.cols.date]);if(!date)continue;const debit=found.cols.debit>=0?Math.abs(statementNumber(cells[found.cols.debit])):0,credit=found.cols.credit>=0?Math.abs(statementNumber(cells[found.cols.credit])):0,generic=found.cols.amount>=0?statementNumber(cells[found.cols.amount]):0,type=found.cols.type>=0?String(cells[found.cols.type]||""):"";if(credit>0&&!debit)continue;let amount=debit;if(!amount&&generic){if(generic<0)amount=Math.abs(generic);else if(!/เงินเข้า|credit|deposit|cr/i.test(type))amount=Math.abs(generic);}if(!(amount>0))continue;out.push({transactionDate:date,amount,direction:"เงินออก",description:found.cols.description>=0?String(cells[found.cols.description]||"").trim():"",reference:found.cols.reference>=0?String(cells[found.cols.reference]||"").trim():"",sourceAccount,raw:{row:i+1,values:cells.map(v=>v instanceof Date?v.toISOString():v)}});}return out;}
-async function parseStatementFile(file){const ext=String(file.name||"").split(".").pop().toLowerCase();let rows;if(ext==="csv"||file.type.includes("csv")){rows=parseCsvRows(await file.text());}else{if(typeof XLSX==="undefined")throw new Error("โหลดตัวอ่าน Excel ไม่สำเร็จ กรุณาบันทึกไฟล์เป็น CSV แล้วลองใหม่");const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true});const ws=wb.Sheets[wb.SheetNames[0]];rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:""});}const channel=RECON_DATA.selectedChannel||{};return normalizeStatementRows(rows,[financeChannelTitle(channel),financeChannelDetail(channel)].filter(Boolean).join(" · "));}
+async function parseStatementFile(file){const ext=String(file.name||"").split(".").pop().toLowerCase();let rows;if(ext==="csv"||file.type.includes("csv")){rows=parseCsvRows(await file.text());}else{const XLSX=await ensureXlsx();const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true});const ws=wb.Sheets[wb.SheetNames[0]];rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:""});}const channel=RECON_DATA.selectedChannel||{};return normalizeStatementRows(rows,[financeChannelTitle(channel),financeChannelDetail(channel)].filter(Boolean).join(" · "));}
 async function importStatementFile(file){if(!file)return;if(!RECON_CHANNEL_ID){alert("เลือกช่องทางการเงินก่อนนำเข้า Statement");el("reconFile").value="";return;}el("reconFileName").value=file.name;try{const rows=await parseStatementFile(file);if(!rows.length)throw new Error("ไม่พบรายการเงินออกในไฟล์นี้");const total=rows.reduce((s,r)=>s+r.amount,0),channel=RECON_DATA.selectedChannel||{};if(!confirm(`นำเข้า Statement ของ ${financeChannelTitle(channel)}\nพบเงินออก ${rows.length} รายการ รวม ${baht(total)}\n\nเริ่มกระทบยอดบัญชีนี้เลยไหม?`))return;const out=await reconciliationPost("/api/reconciliation-import",{fileName:file.name,sourceChannelId:RECON_CHANNEL_ID,rows});await refreshReconciliation({quiet:true});alert(`นำเข้าแล้ว ${out.imported} รายการ${out.skippedDuplicate?`\nข้ามรายการซ้ำ ${out.skippedDuplicate}`:""}${out.skippedInvalid?`\nข้ามข้อมูลไม่ครบ ${out.skippedInvalid}`:""}`);}catch(err){alert("นำเข้า Statement ไม่สำเร็จ: "+err.message);}finally{el("reconFile").value="";}}
 
 
@@ -3705,8 +3767,8 @@ function toCSV(rows){
   return "\ufeff"+[head.join(","),...body].join("\n");
 }
 function download(name,text){
-  const b=new Blob([text],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");
-  a.href=URL.createObjectURL(b);a.download=name;a.click();
+  const b=new Blob([text],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(b),a=document.createElement("a");
+  a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
 }
 
 /* ---------- NAV / DRAW ---------- */
@@ -3733,7 +3795,7 @@ if(el("businessSwitcherBtn"))el("businessSwitcherBtn").addEventListener("click",
 if(el("mobileWorkspaceCard"))el("mobileWorkspaceCard").addEventListener("click",async()=>{await refreshBusinesses({quiet:true});openBusinessManager();});
 if(document.querySelector(".company-menu"))document.querySelector(".company-menu").addEventListener("click",async()=>{await refreshBusinesses({quiet:true});openBusinessManager();});
 document.addEventListener("click",e=>{
-  const lockedBiz=e.target.closest("[data-locked-business]");if(lockedBiz){e.preventDefault();el("modal").classList.remove("show");closeBusinessSwitcher();openPage("billing",document.querySelector('[data-p="billing"]'));window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>alert("Workspace นี้ต้องใช้แพ็กเกจ Pro ขึ้นไป"),100);return;}
+  const lockedBiz=e.target.closest("[data-locked-business]");if(lockedBiz){e.preventDefault();closeGlobalModal();closeBusinessSwitcher();openPage("billing",document.querySelector('[data-p="billing"]'));window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>alert("Workspace นี้ต้องใช้แพ็กเกจ Pro ขึ้นไป"),100);return;}
   const sw=e.target.closest("[data-switch-business]");if(sw){e.preventDefault();const url=sw.dataset.switchBusiness;if(url)location.href=url;return;}
   const add=e.target.closest("[data-add-business]");if(add){e.preventDefault();startAddBusiness();return;}
   const copy=e.target.closest("[data-copy-business-code]");if(copy){e.preventDefault();const code=copy.dataset.copyBusinessCode||"";navigator.clipboard?.writeText(code).then(()=>{copy.textContent="คัดลอกแล้ว ✓";}).catch(()=>prompt("คัดลอกรหัสนี้",code));return;}
@@ -3854,9 +3916,9 @@ document.addEventListener("click",e=>{const finance=e.target.closest("[data-open
 el("rangeSel").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
   el("rangeSel").querySelectorAll("button").forEach(x=>x.classList.remove("on"));b.classList.add("on");RANGE=b.dataset.r;drawScoped();
 }));
-["q","fStatus","fCat","fSender","fDateBasis","fSort"].forEach(id=>{const e=el(id);if(e)e.addEventListener("input",renderExp);});
+["q","fStatus","fCat","fSender","fDateBasis","fSort"].forEach(id=>{const e=el(id);if(e)e.addEventListener("input",()=>{EXPENSE_PAGE=1;renderExp();});});
 el("expCsv").onclick=()=>download("expenses.csv",toCSV(filteredExp()));
-if(el("expenseStatusTabs"))el("expenseStatusTabs").addEventListener("click",e=>{const b=e.target.closest("[data-exp-status]");if(!b)return;el("fStatus").value=b.dataset.expStatus||"";renderExp();});
+if(el("expenseStatusTabs"))el("expenseStatusTabs").addEventListener("click",e=>{const b=e.target.closest("[data-exp-status]");if(!b)return;el("fStatus").value=b.dataset.expStatus||"";EXPENSE_PAGE=1;renderExp();});
 if(el("rows"))el("rows").addEventListener("click",e=>{if(e.target.closest("a"))return;const open=e.target.closest("[data-exp-open]");if(open)openExpenseDrawer(open.dataset.expOpen);});
 if(el("expenseDrawerClose"))el("expenseDrawerClose").onclick=closeExpenseDrawer;
 if(el("expenseDrawerBackdrop"))el("expenseDrawerBackdrop").onclick=closeExpenseDrawer;
@@ -3867,8 +3929,8 @@ el("repPrint").onclick=()=>window.print();
 ["docQ","docStatus","docMonth","docSort"].forEach(id=>{const node=el(id);if(node)node.addEventListener(id==="docQ"?"input":"change",renderBills);});
 if(el("docCsv"))el("docCsv").onclick=exportDocumentCSV;
 
-function drawScoped(){renderKPIs();renderTrend();renderCats();renderVendors();renderRecent();renderExp();}
-function drawAll(){buildCatFilter();buildSenderFilter();buildRepMonths();drawScoped();renderReim();renderReport();renderBills();renderActivity();renderSettings();renderBusiness();renderOnboarding();renderEmailInbox();renderSubscriptions();renderBatches();renderReconciliation();
+function drawScoped(){const p=currentPageKey();if(p==="overview"){renderKPIs();renderTrend();renderCats();renderVendors();renderRecent();}else if(p==="expenses")renderExp();}
+function drawAll(){buildCatFilter();buildSenderFilter();renderOnboarding();renderLocalPage(currentPageKey());
   applyWorkspaceBranding();
   // ส่ง k ต่อไปทุกลิงก์ ไม่งั้นหน้าปลายทางจะโดน 401
   const qs="?tenant="+encodeURIComponent(TENANT)+"&k="+encodeURIComponent(K);
@@ -3942,10 +4004,13 @@ function renderIncome(){
   if(el("incomeKVat"))el("incomeKVat").textContent=baht(t.vat);
   if(el("incomeKOverdue"))el("incomeKOverdue").textContent=baht(t.overdue);
   if(el("incomeKOverdueCount"))el("incomeKOverdueCount").textContent=`${t.overdueCount.toLocaleString("th-TH")} รายการ`;
-  if(el("incomeTableMeta"))el("incomeTableMeta").textContent=`แสดง ${rows.length.toLocaleString("th-TH")} จาก ${(INCOME_DATA.records||[]).length.toLocaleString("th-TH")} รายการ · ยอดตัดลูกหนี้นับเงินเข้าจริง + เครดิตหัก ณ ที่จ่าย`;
+  const pages=Math.max(1,Math.ceil(rows.length/INCOME_PAGE_SIZE));INCOME_PAGE=Math.min(Math.max(1,INCOME_PAGE),pages);
+  const start=(INCOME_PAGE-1)*INCOME_PAGE_SIZE,end=Math.min(rows.length,start+INCOME_PAGE_SIZE),visible=rows.slice(start,end);
+  if(el("incomeTableMeta"))el("incomeTableMeta").textContent=`แสดง ${rows.length?start+1:0}-${end} จาก ${rows.length.toLocaleString("th-TH")} รายการที่กรอง · ทั้งหมด ${(INCOME_DATA.records||[]).length.toLocaleString("th-TH")} รายการ · ยอดตัดลูกหนี้นับเงินเข้าจริง + เครดิตหัก ณ ที่จ่าย`;
   const body=el("incomeBody");if(!body)return;
+  const pager=el("incomePager");if(pager){pager.hidden=rows.length<=INCOME_PAGE_SIZE;pager.innerHTML=`<button type="button" onclick="changeIncomePage(-1)" ${INCOME_PAGE<=1?"disabled":""}>‹ ก่อนหน้า</button><span class="page-info">หน้า ${INCOME_PAGE}/${pages}</span><button type="button" onclick="changeIncomePage(1)" ${INCOME_PAGE>=pages?"disabled":""}>ถัดไป ›</button>`;}
   if(!rows.length){body.innerHTML='<tr><td colspan="7"><div class="income-empty">ยังไม่มีรายการตามตัวกรองนี้<br><small>กด “+ บันทึกรายรับ” หรือส่งหลักฐานเงินเข้าใน LINE แล้วเลือกประเภทรายการเป็น “รายรับ”</small></div></td></tr>';return;}
-  body.innerHTML=rows.map(r=>{
+  body.innerHTML=visible.map(r=>{
     const docs=[r.invoiceNo&&`INV ${r.invoiceNo}`,r.taxInvoiceNo&&`Tax ${r.taxInvoiceNo}`,r.receiptNo&&`Receipt ${r.receiptNo}`].filter(Boolean);
     const received=incomeNum(r.cashReceived),wht=incomeNum(r.whtCreditReceived),out=incomeNum(r.outstanding);
     const canReceive=r.status!=="ยกเลิก"&&out>.009;
@@ -3962,6 +4027,7 @@ function renderIncome(){
   }).join("");
   if(incomeReconModalOpen())renderIncomeRecon();
 }
+function changeIncomePage(delta){INCOME_PAGE+=Number(delta||0);renderIncome();el("page-income")?.scrollIntoView({block:"start",behavior:"smooth"});}
 async function refreshIncome({quiet=false}={}){
   if(INCOME_LOADING)return false;
   INCOME_LOADING=true;
@@ -4054,7 +4120,7 @@ function showIncomeDetail(id){
     ${r.note?`<div class="note" style="margin:10px 0"><b>หมายเหตุ</b><br>${esc(r.note)}</div>`:""}
     ${r.attachmentUrl?`<p><a class="btn" href="${escAttr(r.attachmentUrl)}" target="_blank" rel="noopener">เปิดเอกสารต้นทาง ↗</a></p>`:""}
     <h3 style="margin-top:20px">ประวัติรับชำระ</h3><div class="income-payment-history">${payments.length?payments.map(p=>`<div class="income-payment-row"><div><strong>${incomeDateLabel(p.receivedDate)} · ตัดลูกหนี้ ${baht(p.settledAmount)}</strong><small>เงินเข้าจริง ${baht(p.cashAmount)}${incomeNum(p.whtAmount)>0?` · WHT ${baht(p.whtAmount)}`:""}${p.paymentChannelId?` · ${esc(incomeChannelName(p.paymentChannelId))}`:""}</small>${p.referenceNo?`<small>อ้างอิง ${esc(p.referenceNo)}</small>`:""}</div><div>${p.slipUrl?`<a class="income-action" href="${escAttr(p.slipUrl)}" target="_blank" rel="noopener">สลิป</a>`:`<button class="income-action" onclick="attachIncomePaymentFile('${escAttr(p.paymentId)}','slipUrl')">+ สลิป</button>`}${incomeNum(p.whtAmount)>0?(p.whtCertificateUrl?`<a class="income-action" href="${escAttr(p.whtCertificateUrl)}" target="_blank" rel="noopener">50 ทวิ</a>`:`<button class="income-action" onclick="attachIncomePaymentFile('${escAttr(p.paymentId)}','whtCertificateUrl')">+ 50 ทวิ</button>`):""}</div></div>`).join(""):'<div class="income-empty" style="padding:18px">ยังไม่มีการรับชำระ</div>'}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px"><button class="btn" onclick="openIncomeEdit('${escAttr(r.id)}')">แก้ข้อมูลลูกค้า/เอกสาร</button>${r.status!=="ยกเลิก"&&incomeNum(r.outstanding)>.009?`<button class="btn solid" onclick="document.getElementById('modal').classList.remove('show');openIncomePayment('${escAttr(r.id)}')">+ รับชำระ</button>`:""}</div>`;
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px"><button class="btn" onclick="openIncomeEdit('${escAttr(r.id)}')">แก้ข้อมูลลูกค้า/เอกสาร</button>${r.status!=="ยกเลิก"&&incomeNum(r.outstanding)>.009?`<button class="btn solid" onclick="closeGlobalModal();openIncomePayment('${escAttr(r.id)}')">+ รับชำระ</button>`:""}</div>`;
   el("modal").classList.add("show");
 }
 function openIncomeEdit(id){
@@ -4140,7 +4206,7 @@ function normalizeIncomingStatementRows(rows){
   for(let i=found.row+1;i<rows.length;i++){const cells=rows[i]||[],date=statementDateValue(cells[found.cols.date]);if(!date)continue;const debit=found.cols.debit>=0?Math.abs(statementNumber(cells[found.cols.debit])):0,credit=found.cols.credit>=0?Math.abs(statementNumber(cells[found.cols.credit])):0,generic=found.cols.amount>=0?statementNumber(cells[found.cols.amount]):0,type=found.cols.type>=0?String(cells[found.cols.type]||""):"";if(debit>0&&!credit)continue;let amount=credit;if(!amount&&generic){if(/เงินเข้า|credit|deposit|รับเงิน|\bcr\b/i.test(type))amount=Math.abs(generic);else if(/เงินออก|debit|withdraw|จ่ายออก|\bdr\b/i.test(type))continue;else if(generic>0)amount=generic;}if(!(amount>0))continue;out.push({transactionDate:date,amount,direction:"เงินเข้า",description:found.cols.description>=0?String(cells[found.cols.description]||"").trim():"",reference:found.cols.reference>=0?String(cells[found.cols.reference]||"").trim():"",raw:{row:i+1,values:cells.map(v=>v instanceof Date?v.toISOString():v)}});}return out;
 }
 async function parseIncomingStatementFile(file){
-  const ext=String(file.name||"").split(".").pop().toLowerCase();let rows;if(ext==="csv"||file.type.includes("csv"))rows=parseCsvRows(await file.text());else{if(typeof XLSX==="undefined")throw new Error("โหลดตัวอ่าน Excel ไม่สำเร็จ กรุณาบันทึกไฟล์เป็น CSV แล้วลองใหม่");const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true}),ws=wb.Sheets[wb.SheetNames[0]];rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:""});}return normalizeIncomingStatementRows(rows);
+  const ext=String(file.name||"").split(".").pop().toLowerCase();let rows;if(ext==="csv"||file.type.includes("csv"))rows=parseCsvRows(await file.text());else{const XLSX=await ensureXlsx();const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:true}),ws=wb.Sheets[wb.SheetNames[0]];rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:""});}return normalizeIncomingStatementRows(rows);
 }
 async function incomeReconPost(path,payload){const res=await fetch(apiUrl(path),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload||{})}),data=await res.json().catch(()=>({}));if(!res.ok||data.ok!==true)throw new Error(data.message||data.error||data.reason||`HTTP ${res.status}`);return data;}
 async function importIncomeStatementFile(file){
@@ -4162,7 +4228,7 @@ function bindIncomeUi(){
   el("incomeCreate")?.addEventListener("click",openIncomeEditor);el("incomeRefresh")?.addEventListener("click",()=>refreshIncome());el("incomeReconBtn")?.addEventListener("click",openIncomeRecon);el("incomeForm")?.addEventListener("submit",saveIncome);el("incomePaymentForm")?.addEventListener("submit",saveIncomePayment);
   ["incAmount","incPriceMode","incVatRate","incExpectedWht"].forEach(id=>el(id)?.addEventListener("input",()=>{incomeCalcPreview();if(el("incPaidNow")?.checked)toggleIncomePaidNow();}));el("incPaidNow")?.addEventListener("change",toggleIncomePaidNow);["incomePayCash","incomePayWht"].forEach(id=>el(id)?.addEventListener("input",incomePaymentPreview));
   document.querySelectorAll("[data-income-close]").forEach(b=>b.addEventListener("click",()=>{const mode=b.dataset.incomeClose;if(mode==="payment")closeIncomePayment();else if(mode==="recon")closeIncomeRecon();else closeIncomeEditor();}));
-  ["incomeQ","incomeStatus","incomeCategory","incomeMonth"].forEach(id=>{el(id)?.addEventListener(id==="incomeQ"?"input":"change",renderIncome);});el("incomeCsv")?.addEventListener("click",exportIncomeCsv);el("incomeVatCsv")?.addEventListener("click",exportIncomeVatCsv);
+  ["incomeQ","incomeStatus","incomeCategory","incomeMonth"].forEach(id=>{el(id)?.addEventListener(id==="incomeQ"?"input":"change",()=>{INCOME_PAGE=1;renderIncome();});});el("incomeCsv")?.addEventListener("click",exportIncomeCsv);el("incomeVatCsv")?.addEventListener("click",exportIncomeVatCsv);
   el("incomeReconChannel")?.addEventListener("change",renderIncomeRecon);el("incomeReconFile")?.addEventListener("change",e=>importIncomeStatementFile(e.target.files?.[0]));el("incomeReconConfirmAll")?.addEventListener("click",confirmIncomeReconSuggestedAll);
   ["incomeEditor","incomePaymentModal","incomeReconModal"].forEach(id=>el(id)?.addEventListener("click",e=>{if(e.target!==e.currentTarget)return;if(id==="incomeEditor")closeIncomeEditor();else if(id==="incomePaymentModal")closeIncomePayment();else closeIncomeRecon();}));
 }
@@ -4193,8 +4259,17 @@ function cleanRows(rows){
 }
 
 function rowsSignature(rows){
-  // API คืนข้อมูลตามลำดับแถวในชีท จึงใช้ JSON เป็น fingerprint ได้ตรงที่สุด
-  return JSON.stringify(rows);
+  // fingerprint แบบ streaming: ตรวจทุก field เหมือนเดิม แต่ไม่เก็บ JSON สำเนาทั้งก้อนไว้ใน RAM
+  let h=2166136261>>>0;
+  const feed=s=>{s=String(s??"");for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}h^=31;h=Math.imul(h,16777619)>>>0;};
+  const walk=v=>{
+    if(v==null){feed("null");return;}
+    if(Array.isArray(v)){feed("[");for(const x of v)walk(x);feed("]");return;}
+    if(typeof v==="object"){feed("{");for(const k of Object.keys(v).sort()){feed(k);walk(v[k]);}feed("}");return;}
+    feed(typeof v);feed(v);
+  };
+  feed(rows.length);for(const row of rows)walk(row);
+  return `${rows.length}:${h.toString(16)}`;
 }
 
 async function refreshData({initial=false,manual=false}={}){
@@ -4296,7 +4371,7 @@ async function load(){
     await refreshBusinesses({quiet:true});
     // OAuth callback returns with ?gmail=connected. Confirm the token first so the setup gate cannot show a stale "connect again" state.
     if(QS.get("gmail")==="connected")await confirmGmailOAuthReturn();
-    await Promise.all([refreshEmailData(),refreshBatchData({quiet:true}),refreshWorkspaceLinks()]);
+    await Promise.all([refreshGmailConnectionStatus({retries:1}),refreshWorkspaceLinks()]);
     renderCompanySetupGate({force:!companySetupState().ready});
     const last=Date.parse(EMAIL_INFO.lastSyncAt||"");
     if(EMAIL_INFO.connected&&(!Number.isFinite(last)||Date.now()-last>10*60*1000))syncGmail({manual:false});
