@@ -61,8 +61,8 @@
   .sidebar{
     width:252px;flex-shrink:0;background:rgba(251,251,253,.88);color:var(--ink);
     position:sticky;top:0;height:100vh;display:flex;flex-direction:column;
-    border-right:1px solid rgba(0,0,0,.07);backdrop-filter:saturate(180%) blur(24px);
-    -webkit-backdrop-filter:saturate(180%) blur(24px);z-index:20;
+    border-right:1px solid rgba(0,0,0,.07);backdrop-filter:none;
+    -webkit-backdrop-filter:none;z-index:20;
   }
   .brand{display:flex;align-items:center;gap:12px;padding:24px 22px 22px}
   .perf-pager{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:10px 2px 0;color:var(--muted);font-size:11px}
@@ -257,7 +257,7 @@
   .expense-table-wrap{max-height:calc(100vh - 315px);min-height:300px;overflow:auto;border-radius:0 0 var(--radius-xl) var(--radius-xl);background:#fff}
   .expense-table{min-width:1020px;font-size:12px}
   .expense-table thead{position:sticky;top:0;z-index:4}
-  .expense-table th{padding:10px 12px;background:rgba(250,250,251,.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-size:10px;letter-spacing:.01em;color:#7a7a80;white-space:nowrap}
+  .expense-table th{padding:10px 12px;background:#fafafb;backdrop-filter:none;-webkit-backdrop-filter:none;font-size:10px;letter-spacing:.01em;color:#7a7a80;white-space:nowrap}
   .expense-table td{padding:12px;border-bottom:1px solid #efeff2;vertical-align:middle;background:#fff}
   .expense-table tbody tr{cursor:pointer}
   .expense-table tbody tr:hover td{background:#fafafa}
@@ -1001,7 +1001,7 @@
     .workspace-links,.company-menu{display:none!important}
 
     /* Bottom nav */
-    .sidebar{display:block!important;position:fixed!important;z-index:80!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;height:calc(var(--mobile-bottom) + env(safe-area-inset-bottom))!important;background:rgba(250,250,252,.97)!important;border:0!important;border-top:1px solid rgba(0,0,0,.10)!important;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 -8px 30px rgba(0,0,0,.07);transform:translateZ(0)}
+    .sidebar{display:block!important;position:fixed!important;z-index:80!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;height:calc(var(--mobile-bottom) + env(safe-area-inset-bottom))!important;background:#fafafc!important;border:0!important;border-top:1px solid rgba(0,0,0,.10)!important;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:0 -8px 30px rgba(0,0,0,.07);transform:translateZ(0)}
     .brand,.sidefoot,.sidebar-fold,.sidebar-separator,.business-group,.clean-system-group,.setup-status-v51,.nav-kicker,.compact-only{display:none!important}
     .sidebar-nav-v51{height:var(--mobile-bottom)!important;display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:2px!important;padding:7px 7px 8px!important;overflow:visible!important}
     .sidebar nav>.navlink{display:none!important}
@@ -2087,9 +2087,19 @@ function currentPageKey(){
   const node=document.querySelector(".page.show");
   return node?.id?.replace(/^page-/,"")||"overview";
 }
+function releaseImageNodes(root){
+  if(!root)return;
+  root.querySelectorAll?.("img").forEach(img=>{try{img.removeAttribute("srcset");img.src="";}catch{}});
+}
 function releasePageDom(page){
   const ids={expenses:["rows","expenseDrawerBody"],income:["incomeBody","incomeReconList"],bills:["billGrid"],activity:["activityRows"],email:["emailList"],subscriptions:["subscriptionList"],batches:["batchMasterBody","batchDrawerBody"],reconciliation:["reconBody","reconDrawerBody"],reports:["repCatBody"]}[page]||[];
-  ids.forEach(id=>{const node=el(id);if(node)node.replaceChildren();});
+  ids.forEach(id=>{const node=el(id);if(node){releaseImageNodes(node);node.replaceChildren();}});
+}
+function releasePageData(page,nextPage=""){
+  if(page==="batches"&&nextPage!=="batches"){BATCH_DATA={pending:{groups:[],itemCount:0,total:0,urgentCount:0,people:0},batches:[],settings:{}};BATCH_SELECTED.clear();REVIEW_BATCH_SELECTED.clear();TRANSFER_SELECTED.clear();}
+  if(page==="reconciliation"&&nextPage!=="reconciliation"){RECON_DATA={rows:[],paidBatches:[],summary:{}};ACTIVE_RECON_ID="";}
+  if(page==="income"&&nextPage!=="income"){INCOME_DATA={ok:true,records:[],payments:[],reconciliation:[],reconciliationSummary:{},summary:{},categories:[]};}
+  const emailFamily=new Set(["email","subscriptions"]);if(emailFamily.has(page)&&!emailFamily.has(nextPage))EMAIL_DOCS=[];
 }
 function renderLocalPage(page=currentPageKey()){
   if(page==="overview"){renderKPIs();renderTrend();renderCats();renderVendors();renderRecent();return;}
@@ -2110,7 +2120,7 @@ function renderLocalPage(page=currentPageKey()){
 function closeGlobalModal(){
   const modal=el("modal"),body=el("modalBody");
   if(modal)modal.classList.remove("show");
-  setTimeout(()=>{if(body&&(!modal||!modal.classList.contains("show")))body.replaceChildren();},80);
+  setTimeout(()=>{if(body&&(!modal||!modal.classList.contains("show"))){releaseImageNodes(body);body.replaceChildren();}},80);
 }
 function ensureXlsx(){
   if(window.XLSX)return Promise.resolve(window.XLSX);
@@ -2573,7 +2583,8 @@ function exportDocumentCSV(){
 }
 function showBill(url){
   if(!url||url==="#")return;
-  el("modalBody").innerHTML=`<img src="${url}" alt="บิล" onerror="this.outerHTML='<p style=\\'color:#647268\\'>เปิดรูปไม่ได้ — <a href=${url} target=_blank>เปิดใน Drive</a></p>'"/><div style="margin-top:10px"><a class="btn" href="${url}" target="_blank">เปิดใน Google Drive ↗</a></div>`;
+  const previewUrl=compactImageUrl(url,1200);
+  el("modalBody").innerHTML=`<img src="${escAttr(previewUrl)}" loading="lazy" decoding="async" alt="บิล"><div style="margin-top:10px"><a class="btn" href="${escAttr(url)}" target="_blank" rel="noopener">เปิดใน Google Drive ↗</a></div>`;
   el("modal").classList.add("show");
 }
 
@@ -2790,21 +2801,23 @@ function approverSignatureUrl(){
 function hasApproverSignature(){
   return Boolean(approverSignatureUrl()||localStorage.getItem(SIGNATURE_READY_KEY)==="1");
 }
+function compactImageUrl(url,size=160){
+  const raw=String(url||"").trim();if(!raw)return "";
+  const patterns=[/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,/drive\.google\.com\/uc\?[^#]*id=([a-zA-Z0-9_-]+)/,/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/,/[?&]id=([a-zA-Z0-9_-]{15,})/];
+  for(const re of patterns){const mm=raw.match(re);if(mm?.[1])return `https://drive.google.com/thumbnail?id=${encodeURIComponent(mm[1])}&sz=w${Math.max(64,Math.min(1600,Number(size)||160))}`;}
+  return raw;
+}
 function companyLogoUrl(){
   return String(SETTINGS.logo_url||SETTINGS.company_logo_url||SETTINGS.logoUrl||"").trim();
 }
 function setAvatarNode(node,name,logoUrl){
   if(!node)return;
-  const initial=businessInitial(name||"D");
-  if(logoUrl){
-    node.classList.add("has-image");
-    node.innerHTML=`<img src="${escAttr(logoUrl)}" alt="${escAttr(name||'โลโก้บริษัท')}">`;
+  const initial=businessInitial(name||"D"),displayUrl=compactImageUrl(logoUrl,128);
+  if(displayUrl){
+    node.classList.add("has-image");const old=node.querySelector("img");
+    if(old&&old.dataset.memorySrc===displayUrl){old.alt=name||"โลโก้บริษัท";}else{releaseImageNodes(node);node.replaceChildren();const img=document.createElement("img");img.src=displayUrl;img.alt=name||"โลโก้บริษัท";img.loading="lazy";img.decoding="async";img.fetchPriority="low";img.dataset.memorySrc=displayUrl;node.appendChild(img);}
     node.setAttribute("aria-label",name||"โลโก้บริษัท");
-  }else{
-    node.classList.remove("has-image");
-    node.textContent=initial;
-    node.removeAttribute("aria-label");
-  }
+  }else{releaseImageNodes(node);node.classList.remove("has-image");if(node.textContent!==initial)node.textContent=initial;node.removeAttribute("aria-label");}
 }
 function applyWorkspaceBranding(){
   const current=(BUSINESS_INFO.businesses||[]).find(x=>x.isCurrent)||(BUSINESS_INFO.businesses||[])[0]||{};
@@ -2939,7 +2952,7 @@ function openPage(p,source=null){
   if(el("mobileMoreNav")&&!['overview','batches','expenses','income'].includes(p))el("mobileMoreNav").classList.add("active");
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
   const page=el("page-"+p);if(page)page.classList.add("show");
-  if(previous&&previous!==p)releasePageDom(previous);
+  if(previous&&previous!==p){releasePageDom(previous);releasePageData(previous,p);}
   el("pageTitle").textContent=TITLES[p]||"จัดการธุรกิจ";
   el("rangeSel").style.display=(p==="overview"||p==="expenses")?"flex":"none";
   if(p==="expenses"){
@@ -2964,7 +2977,7 @@ function openBusiness(tab,source=null){
   if(el("mobileMoreNav"))el("mobileMoreNav").classList.add("active");
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
   el("page-business").classList.add("show");
-  if(previous&&previous!=="business")releasePageDom(previous);
+  if(previous&&previous!=="business"){releasePageDom(previous);releasePageData(previous,"business");}
   el("pageTitle").textContent={profile:"ข้อมูลธุรกิจ",approver:"ผู้อนุมัติค่าใช้จ่าย",categories:"หมวดหมู่",finance:"ช่องทางการเงิน",team:"ทีมของฉัน"}[tab]||"จัดการธุรกิจ";
   el("rangeSel").style.display="none";
   setBusinessTab(tab);
@@ -2987,7 +3000,8 @@ function renderBusiness(){
   el("businessReadiness").innerHTML=readiness.map(([k,v])=>`<div class="summary-item"><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join("");
   const signatureUrl=approverSignatureUrl();
   const signatureReady=hasApproverSignature();
-  el("signatureStatus").innerHTML=`<div class="status-line ${signatureReady?"ok":""}"><span class="light"></span><span>${signatureReady?"มีลายเซ็นพร้อมใช้ในเอกสารใหม่":"ยังไม่มีลายเซ็นผู้อนุมัติ"}</span></div>${signatureUrl?`<div style="margin-top:14px"><img src="${escAttr(signatureUrl)}" alt="ลายเซ็น" style="max-width:220px;max-height:90px;object-fit:contain;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff"></div>`:""}`;
+  const signaturePreview=compactImageUrl(signatureUrl,420);
+  el("signatureStatus").innerHTML=`<div class="status-line ${signatureReady?"ok":""}"><span class="light"></span><span>${signatureReady?"มีลายเซ็นพร้อมใช้ในเอกสารใหม่":"ยังไม่มีลายเซ็นผู้อนุมัติ"}</span></div>${signaturePreview?`<div style="margin-top:14px"><img src="${escAttr(signaturePreview)}" loading="lazy" decoding="async" alt="ลายเซ็น" style="max-width:220px;max-height:90px;object-fit:contain;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff"></div>`:""}`;
 
   const custom=parseSettingList("custom_categories");
   el("customCategoryTags").innerHTML=custom.length?custom.map((c,i)=>`<span class="manage-tag">${esc(c)}<button data-remove-category="${i}" aria-label="ลบ">×</button></span>`).join(""):'<span style="font-size:12px;color:var(--muted)">ยังไม่มีหมวดที่เพิ่มเอง</span>';
@@ -3767,8 +3781,8 @@ function toCSV(rows){
   return "\ufeff"+[head.join(","),...body].join("\n");
 }
 function download(name,text){
-  const b=new Blob([text],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(b),a=document.createElement("a");
-  a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
+  const b=new Blob([text],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");
+  a.href=URL.createObjectURL(b);a.download=name;a.click();
 }
 
 /* ---------- NAV / DRAW ---------- */
@@ -3795,7 +3809,7 @@ if(el("businessSwitcherBtn"))el("businessSwitcherBtn").addEventListener("click",
 if(el("mobileWorkspaceCard"))el("mobileWorkspaceCard").addEventListener("click",async()=>{await refreshBusinesses({quiet:true});openBusinessManager();});
 if(document.querySelector(".company-menu"))document.querySelector(".company-menu").addEventListener("click",async()=>{await refreshBusinesses({quiet:true});openBusinessManager();});
 document.addEventListener("click",e=>{
-  const lockedBiz=e.target.closest("[data-locked-business]");if(lockedBiz){e.preventDefault();closeGlobalModal();closeBusinessSwitcher();openPage("billing",document.querySelector('[data-p="billing"]'));window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>alert("Workspace นี้ต้องใช้แพ็กเกจ Pro ขึ้นไป"),100);return;}
+  const lockedBiz=e.target.closest("[data-locked-business]");if(lockedBiz){e.preventDefault();el("modal").classList.remove("show");closeBusinessSwitcher();openPage("billing",document.querySelector('[data-p="billing"]'));window.scrollTo({top:0,behavior:"smooth"});setTimeout(()=>alert("Workspace นี้ต้องใช้แพ็กเกจ Pro ขึ้นไป"),100);return;}
   const sw=e.target.closest("[data-switch-business]");if(sw){e.preventDefault();const url=sw.dataset.switchBusiness;if(url)location.href=url;return;}
   const add=e.target.closest("[data-add-business]");if(add){e.preventDefault();startAddBusiness();return;}
   const copy=e.target.closest("[data-copy-business-code]");if(copy){e.preventDefault();const code=copy.dataset.copyBusinessCode||"";navigator.clipboard?.writeText(code).then(()=>{copy.textContent="คัดลอกแล้ว ✓";}).catch(()=>prompt("คัดลอกรหัสนี้",code));return;}
@@ -4358,6 +4372,11 @@ function startRealtime(){
   if(REFRESH_TIMER) clearInterval(REFRESH_TIMER);
   REFRESH_TIMER=setInterval(()=>refreshVisiblePage(),REFRESH_MS);
 }
+window.dashboardMemoryReport=function(){
+  const heap=performance.memory?{usedMB:Math.round(performance.memory.usedJSHeapSize/1048576),totalMB:Math.round(performance.memory.totalJSHeapSize/1048576),limitMB:Math.round(performance.memory.jsHeapSizeLimit/1048576)}:null;
+  return {page:currentPageKey(),heap,domNodes:document.getElementsByTagName("*").length,images:document.images.length,expenses:ALL.length,emailDocs:EMAIL_DOCS.length,batches:(BATCH_DATA.batches||[]).length,reconRows:(RECON_DATA.rows||[]).length,incomeRecords:(INCOME_DATA.records||[]).length,incomePayments:(INCOME_DATA.payments||[]).length};
+};
+window.addEventListener("pagehide",()=>{if(REFRESH_TIMER){clearInterval(REFRESH_TIMER);REFRESH_TIMER=null;}if(BUSINESS_PAIR_POLL){clearInterval(BUSINESS_PAIR_POLL);BUSINESS_PAIR_POLL=null;}releaseImageNodes(document);});
 
 async function load(){
   if(!TENANT||!K){
