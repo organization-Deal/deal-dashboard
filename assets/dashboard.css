@@ -1094,3 +1094,20 @@
   /* v6 renderer budget */
   .sidebar{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:#fbfbfd!important}
   .page:not(.show){display:none!important}
+
+
+/* ── v7.2 Coming Soon locks ───────────────────────────── */
+.locked-feature{cursor:not-allowed!important;color:#a0a0a6!important;position:relative}
+.locked-feature:hover{background:transparent!important;color:#a0a0a6!important;transform:none!important}
+.locked-feature .ic{color:#b4b4ba!important}
+.coming-soon-badge{margin-left:auto;display:inline-flex;align-items:center;gap:4px;padding:3px 6px;border:1px solid #e0e0e4;border-radius:999px;background:#f5f5f7;color:#8e8e93;font-size:7.5px!important;font-weight:800!important;letter-spacing:.02em;white-space:nowrap}
+.coming-soon-badge:before{content:"🔒";font-size:8px}
+.sidebar-fold-body .locked-feature{display:flex;align-items:center;justify-content:space-between;gap:7px}
+.fold-coming-soon{display:inline-block;margin-left:5px;padding:2px 5px;border-radius:999px;background:#f0f0f2;color:#98989e;font-size:7px;font-style:normal;font-weight:800;vertical-align:1px;letter-spacing:.02em}
+.mobile-more-list .locked-feature{opacity:.62;background:#fafafa!important}
+.mobile-more-list .locked-feature small{display:inline;margin-left:5px;color:#9b9ba1;font-size:8px;font-weight:700}
+.coming-soon-dialog{padding:12px 4px 3px;text-align:center}
+.coming-soon-lock{width:52px;height:52px;margin:0 auto 14px;border-radius:17px;background:#f2f2f7;display:grid;place-items:center;font-size:23px}
+.coming-soon-dialog h3{margin:0;font-size:21px;letter-spacing:-.03em}
+.coming-soon-dialog p{max-width:430px;margin:8px auto 18px;color:#77777d;font-size:12px;line-height:1.65}
+.coming-soon-dialog .btn{min-width:120px}
