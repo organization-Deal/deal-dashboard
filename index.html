@@ -32,21 +32,21 @@
       <button class="navlink mobile-primary" data-p="batches"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/><circle cx="18" cy="17" r="2"/></svg></span><span>เบิกจ่าย</span></button>
       <button class="navlink mobile-primary" data-p="expenses"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v13"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg></span><span>รายจ่าย</span></button>
       <button class="navlink mobile-primary" data-p="income"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21V8"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span><span>รายรับ</span></button>
-      <button class="navlink" data-p="payables"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 3h14v18H5z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span><span>เจ้าหนี้</span></button>
+      <button class="navlink locked-feature" type="button" data-coming-soon="payables"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 3h14v18H5z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span><span>เจ้าหนี้</span><span class="coming-soon-badge">Coming Soon</span></button>
       <button class="navlink" data-p="reconciliation"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h11"/><path d="M4 12h7"/><path d="M4 17h6"/><path d="m14 15 2 2 4-5"/><circle cx="17" cy="14" r="5"/></svg></span><span>กระทบยอด</span></button>
       <button class="navlink mobile-primary mobile-more-nav" id="mobileMoreNav" type="button"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></span><span>เพิ่มเติม</span></button>
       <button class="navlink" data-p="reports"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V9"/><path d="M10 19V5"/><path d="M16 19v-7"/><path d="M22 19V3"/></svg></span><span>รายงานและภาษี</span></button>
 
       <details class="sidebar-fold accounting-nav-fold">
-        <summary><span class="fold-icon"><svg viewBox="0 0 24 24"><path d="M4 20h16M6 17V8m4 9V8m4 9V8m4 9V8M4 8h16l-8-5z"/></svg></span><span>บัญชี SME</span><b>⌄</b></summary>
+        <summary><span class="fold-icon"><svg viewBox="0 0 24 24"><path d="M4 20h16M6 17V8m4 9V8m4 9V8m4 9V8M4 8h16l-8-5z"/></svg></span><span>บัญชี SME <em class="fold-coming-soon">Coming Soon</em></span><b>⌄</b></summary>
         <div class="sidebar-fold-body">
-          <button class="subnavlink" data-p="search">ค้นหาทั้งระบบ</button>
-          <button class="subnavlink" data-p="contacts">ลูกค้าและผู้ขาย</button>
-          <button class="subnavlink" data-p="period-close">ปิดงวดบัญชี</button>
-          <button class="subnavlink" data-p="tax-center">ศูนย์ภาษี</button>
-          <button class="subnavlink" data-p="ledger">สมุดบัญชี</button>
-          <button class="subnavlink" data-p="migration">ย้ายข้อมูล</button>
-          <button class="subnavlink" data-p="audit">Audit & สิทธิ์</button>
+          <button class="subnavlink locked-feature" type="button" data-coming-soon="search"><span>ค้นหาทั้งระบบ</span><span class="coming-soon-badge">Coming Soon</span></button>
+          <button class="subnavlink locked-feature" type="button" data-coming-soon="contacts"><span>ลูกค้าและผู้ขาย</span><span class="coming-soon-badge">Coming Soon</span></button>
+          <button class="subnavlink locked-feature" type="button" data-coming-soon="period-close"><span>ปิดงวดบัญชี</span><span class="coming-soon-badge">Coming Soon</span></button>
+          <button class="subnavlink locked-feature" type="button" data-coming-soon="tax-center"><span>ศูนย์ภาษี</span><span class="coming-soon-badge">Coming Soon</span></button>
+          <button class="subnavlink locked-feature" type="button" data-coming-soon="ledger"><span>สมุดบัญชี</span><span class="coming-soon-badge">Coming Soon</span></button>
+          <button class="subnavlink locked-feature" type="button" data-coming-soon="migration"><span>ย้ายข้อมูล</span><span class="coming-soon-badge">Coming Soon</span></button>
+          <button class="subnavlink locked-feature" type="button" data-coming-soon="audit"><span>Audit & สิทธิ์</span><span class="coming-soon-badge">Coming Soon</span></button>
         </div>
       </details>
 
@@ -131,14 +131,14 @@
       <div class="mobile-more-section">
         <div class="mobile-more-label">บัญชี SME</div>
         <div class="mobile-more-list">
-          <button type="button" data-mobile-page="search"><span>ค้นหาทั้งระบบ</span><b>›</b></button>
-          <button type="button" data-mobile-page="payables"><span>เจ้าหนี้และบิลค้างจ่าย</span><b>›</b></button>
-          <button type="button" data-mobile-page="contacts"><span>ลูกค้าและผู้ขาย</span><b>›</b></button>
-          <button type="button" data-mobile-page="period-close"><span>ปิดงวดบัญชี</span><b>›</b></button>
-          <button type="button" data-mobile-page="tax-center"><span>ศูนย์ภาษี</span><b>›</b></button>
-          <button type="button" data-mobile-page="ledger"><span>สมุดบัญชี</span><b>›</b></button>
-          <button type="button" data-mobile-page="migration"><span>ย้ายข้อมูลจากระบบเดิม</span><b>›</b></button>
-          <button type="button" data-mobile-page="audit"><span>Audit & สิทธิ์</span><b>›</b></button>
+          <button type="button" class="locked-feature" data-coming-soon="search"><span>ค้นหาทั้งระบบ <small>Coming Soon</small></span><b>🔒</b></button>
+          <button type="button" class="locked-feature" data-coming-soon="payables"><span>เจ้าหนี้และบิลค้างจ่าย <small>Coming Soon</small></span><b>🔒</b></button>
+          <button type="button" class="locked-feature" data-coming-soon="contacts"><span>ลูกค้าและผู้ขาย <small>Coming Soon</small></span><b>🔒</b></button>
+          <button type="button" class="locked-feature" data-coming-soon="period-close"><span>ปิดงวดบัญชี <small>Coming Soon</small></span><b>🔒</b></button>
+          <button type="button" class="locked-feature" data-coming-soon="tax-center"><span>ศูนย์ภาษี <small>Coming Soon</small></span><b>🔒</b></button>
+          <button type="button" class="locked-feature" data-coming-soon="ledger"><span>สมุดบัญชี <small>Coming Soon</small></span><b>🔒</b></button>
+          <button type="button" class="locked-feature" data-coming-soon="migration"><span>ย้ายข้อมูลจากระบบเดิม <small>Coming Soon</small></span><b>🔒</b></button>
+          <button type="button" class="locked-feature" data-coming-soon="audit"><span>Audit & สิทธิ์ <small>Coming Soon</small></span><b>🔒</b></button>
         </div>
       </div>
       <div class="mobile-more-section">
@@ -965,7 +965,7 @@
 
 <div class="modal" id="modal"><div class="box"><button class="x" onclick="closeGlobalModal()">✕</button><div id="modalBody"></div></div></div>
 
-<script src="./assets/dashboard.js?v=7.0"></script>
-<script src="./assets/accounting-suite.js?v=7.1"></script>
+<script src="./assets/dashboard.js?v=7.2"></script>
+<!-- Accounting Suite advanced modules are intentionally locked until release. File kept in repo. -->
 </body>
 </html>
