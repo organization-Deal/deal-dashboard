@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Internal Ops · รับจ่ายแบบไม่จำกัด</title>
+<link rel="stylesheet" href="./assets/admin.css?v=7.13">
+</head>
+<body>
+<div id="loginGate" class="login-gate">
+  <form id="loginForm" class="login-card">
+    <div class="brand-mark">OPS</div>
+    <h1>Internal Operations</h1>
+    <p>หลังบ้านสำหรับทีมบริษัทเท่านั้น ใส่ ADMIN_KEY เพื่อเข้าใช้งาน</p>
+    <input id="adminKeyInput" type="password" autocomplete="current-password" placeholder="ADMIN_KEY" required>
+    <button type="submit">เข้าสู่หลังบ้าน</button>
+    <small>Key จะเก็บเฉพาะ Session ของแท็บนี้ ไม่บันทึกถาวรในเครื่อง</small>
+  </form>
+</div>
+
+<div class="ops-shell" id="opsShell" hidden>
+  <aside class="ops-sidebar">
+    <div class="ops-brand"><div class="brand-mark small">OPS</div><div><b>รับจ่ายแบบไม่จำกัด</b><small>Internal Operations</small></div></div>
+    <nav>
+      <button class="ops-nav active" data-page="overview">ภาพรวม</button>
+      <button class="ops-nav" data-page="customers">ลูกค้า</button>
+      <button class="ops-nav" data-page="pilot">Pilot Requests</button>
+      <button class="ops-nav" data-page="subscriptions">Trial & Packages</button>
+      <button class="ops-nav" data-page="operations">Operations</button>
+      <button class="ops-nav" data-page="audit">Audit Log</button>
+    </nav>
+    <div class="sidebar-foot">
+      <button id="openPilotForm" class="text-btn">เปิดฟอร์ม Pilot ↗</button>
+      <button id="logoutBtn" class="text-btn danger">ออกจากหลังบ้าน</button>
+    </div>
+  </aside>
+
+  <main class="ops-main">
+    <header class="topbar">
+      <div><div class="eyebrow">INTERNAL ONLY</div><h1 id="pageTitle">ภาพรวม</h1></div>
+      <div class="top-actions"><span id="lastUpdated">—</span><button id="refreshBtn">อัปเดต</button></div>
+    </header>
+
+    <section class="ops-page show" id="page-overview">
+      <div class="kpi-grid" id="overviewKpis"></div>
+      <div class="health-grid" id="healthGrid"></div>
+      <div class="two-col">
+        <article class="panel"><div class="panel-head"><div><h2>ต้องดูแลก่อน</h2><p>ลูกค้าที่ Trial, Quota หรือการเชื่อมต่อมีความเสี่ยง</p></div></div><div id="attentionList"></div></article>
+        <article class="panel"><div class="panel-head"><div><h2>Pilot ล่าสุด</h2><p>คำขอที่ยังอยู่ในกระบวนการเปิดสิทธิ์</p></div></div><div id="pilotLatest"></div></article>
+      </div>
+    </section>
+
+    <section class="ops-page" id="page-customers">
+      <div class="toolbar"><input id="customerSearch" type="search" placeholder="ค้นหาบริษัท / Tenant / Gmail"><select id="customerFilter"><option value="">ทุกสถานะ</option><option value="critical">ต้องแก้ด่วน</option><option value="warning">ควรดู</option><option value="trial">Trial</option><option value="paid">Paid</option><option value="free">Free</option></select><button id="deepCustomerRefresh">ตรวจเชิงลึก</button></div>
+      <article class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>บริษัท</th><th>แพ็กเกจ</th><th>Trial</th><th>Usage</th><th>ธุรกิจ</th><th>Google</th><th>Gmail</th><th>สถานะ</th></tr></thead><tbody id="customerBody"></tbody></table></div></article>
+    </section>
+
+    <section class="ops-page" id="page-pilot">
+      <div class="toolbar"><input id="pilotSearch" type="search" placeholder="ค้นหาธุรกิจ / อีเมล / ผู้แนะนำ"><a class="button-link" href="https://deal-dashboard.organization-23c.workers.dev/pilot.html" target="_blank" rel="noopener">เปิดฟอร์ม Pilot ↗</a></div>
+      <article class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>วันที่</th><th>ธุรกิจ</th><th>อีเมล</th><th>ผู้แนะนำ</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="pilotBody"></tbody></table></div></article>
+    </section>
+
+    <section class="ops-page" id="page-subscriptions">
+      <div class="toolbar"><select id="subscriptionFilter"><option value="">ทุกแพ็กเกจ</option><option value="trial">Trial Business</option><option value="active">Paid Active</option><option value="free">Free</option><option value="not_started">ยังไม่เริ่ม Trial</option></select><button id="subscriptionRefreshUsage">Refresh Usage ทั้งหมด</button></div>
+      <article class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>บริษัท</th><th>แพ็กเกจ</th><th>Trial สิ้นสุด</th><th>เหลือ</th><th>Usage เดือนนี้</th><th>ธุรกิจ</th><th>สถานะ</th></tr></thead><tbody id="subscriptionBody"></tbody></table></div></article>
+    </section>
+
+    <section class="ops-page" id="page-operations">
+      <div class="health-grid" id="operationsHealth"></div>
+      <div class="two-col">
+        <article class="panel"><div class="panel-head"><div><h2>ลูกค้าที่การเชื่อมต่อมีปัญหา</h2><p>Google / Gmail / Setup ที่ควรเข้าไปช่วย</p></div></div><div id="connectionIssues"></div></article>
+        <article class="panel"><div class="panel-head"><div><h2>Recent Errors</h2><p>Error ที่ระบบบันทึกใน 14 วันล่าสุด</p></div></div><div id="errorList"></div></article>
+      </div>
+    </section>
+
+    <section class="ops-page" id="page-audit">
+      <article class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>เวลา</th><th>Action</th><th>Tenant</th><th>รายละเอียด</th></tr></thead><tbody id="auditBody"></tbody></table></div></article>
+    </section>
+  </main>
+</div>
+
+<div class="drawer-backdrop" id="drawerBackdrop" hidden>
+  <aside class="customer-drawer" id="customerDrawer" aria-modal="true" role="dialog">
+    <div class="drawer-head"><div><span class="eyebrow">CUSTOMER DETAIL</span><h2 id="drawerTitle">—</h2><small id="drawerTenant">—</small></div><button id="drawerClose" aria-label="ปิด">×</button></div>
+    <div id="drawerBody" class="drawer-body"></div>
+  </aside>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+<script src="./assets/admin.js?v=7.13"></script>
+</body>
+</html>

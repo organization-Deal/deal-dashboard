@@ -1,5 +1,9 @@
 /index.html
   Cache-Control: no-cache, no-store, must-revalidate
-
+/admin.html
+  Cache-Control: no-cache, no-store, must-revalidate
+  X-Robots-Tag: noindex, nofollow
+/pilot.html
+  Cache-Control: no-cache, no-store, must-revalidate
 /assets/*
   Cache-Control: public, max-age=86400
