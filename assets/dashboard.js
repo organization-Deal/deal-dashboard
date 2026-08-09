@@ -1,4 +1,4 @@
-/* Dashboard Core SME v7.3 — focused production UI */
+/* Dashboard Core SME v7.7 — mobile reimbursement selection */
 const API = "https://accoutingsuppor02.organization-23c.workers.dev/api/expenses";
 const WORKER = "https://accoutingsuppor02.organization-23c.workers.dev";
 const QS = new URLSearchParams(location.search);
@@ -1385,16 +1385,48 @@ function updateStatusCounts(){
 function reviewMergeSelectable(row){return row?.statusKey==="review"&&(row.kind==="queue"||(row.kind==="batch"&&row.workflowStep==="review"));}
 function reviewMergeSelected(row){return row.kind==="queue"?BATCH_SELECTED.has(row.id):REVIEW_BATCH_SELECTED.has(row.id);}
 function setReviewMergeSelected(row,selected){const set=row.kind==="queue"?BATCH_SELECTED:REVIEW_BATCH_SELECTED;if(selected)set.add(row.id);else set.delete(row.id);}
+function selectedReviewRows(){
+  return allMasterRows().filter(row=>reviewMergeSelectable(row)&&reviewMergeSelected(row));
+}
+function selectedPayerSummary(){
+  const rows=selectedReviewRows();
+  const keyOf=row=>String(row?.payerName||row?.group?.payerName||row?.raw?.payerName||"ไม่ระบุผู้เบิก").trim()||"ไม่ระบุผู้เบิก";
+  const names=[...new Set(rows.map(keyOf))];
+  return {rows,names,count:names.length,total:rows.reduce((sum,row)=>sum+Number(row.amount||0),0)};
+}
+function ensureMobileBatchDock(){
+  let dock=el("mobileBatchDock");
+  if(dock)return dock;
+  dock=document.createElement("div");
+  dock.id="mobileBatchDock";
+  dock.className="mobile-batch-dock";
+  dock.hidden=true;
+  dock.innerHTML=`<label class="mobile-batch-select-all"><input id="mobileBatchSelectAll" type="checkbox"><span>เลือกทั้งหมด</span></label><div class="mobile-batch-dock-copy"><strong id="mobileBatchDockTitle">ยังไม่ได้เลือก</strong><small id="mobileBatchDockHint"></small></div><button class="btn solid" id="mobileBatchDockCreate" type="button">รวมเป็นใบเบิก</button>`;
+  document.body.appendChild(dock);
+  el("mobileBatchSelectAll").addEventListener("change",e=>masterToggleVisible(e.target.checked));
+  el("mobileBatchDockCreate").addEventListener("click",()=>createBatchFromSelection("ปกติ"));
+  return dock;
+}
 function updateMasterSelection(){
   const qn=BATCH_SELECTED.size+REVIEW_BATCH_SELECTED.size;
   const pieces=[];if(BATCH_SELECTED.size)pieces.push(`${BATCH_SELECTED.size} รายการย่อย`);if(REVIEW_BATCH_SELECTED.size)pieces.push(`${REVIEW_BATCH_SELECTED.size} ใบเบิก`);
-  const text=qn?`เลือก ${pieces.join(" + ")}`:"ยังไม่ได้เลือกรายการ";
+  const payers=selectedPayerSummary();
+  const multiplePayers=payers.count>1;
+  const text=qn?`เลือก ${pieces.join(" + ")}${multiplePayers?` · ${payers.count} ผู้เบิก`:""}`:"ยังไม่ได้เลือกรายการ";
+  const hint=qn?(multiplePayers?"รวมเป็นรอบเดียวกัน และแยกใบเบิก/บัญชีรับเงินตามผู้เบิกอัตโนมัติ":"รวมรายการที่เลือกเป็นใบเบิกหลักเดียวกัน"):"ติ๊ก Checkbox หน้ารายการเพื่อรวมใบเบิก";
   if(el("batchMasterSelected"))el("batchMasterSelected").textContent=text;
-  if(el("batchBulkHint"))el("batchBulkHint").textContent=qn?"รวมทุกแถวที่เลือกเป็นใบเบิกหลักใหม่":"เลือกหลายรายการเพื่อรวมเป็นใบเบิก (ฟีเจอร์เสริม ไม่ใช่ขั้นตอนบังคับ)";
-  if(el("batchMasterCreate"))el("batchMasterCreate").disabled=!qn;
+  if(el("batchBulkHint"))el("batchBulkHint").textContent=hint;
+  if(el("batchMasterCreate")){el("batchMasterCreate").disabled=!qn;el("batchMasterCreate").textContent=multiplePayers?"รวมเป็นรอบเบิก":"รวมเป็นใบเบิก";}
   const visible=masterFilteredRows().filter(reviewMergeSelectable);
   const checked=visible.filter(reviewMergeSelected).length;
   const head=el("batchMasterHeaderCheck");if(head){head.checked=visible.length>0&&checked===visible.length;head.indeterminate=checked>0&&checked<visible.length;}
+  const dock=ensureMobileBatchDock();
+  dock.hidden=!qn;
+  document.body.classList.toggle("has-mobile-batch-selection",qn>0);
+  if(el("mobileBatchDockTitle"))el("mobileBatchDockTitle").textContent=multiplePayers?`${qn} รายการ · ${payers.count} ผู้เบิก`: `${qn} รายการ · ${baht(payers.total)}`;
+  if(el("mobileBatchDockHint"))el("mobileBatchDockHint").textContent=multiplePayers?"รอบเดียว · แยกจ่ายตามคน":`รวม ${baht(payers.total)}`;
+  if(el("mobileBatchDockCreate"))el("mobileBatchDockCreate").textContent=multiplePayers?"รวมเป็นรอบเบิก":"รวมเป็นใบเบิก";
+  const mobileAll=el("mobileBatchSelectAll");if(mobileAll){mobileAll.checked=visible.length>0&&checked===visible.length;mobileAll.indeterminate=checked>0&&checked<visible.length;}
 }
 function batchPaymentChannels(){const fromApi=Array.isArray(BATCH_DATA.paymentChannels)?BATCH_DATA.paymentChannels.map(normalizeFinanceChannel):[];return (fromApi.length?fromApi:financeChannels(false));}
 function batchChannelById(id){return batchPaymentChannels().find(x=>String(x.id)===String(id))||null;}
@@ -1457,7 +1489,7 @@ function renderMasterTable(){
     const b=row.raw||{},isQueue=row.kind==="queue",selectable=reviewMergeSelectable(row),checked=reviewMergeSelected(row);
     const checkbox=selectable?`<input class="master-checkbox" type="checkbox" data-master-merge-kind="${escAttr(row.kind)}" data-master-merge-id="${escAttr(row.id)}" ${checked?"checked":""}>`:"";
     const accountNo=row.accountNo||"";
-    const rowClass=row.statusKey==="paid"?"row-paid":["correction","rejected"].includes(row.statusKey)?"row-correction":"";
+    const rowClass=[row.statusKey==="paid"?"row-paid":["correction","rejected"].includes(row.statusKey)?"row-correction":"",selectable?"merge-selectable":""].filter(Boolean).join(" ");
     return `<tr class="${rowClass}" role="button" tabindex="0" aria-label="เปิดดูรายละเอียด ${escAttr(row.title)}" ${isQueue?`data-open-queue="${escAttr(row.id)}"`:`data-open-batch="${escAttr(row.id)}"`}>
       <td class="sticky-select" data-label="เลือก">${checkbox}</td>
       <td data-label="ประเภท"><span class="acct-priority ${row.priority}">${row.priority==="urgent"?"ด่วน":"ปกติ"}</span></td>
@@ -1569,19 +1601,27 @@ async function createBatchFromSelection(type="ปกติ"){
   const expenseIds=[...BATCH_SELECTED],batchIds=[...REVIEW_BATCH_SELECTED],selectedCount=expenseIds.length+batchIds.length;if(!selectedCount)return;
   const urgent=type==="ด่วน";
   const summary=[expenseIds.length?`${expenseIds.length} รายการย่อย`:"",batchIds.length?`${batchIds.length} ใบเบิกเดิม`:""].filter(Boolean).join(" และ ");
-  if(!confirm(`${urgent?"สร้างใบเบิกด่วน":"รวมเป็นใบเบิกหลักใหม่"}จาก ${summary}?
+  const payers=selectedPayerSummary(),multiplePayers=payers.count>1;
+  const title=urgent?"สร้างใบเบิกด่วน":multiplePayers?"รวมเป็นรอบเบิกเดียวกัน":"รวมเป็นใบเบิกหลักใหม่";
+  const payerNote=multiplePayers?`
+
+เลือก ${payers.count} ผู้เบิก: ${payers.names.slice(0,4).join(", ")}${payers.names.length>4?" …":""}
+ระบบจะใช้รอบเดียวกัน แต่แยกใบเบิกและบัญชีรับเงินตามแต่ละคนอัตโนมัติ เพื่อไม่ให้ยอดโอนปะปน`:"";
+  if(!confirm(`${title}จาก ${summary}?${payerNote}
 
 ใบเบิกเดิมที่เลือกจะถูกเก็บประวัติว่า “ถูกรวมแล้ว”`))return;
-  const button=urgent?el("batchMasterUrgent"):el("batchMasterCreate"),old=button?.textContent;if(button){button.disabled=true;button.textContent="กำลังรวม…";}
+  const button=urgent?el("batchMasterUrgent"):el("batchMasterCreate"),dockButton=el("mobileBatchDockCreate"),old=button?.textContent,oldDock=dockButton?.textContent;if(button){button.disabled=true;button.textContent="กำลังรวม…";}if(dockButton){dockButton.disabled=true;dockButton.textContent="กำลังรวม…";}
   try{
     const out=urgent?await batchPost("/api/batch-urgent",{expenseIds}):await batchPost("/api/batch-close",{expenseIds,batchIds});
     const docs=(out.batches||[]).map(x=>x.docId).filter(Boolean);
-    alert(out.itemCount?`สร้างใบเบิกสำเร็จ${docs.length?`
+    const people=Number(out.people||payers.count||0);
+    alert(out.itemCount?`${multiplePayers?"สร้างรอบเบิกสำเร็จ":"สร้างใบเบิกสำเร็จ"}${docs.length?`
 ${docs.join(", ")}`:""}
-${out.itemCount} รายการย่อย · ${baht(out.total)}${out.mergedBatchCount?`
+${out.itemCount} รายการย่อย · ${baht(out.total)}${people>1?`
+${people} ผู้เบิก · แยกใบและบัญชีรับเงินตามคน`:""}${out.mergedBatchCount?`
 รวมใบเบิกเดิม ${out.mergedBatchCount} ใบ`:""}`:(out.message||"ไม่มีรายการ"));
     BATCH_SELECTED.clear();REVIEW_BATCH_SELECTED.clear();await refreshBatchData({quiet:true});setStatusFilter("review");
-  }catch(err){alert("รวมใบเบิกไม่สำเร็จ: "+err.message);}finally{if(button){button.disabled=false;button.textContent=old||"รวมเป็นใบเบิก";}}
+  }catch(err){alert("รวมใบเบิกไม่สำเร็จ: "+err.message);}finally{if(button){button.disabled=false;button.textContent=old||"รวมเป็นใบเบิก";}if(dockButton){dockButton.disabled=false;dockButton.textContent=oldDock||"รวมเป็นใบเบิก";}updateMasterSelection();}
 }
 function markSelectedTransfers(){
   const rows=selectedPaymentRows();
