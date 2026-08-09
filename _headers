@@ -7,3 +7,6 @@
   Cache-Control: no-cache, no-store, must-revalidate
 /assets/*
   Cache-Control: public, max-age=86400
+/assets/reimbursement-batch-lock.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
