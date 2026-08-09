@@ -6,3 +6,7 @@
 .login-status.loading{background:#f5f5f7;color:#1d1d1f}
 .login-status.success{background:#edf8f0;color:#147a36;border-color:#caebd3}
 .login-status.error{background:#fff0ef;color:#b42318;border-color:#ffd2cf}
+
+/* v7.13.2 HOTFIX — author CSS must never override the native hidden attribute */
+[hidden]{display:none!important}
+.login-gate[hidden],.ops-shell[hidden],.drawer-backdrop[hidden],.toast[hidden]{display:none!important}
