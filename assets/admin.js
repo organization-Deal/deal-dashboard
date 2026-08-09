@@ -1,6 +1,8 @@
 (() => {
   "use strict";
   const API = "https://accoutingsuppor02.organization-23c.workers.dev";
+  const ADMIN_UI_VERSION = "7.13.1";
+  const API_TIMEOUT_MS = 12000;
   const $ = (id) => document.getElementById(id);
   let KEY = sessionStorage.getItem("ops:adminKey") || "";
   let PAGE = "overview";
@@ -14,22 +16,56 @@
   const statusPill = (text, cls="ok") => `<span class="status-pill ${esc(cls)}">${esc(text)}</span>`;
   const toast = (msg) => { const n=$("toast"); n.textContent=msg; n.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>n.hidden=true,2600); };
 
+  function setLoginStatus(message, state="info") {
+    const n=$("loginStatus");
+    if(!n)return;
+    n.textContent=message;
+    n.className=`login-status ${state}`;
+  }
+  function setLoginBusy(busy) {
+    const btn=$("loginSubmit") || $("loginForm")?.querySelector('button[type="submit"]');
+    const input=$("adminKeyInput");
+    if(btn){ btn.disabled=busy; btn.textContent=busy?"กำลังตรวจสอบ…":"เข้าสู่หลังบ้าน"; }
+    if(input) input.disabled=busy;
+  }
+  function friendlyLoginError(error) {
+    const raw=String(error?.message||error||"").trim();
+    if(/ADMIN_KEY|unauthorized|401/i.test(raw)) return "ADMIN_KEY ไม่ถูกต้อง · ตรวจค่าที่ตั้งไว้ใน Cloudflare Variables and Secrets แล้วลองใหม่";
+    if(/admin_api_not_deployed|404|not_found/i.test(raw)) return "Backend Admin API ยังไม่พร้อม · ต้อง Deploy deal-line-bot v7.13+ ก่อน แล้วค่อย Refresh หน้านี้";
+    if(/timeout|AbortError/i.test(raw)) return "Worker ตอบช้าเกิน 12 วินาที · ลองอีกครั้ง หรือตรวจ Cloudflare Worker/Live Logs";
+    if(/Failed to fetch|NetworkError|Load failed|CORS/i.test(raw)) return "ติดต่อ Worker ไม่ได้ · ตรวจว่า deal-line-bot Deploy แล้ว และ CORS/DASHBOARD_URL ถูกต้อง";
+    return raw || "เข้าสู่หลังบ้านไม่สำเร็จ";
+  }
   function apiUrl(path, params={}) { const u=new URL(API+path); u.searchParams.set("key",KEY); Object.entries(params).forEach(([k,v])=>v!==undefined&&v!==null&&u.searchParams.set(k,String(v))); return u.toString(); }
   async function api(path, opts={}, params={}) {
-    const res = await fetch(apiUrl(path,params), { ...opts, headers:{"content-type":"application/json",...(opts.headers||{})} });
-    const data = await res.json().catch(()=>({}));
-    if (res.status===401) { logout(false); throw new Error("ADMIN_KEY ไม่ถูกต้อง"); }
-    if (!res.ok || data.ok===false) throw new Error(data.error || data.message || `HTTP ${res.status}`);
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),API_TIMEOUT_MS);
+    let res;
+    try {
+      res = await fetch(apiUrl(path,params), { ...opts, signal:opts.signal||controller.signal, headers:{"content-type":"application/json",...(opts.headers||{})} });
+    } catch(error) {
+      if(error?.name==="AbortError") throw new Error("timeout");
+      throw new Error(`Failed to fetch: ${error?.message||error}`);
+    } finally { clearTimeout(timer); }
+    const raw=await res.text();
+    let data={};
+    try{ data=raw?JSON.parse(raw):{}; }catch{ data={ error: raw.slice(0,240) || `HTTP ${res.status}` }; }
+    if(res.status===401) throw new Error("ADMIN_KEY ไม่ถูกต้อง");
+    if(res.status===404) throw new Error("admin_api_not_deployed: HTTP 404");
+    if(!res.ok || data.ok===false) throw new Error(data.error || data.message || `HTTP ${res.status}`);
     return data;
   }
   async function action(body) { return api("/admin/ops/action", { method:"POST", body:JSON.stringify(body) }); }
 
-  function loginSuccess() { $("loginGate").hidden=true; $("opsShell").hidden=false; loadPage("overview",true); }
-  function logout(show=true) { sessionStorage.removeItem("ops:adminKey"); KEY=""; $("opsShell").hidden=true; $("loginGate").hidden=false; if(show) toast("ออกจากหลังบ้านแล้ว"); }
+  function loginSuccess() { setLoginStatus("เข้าสู่ระบบสำเร็จ", "success"); $("loginGate").hidden=true; $("opsShell").hidden=false; loadPage("overview",true); }
+  function logout(show=true) { sessionStorage.removeItem("ops:adminKey"); KEY=""; $("opsShell").hidden=true; $("loginGate").hidden=false; setLoginBusy(false); setLoginStatus("พร้อมตรวจสอบ ADMIN_KEY", "info"); if(show) toast("ออกจากหลังบ้านแล้ว"); }
 
   async function validateKey() {
     if (!KEY) return;
-    try { await api("/admin/ops/overview"); loginSuccess(); } catch(e) { $("adminKeyInput").value=""; }
+    setLoginBusy(true); setLoginStatus("กำลังตรวจสอบ Session เดิม…", "loading");
+    try { await api("/admin/ops/overview"); loginSuccess(); }
+    catch(e) { sessionStorage.removeItem("ops:adminKey"); KEY=""; $("adminKeyInput").value=""; setLoginStatus(friendlyLoginError(e),"error"); }
+    finally { setLoginBusy(false); }
   }
 
   function setPage(page) {
@@ -180,7 +216,26 @@
     const act=e.target.closest("[data-customer-action]"); if(act){doCustomerAction(act);return;}
   });
 
-  $("loginForm").addEventListener("submit", async e=>{e.preventDefault();KEY=$("adminKeyInput").value.trim();sessionStorage.setItem("ops:adminKey",KEY);try{await api("/admin/ops/overview");loginSuccess();}catch(err){sessionStorage.removeItem("ops:adminKey");KEY="";toast(err.message);}});
+  $("loginForm").addEventListener("submit", async e=>{
+    e.preventDefault();
+    const candidate=$("adminKeyInput").value.trim();
+    if(!candidate){setLoginStatus("กรอก ADMIN_KEY ก่อน", "error");$("adminKeyInput").focus();return;}
+    KEY=candidate;
+    setLoginBusy(true);
+    setLoginStatus("กำลังตรวจสอบ ADMIN_KEY กับ Worker…", "loading");
+    try{
+      await api("/admin/ops/overview");
+      sessionStorage.setItem("ops:adminKey",KEY);
+      loginSuccess();
+    }catch(err){
+      sessionStorage.removeItem("ops:adminKey");
+      KEY="";
+      $("adminKeyInput").removeAttribute("disabled");
+      $("adminKeyInput").setAttribute("aria-invalid","true");
+      setLoginStatus(friendlyLoginError(err),"error");
+      toast(friendlyLoginError(err));
+    }finally{setLoginBusy(false);}
+  });
   $("logoutBtn").addEventListener("click",()=>logout());
   $("refreshBtn").addEventListener("click",()=>loadPage(PAGE));
   $("customerSearch").addEventListener("input",renderCustomers); $("customerFilter").addEventListener("change",renderCustomers); $("pilotSearch").addEventListener("input",renderPilots); $("subscriptionFilter").addEventListener("change",renderSubscriptions);
@@ -189,5 +244,16 @@
   $("openPilotForm").addEventListener("click",()=>window.open("https://deal-dashboard.organization-23c.workers.dev/pilot.html","_blank","noopener"));
 
   const q=new URLSearchParams(location.search); if(q.get("key")){KEY=q.get("key");sessionStorage.setItem("ops:adminKey",KEY);q.delete("key");history.replaceState(null,"",location.pathname+(q.toString()?`?${q}`:""));}
-  if(KEY) validateKey(); else $("loginGate").hidden=false;
+  window.addEventListener("unhandledrejection",e=>{
+    console.error("[OPS unhandled rejection]",e.reason);
+    if(!$("loginGate").hidden)setLoginStatus(`ระบบหลังบ้านมีข้อผิดพลาด: ${friendlyLoginError(e.reason)}`,"error");
+  });
+  window.addEventListener("error",e=>{
+    console.error("[OPS runtime error]",e.error||e.message);
+    if(!$("loginGate").hidden)setLoginStatus(`JavaScript ทำงานผิดพลาด: ${String(e.message||"unknown error").slice(0,180)}`,"error");
+  });
+
+  if(KEY) validateKey(); else { $("loginGate").hidden=false; setLoginStatus("พร้อมตรวจสอบ ADMIN_KEY", "info"); }
+  window.__OPS_ADMIN_READY__=true;
+  console.info(`[Internal Ops] Admin UI v${ADMIN_UI_VERSION} ready`);
 })();
