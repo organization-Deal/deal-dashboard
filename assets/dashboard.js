@@ -69,6 +69,13 @@ let REFRESHING = false;
 let HAS_LOADED = false;
 let EMAIL_POLL_TICK = 0;
 let LAST_FOREGROUND_REFRESH = 0;
+// v7.4 Resilient Mobile Load: never destroy the Dashboard on a transient network/API error.
+const DASH_CACHE_KEY=`dashboard:last-good:${TENANT}`;
+const DASH_CACHE_MAX_ROWS=750;
+const DASH_CACHE_MAX_BYTES=3_500_000;
+let DASH_RETRY_TIMER=null;
+let DASH_FAILURE_COUNT=0;
+let DASH_AUTH_BLOCKED=false;
 const SETTINGS_SIGNAL_KEY=`document-settings-updated:${TENANT}`;
 const SIGNATURE_READY_KEY=`signature-ready:${TENANT}`;
 let LAST_SETTINGS_SIGNAL=localStorage.getItem(SETTINGS_SIGNAL_KEY)||"";
@@ -2293,8 +2300,77 @@ bindIncomeUi();
 
 /* ---------- REALTIME LOAD ---------- */
 function fatal(icon,msg){
+  // ใช้เฉพาะกรณีเปิดมาด้วย URL ที่ใช้งานไม่ได้จริง ๆ เช่นไม่มี tenant/token
   if(REFRESH_TIMER) clearInterval(REFRESH_TIMER);
   document.body.innerHTML='<div class="fatal"><span class="ic">'+icon+'</span>'+msg+'</div>';
+}
+
+function ensureNetworkBanner(){
+  let box=el("networkRecoveryBanner");
+  if(box)return box;
+  const main=document.querySelector(".main");
+  if(!main)return null;
+  box=document.createElement("div");
+  box.id="networkRecoveryBanner";
+  box.className="network-recovery-banner";
+  box.hidden=true;
+  box.innerHTML=`<span class="network-recovery-dot" aria-hidden="true"></span><div class="network-recovery-copy"><strong id="networkRecoveryTitle">กำลังเชื่อมต่อ…</strong><small id="networkRecoveryDetail">กำลังโหลดข้อมูลล่าสุด</small></div><button type="button" id="networkRecoveryRetry">ลองใหม่</button>`;
+  main.prepend(box);
+  box.querySelector("#networkRecoveryRetry")?.addEventListener("click",()=>{
+    if(DASH_AUTH_BLOCKED){location.reload();return;}
+    clearDashboardRetry();
+    refreshData({manual:true});
+  });
+  return box;
+}
+function showNetworkBanner(mode,title,detail,retryLabel="ลองใหม่"){
+  const box=ensureNetworkBanner();if(!box)return;
+  box.hidden=false;box.dataset.mode=mode||"warn";
+  const t=el("networkRecoveryTitle"),d=el("networkRecoveryDetail"),b=el("networkRecoveryRetry");
+  if(t)t.textContent=title||"เชื่อมต่อไม่สำเร็จ";if(d)d.textContent=detail||"ระบบจะลองใหม่ให้อัตโนมัติ";if(b)b.textContent=retryLabel;
+}
+function hideNetworkBanner(){const box=el("networkRecoveryBanner");if(box)box.hidden=true;}
+function clearDashboardRetry(){if(DASH_RETRY_TIMER){clearTimeout(DASH_RETRY_TIMER);DASH_RETRY_TIMER=null;}}
+function scheduleDashboardRetry(){
+  if(DASH_AUTH_BLOCKED||document.hidden)return;
+  clearDashboardRetry();
+  const waits=[2500,5000,10000,20000,30000,60000];
+  const wait=waits[Math.min(Math.max(DASH_FAILURE_COUNT-1,0),waits.length-1)];
+  DASH_RETRY_TIMER=setTimeout(()=>{DASH_RETRY_TIMER=null;refreshData({manual:false});},wait);
+}
+function saveDashboardCache(rows){
+  try{
+    const safe=(Array.isArray(rows)?rows:[]).slice(0,DASH_CACHE_MAX_ROWS);
+    const payload=JSON.stringify({savedAt:Date.now(),rows:safe});
+    if(payload.length<=DASH_CACHE_MAX_BYTES)sessionStorage.setItem(DASH_CACHE_KEY,payload);
+  }catch(err){console.debug("dashboard cache skipped",err);}
+}
+function loadDashboardCache(){
+  try{
+    const raw=sessionStorage.getItem(DASH_CACHE_KEY);if(!raw)return null;
+    const parsed=JSON.parse(raw);if(!Array.isArray(parsed?.rows))return null;
+    return {savedAt:Number(parsed.savedAt)||0,rows:cleanRows(parsed.rows)};
+  }catch{return null;}
+}
+function cachedAgeLabel(savedAt){
+  if(!savedAt)return "ข้อมูลที่บันทึกไว้ล่าสุด";
+  const mins=Math.max(0,Math.round((Date.now()-savedAt)/60000));
+  if(mins<1)return "ข้อมูลล่าสุดเมื่อสักครู่";if(mins<60)return `ข้อมูลล่าสุดประมาณ ${mins} นาทีที่แล้ว`;
+  const hours=Math.round(mins/60);if(hours<24)return `ข้อมูลล่าสุดประมาณ ${hours} ชั่วโมงที่แล้ว`;
+  return `ข้อมูลล่าสุด ${new Date(savedAt).toLocaleDateString("th-TH")}`;
+}
+function recoverDashboardShell(reason="network"){
+  if(HAS_LOADED)return false;
+  const cached=loadDashboardCache();
+  if(cached?.rows?.length){
+    ALL=cached.rows;LAST_SIGNATURE=rowsSignature(ALL);CONNECTED=false;HAS_LOADED=true;drawAll();
+    showNetworkBanner("warn","อัปเดตข้อมูลไม่ได้",`${cachedAgeLabel(cached.savedAt)} · ระบบกำลังลองเชื่อมต่อใหม่`);
+    return true;
+  }
+  ALL=[];CONNECTED=false;HAS_LOADED=true;
+  try{drawAll();}catch(err){console.debug("empty dashboard render skipped",err);}
+  showNetworkBanner("warn",reason==="offline"?"ตอนนี้ออฟไลน์":"กำลังเชื่อมต่อระบบ",reason==="offline"?"ยังใช้งานหน้าเดิมได้ และระบบจะอัปเดตทันทีเมื่ออินเทอร์เน็ตกลับมา":"ยังโหลดข้อมูลล่าสุดไม่ได้ ระบบจะลองใหม่ให้อัตโนมัติ");
+  return true;
 }
 
 function syncStatus(mode,text){
@@ -2327,21 +2403,21 @@ async function refreshData({initial=false,manual=false}={}){
   if(REFRESHING) return false;
   if(!navigator.onLine){
     syncStatus("error","ออฟไลน์ — รอเชื่อมต่อ");
+    recoverDashboardShell("offline");
+    showNetworkBanner("offline","ตอนนี้ออฟไลน์","ยังดูข้อมูลล่าสุดที่มีอยู่ได้ ระบบจะอัปเดตเองเมื่ออินเทอร์เน็ตกลับมา");
     return false;
   }
   REFRESHING=true;
   syncStatus("syncing",manual?"กำลังอัปเดต…":"กำลังซิงก์…");
-  let res;
   try{
     const u=`${API}?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(K)}&view=dashboard&_=${Date.now()}`;
-    res=await fetch(u,{
-      method:"GET",
-      cache:"no-store",
-      headers:{"accept":"application/json","cache-control":"no-cache"}
-    });
+    const res=await fetch(u,{method:"GET",cache:"no-store",headers:{"accept":"application/json","cache-control":"no-cache"}});
 
     if(res.status===401||res.status===403){
-      fatal("🔒","<b>ลิงก์นี้ใช้ไม่ได้แล้ว</b><br><br>พิมพ์ <b>แดชบอร์ด</b> ในกลุ่ม LINE<br>เพื่อขอลิงก์ใหม่");
+      DASH_AUTH_BLOCKED=true;clearDashboardRetry();
+      recoverDashboardShell("auth");
+      showNetworkBanner("auth","ลิงก์ Dashboard หมดอายุ","ข้อมูลเดิมยังแสดงได้ แต่ต้องเปิด Dashboard จาก LINE ใหม่ก่อนอัปเดตข้อมูล","เปิดใหม่");
+      syncStatus("error","ลิงก์หมดอายุ");
       return false;
     }
     if(!res.ok) throw new Error("HTTP "+res.status);
@@ -2352,24 +2428,20 @@ async function refreshData({initial=false,manual=false}={}){
     const next=cleanRows(rows);
     const sig=rowsSignature(next);
     const changed=!HAS_LOADED||sig!==LAST_SIGNATURE;
+    if(changed){ALL=next;LAST_SIGNATURE=sig;CONNECTED=true;drawAll();}
+    else CONNECTED=true;
 
-    if(changed){
-      ALL=next;
-      LAST_SIGNATURE=sig;
-      CONNECTED=true;
-      drawAll();
-    }
-
-    HAS_LOADED=true;
+    HAS_LOADED=true;DASH_FAILURE_COUNT=0;DASH_AUTH_BLOCKED=false;clearDashboardRetry();saveDashboardCache(next);hideNetworkBanner();
     syncStatus("ok",changed?`อัปเดตแล้ว ${clockTime()}`:`ข้อมูลล่าสุด ${clockTime()}`);
     return true;
   }catch(e){
     console.error("dashboard refresh failed",e);
-    if(initial){
-      fatal("📡","<b>โหลดข้อมูลไม่สำเร็จ</b><br><br>ตรวจอินเทอร์เน็ตแล้วรีเฟรชอีกครั้ง<br>ถ้ายังไม่ได้ พิมพ์ <b>เชื่อม</b> ในกลุ่ม LINE");
-    }else{
-      syncStatus("error","ซิงก์ไม่สำเร็จ — จะลองใหม่");
-    }
+    DASH_FAILURE_COUNT+=1;
+    recoverDashboardShell("network");
+    const isServer=/HTTP 5\d\d/.test(String(e?.message||""));
+    showNetworkBanner("warn",isServer?"ระบบตอบช้ากว่าปกติ":"อัปเดตข้อมูลไม่ได้","ยังใช้งานหน้าที่โหลดไว้ได้ · ระบบกำลังลองใหม่ให้อัตโนมัติ");
+    syncStatus("error","เชื่อมต่อไม่สำเร็จ — กำลังลองใหม่");
+    scheduleDashboardRetry();
     return false;
   }finally{
     REFRESHING=false;
@@ -2378,7 +2450,7 @@ async function refreshData({initial=false,manual=false}={}){
 }
 
 function refreshVisiblePage({manual=false}={}){
-  if(document.hidden||!HAS_LOADED)return;
+  if(document.hidden||!HAS_LOADED||DASH_AUTH_BLOCKED)return;
   const now=Date.now();
   if(!manual&&now-LAST_FOREGROUND_REFRESH<FOREGROUND_DEBOUNCE_MS)return;
   LAST_FOREGROUND_REFRESH=now;
@@ -2420,7 +2492,7 @@ window.dashboardDeepMemoryReport=async function(){
   try{const m=await performance.measureUserAgentSpecificMemory();return {...base,userAgentSpecificMB:Math.round((m.bytes||0)/1048576),breakdown:m.breakdown||[]};}
   catch(err){return {...base,deepMemory:"unavailable",error:String(err?.message||err)};}
 };
-window.addEventListener("pagehide",()=>{if(REFRESH_TIMER){clearInterval(REFRESH_TIMER);REFRESH_TIMER=null;}if(BUSINESS_PAIR_POLL){clearInterval(BUSINESS_PAIR_POLL);BUSINESS_PAIR_POLL=null;}releaseImageNodes(document);ALL=[];EMAIL_DOCS=[];SUBSCRIPTIONS=[];BATCH_DATA={pending:{groups:[],itemCount:0,total:0,urgentCount:0,people:0},batches:[],settings:{}};RECON_DATA={rows:[],paidBatches:[],summary:{}};INCOME_DATA={ok:true,records:[],payments:[],reconciliation:[],reconciliationSummary:{},summary:{},categories:[]};});
+window.addEventListener("pagehide",()=>{clearDashboardRetry();if(REFRESH_TIMER){clearInterval(REFRESH_TIMER);REFRESH_TIMER=null;}if(BUSINESS_PAIR_POLL){clearInterval(BUSINESS_PAIR_POLL);BUSINESS_PAIR_POLL=null;}releaseImageNodes(document);ALL=[];EMAIL_DOCS=[];SUBSCRIPTIONS=[];BATCH_DATA={pending:{groups:[],itemCount:0,total:0,urgentCount:0,people:0},batches:[],settings:{}};RECON_DATA={rows:[],paidBatches:[],summary:{}};INCOME_DATA={ok:true,records:[],payments:[],reconciliation:[],reconciliationSummary:{},summary:{},categories:[]};});
 
 async function load(){
   if(!TENANT||!K){
@@ -2460,7 +2532,9 @@ async function load(){
     if(EMAIL_INFO.connected&&(!Number.isFinite(last)||Date.now()-last>10*60*1000))syncGmail({manual:false});
   }
   ROUTE_BOOTSTRAPPING=false;
-  if(primaryOk!==false)startRealtime();
+  // แม้ API รอบแรกพลาด หน้าเว็บยังคงอยู่และ retry ต่อเบื้องหลัง
+  if(HAS_LOADED)startRealtime();
+  if(primaryOk===false&&!DASH_AUTH_BLOCKED)scheduleDashboardRetry();
 }
 
 el("syncBtn").addEventListener("click",async()=>{const reconOpen=el("page-reconciliation")?.classList.contains("show");const incomeOpen=el("page-income")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");const billingOpen=el("page-billing")?.classList.contains("show");if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings(),refreshWorkspaceLinks()]);else if(incomeOpen)await Promise.all([refreshIncome({withReconciliation:incomeReconModalOpen()}),refreshSettings(),refreshWorkspaceLinks()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings(),refreshWorkspaceLinks()]);else if(billingOpen)await Promise.all([refreshSubscription(),refreshBusinesses(),refreshSettings(),refreshWorkspaceLinks()]);else await Promise.all([refreshData({manual:true}),refreshSettings(),refreshWorkspaceLinks()]);});
@@ -2470,7 +2544,7 @@ document.addEventListener("visibilitychange",()=>{
 window.addEventListener("focus",()=>{if(HAS_LOADED)refreshVisiblePage();});
 window.addEventListener("pageshow",()=>{if(HAS_LOADED)refreshSettingsIfAssetChanged(true);});
 window.addEventListener("storage",e=>{if(e.key===SETTINGS_SIGNAL_KEY||e.key===SIGNATURE_READY_KEY){renderOnboarding();refreshSettingsIfAssetChanged(true);}});
-window.addEventListener("online",()=>{syncStatus("syncing","กลับมาออนไลน์ — กำลังซิงก์…");refreshVisiblePage({manual:true});refreshSettingsIfAssetChanged(true);});
-window.addEventListener("offline",()=>syncStatus("error","ออฟไลน์ — รอเชื่อมต่อ"));
+window.addEventListener("online",()=>{DASH_FAILURE_COUNT=0;showNetworkBanner("syncing","กลับมาออนไลน์แล้ว","กำลังอัปเดตข้อมูลล่าสุด…");syncStatus("syncing","กลับมาออนไลน์ — กำลังซิงก์…");refreshData({manual:true});refreshSettingsIfAssetChanged(true);});
+window.addEventListener("offline",()=>{clearDashboardRetry();recoverDashboardShell("offline");showNetworkBanner("offline","ตอนนี้ออฟไลน์","ยังดูข้อมูลล่าสุดที่มีอยู่ได้ ระบบจะอัปเดตเองเมื่ออินเทอร์เน็ตกลับมา");syncStatus("error","ออฟไลน์ — รอเชื่อมต่อ");});
 
 load();
