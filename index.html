@@ -172,20 +172,20 @@
         <button class="btn solid" type="button" data-open-billing>ดูแพ็กเกจ / อัปเกรด</button>
       </div>
       <div class="kpis">
-        <div class="kpi hero"><div class="lb">ยอดใช้จ่ายสุทธิ</div><div class="big" id="kSpend">฿0</div><div class="foot" id="kSpendCmp" style="color:rgba(255,255,255,.62)"></div><div class="bar"></div></div>
-        <div class="kpi"><div class="lb">รายการทั้งหมด</div><div class="big" id="kCount">0</div><div class="foot">บิลที่บันทึกแล้ว</div></div>
+        <div class="kpi hero"><div class="lb">จ่ายจริงแล้ว</div><div class="big" id="kSpend">฿0</div><div class="foot" id="kSpendCmp" style="color:rgba(255,255,255,.62)"></div><div class="bar"></div></div>
+        <div class="kpi"><div class="lb">รายการทั้งหมด</div><div class="big" id="kCount">0</div><div class="foot">รายการที่บันทึกเข้าระบบ</div></div>
         <div class="kpi pending"><div class="lb">ยอดรอดำเนินการ</div><div class="big" id="kPending">฿0</div><div class="foot" id="kPendingCount">0 รายการ</div></div>
-        <div class="kpi paid"><div class="lb">ยอดชำระแล้ว</div><div class="big" id="kPaid">฿0</div><div class="foot" id="kPaidCount">0 รายการ</div></div>
+        <div class="kpi paid"><div class="lb">ยอดตั้งเบิกทั้งหมด</div><div class="big" id="kPaid">฿0</div><div class="foot" id="kPaidCount">0 รายการ</div></div>
       </div>
-      <div class="accounting-note"><span>ℹ️</span><span><b>ยอดและกราฟ</b> ยึดวันที่รายการจริงตามสลิป ส่วน <b>รายการล่าสุด</b> เรียงตามวันที่และเวลาที่กดบันทึกเข้าระบบ</span></div>
+      <div class="accounting-note"><span>ℹ️</span><span><b>จ่ายจริงและกราฟ</b> นับเฉพาะรายการที่บริษัทบันทึกว่าโอน/จ่ายแล้ว รายการที่ยังตรวจเอกสารหรือรอโอนจะอยู่ใน <b>ยอดรอดำเนินการ</b> และยังไม่ถือเป็นเงินออกจริง</span></div>
       <div class="grid2">
         <div>
-          <div class="card"><h3>แนวโน้มรายจ่าย</h3><div class="cs">ยอดใช้จ่ายรายวันตามวันที่รายการในช่วงที่เลือก</div><svg class="trend" id="trend" viewBox="0 0 600 150" preserveAspectRatio="none"></svg></div>
+          <div class="card"><h3>แนวโน้มเงินออกจริง</h3><div class="cs">เฉพาะรายการที่จ่ายแล้ว ตามวันที่รายการในช่วงที่เลือก</div><svg class="trend" id="trend" viewBox="0 0 600 150" preserveAspectRatio="none"></svg></div>
           <div class="card"><h3>รายการล่าสุด</h3><div class="cs">เรียงตามเวลาที่บันทึกเข้าระบบ ไม่จำกัดเดือนบัญชี</div><div id="recent"></div></div>
         </div>
         <div>
-          <div class="card"><h3>หมวดที่ใช้เยอะสุด</h3><div class="cs">ช่วงที่เลือก</div><div id="cats"></div></div>
-          <div class="card"><h3>ร้านที่จ่ายเยอะสุด</h3><div class="cs">ท็อป 5 ร้าน/ผู้รับ</div><div id="vendors"></div></div>
+          <div class="card"><h3>หมวดที่จ่ายเยอะสุด</h3><div class="cs">เฉพาะรายการที่จ่ายจริงในช่วงที่เลือก</div><div id="cats"></div></div>
+          <div class="card"><h3>ร้านที่จ่ายเยอะสุด</h3><div class="cs">ท็อป 5 จากรายการที่จ่ายจริง</div><div id="vendors"></div></div>
         </div>
       </div>
     </section>
@@ -931,5 +931,6 @@
 <div class="modal" id="modal"><div class="box"><button class="x" onclick="closeGlobalModal()">✕</button><div id="modalBody"></div></div></div>
 
 <script src="./assets/dashboard.js?v=7.7"></script>
+<script src="./assets/overview-paid-only.js?v=7.8"></script>
 </body>
 </html>
