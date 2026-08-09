@@ -254,3 +254,390 @@
 
   console.info("[Dashboard] v7.12 commercial pilot package mode active");
 })();
+/* Dashboard v7.14 — Team Dashboard Access
+   ใช้ backend role-token ที่มีอยู่แล้ว:
+   owner / accountant / approver / viewer
+   แยกจาก team_members ซึ่งเป็นข้อมูลผู้เบิกและบัญชีรับเงิน
+*/
+(() => {
+  "use strict";
+
+  const ACCESS_ROLE_LABELS = {
+    owner: "เจ้าของ",
+    accountant: "แอดมิน / บัญชี",
+    approver: "ผู้อนุมัติ",
+    viewer: "ดูอย่างเดียว",
+  };
+
+  const ACCESS_ROLE_DESC = {
+    accountant: "ดูและทำงานบัญชี/เบิกจ่ายได้ รวมตรวจเบิก โอน แนบหลักฐาน กระทบยอด และรายงาน แต่จัดการแพ็กเกจ/สิทธิ์ทีมไม่ได้",
+    approver: "ดูงานที่เกี่ยวข้องและอนุมัติหรือตีกลับเอกสารได้ โดยไม่เข้าถึงการจัดการแพ็กเกจและสิทธิ์ทีม",
+    viewer: "เปิดดู Dashboard และรายงานได้อย่างเดียว ไม่มีสิทธิ์แก้ไขข้อมูล",
+  };
+
+  let DASH_ACCESS_ME = null;
+  let DASH_ACCESS_ROWS = [];
+  let DASH_ACCESS_BUSY = false;
+
+  const accessEsc = (v) =>
+    String(v ?? "").replace(/[&<>"']/g, (ch) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[ch]));
+
+  function accessEndpoint(path) {
+    const u = new URL(`${WORKER}${path}`);
+    u.searchParams.set("tenant", TENANT);
+    u.searchParams.set("k", K);
+    return u.toString();
+  }
+
+  async function accessApi(path, options = {}) {
+    let response;
+    try {
+      response = await fetch(accessEndpoint(path), {
+        ...options,
+        headers: {
+          "content-type": "application/json",
+          ...(options.headers || {}),
+        },
+      });
+    } catch (error) {
+      throw new Error(`ติดต่อ Worker ไม่ได้: ${error?.message || error}`);
+    }
+
+    const raw = await response.text();
+    let data = {};
+    try { data = raw ? JSON.parse(raw) : {}; }
+    catch { data = { error: raw.slice(0, 220) }; }
+
+    if (response.status === 401) throw new Error("ลิงก์ Dashboard นี้หมดอายุหรือถูกยกเลิกสิทธิ์แล้ว");
+    if (response.status === 403) throw new Error(data.error === "owner_only" ? "เฉพาะ Owner เท่านั้นที่จัดการสิทธิ์ทีมได้" : "ไม่มีสิทธิ์ทำรายการนี้");
+    if (!response.ok || data.ok === false) throw new Error(data.message || data.error || `HTTP ${response.status}`);
+    return data;
+  }
+
+  function accessRoleLabel(role) {
+    return ACCESS_ROLE_LABELS[String(role || "")] || String(role || "ผู้ใช้งาน");
+  }
+
+  function shortToken(token = "") {
+    const t = String(token || "");
+    return t.length > 10 ? `${t.slice(0, 4)}••••${t.slice(-4)}` : "••••••••";
+  }
+
+  function accessDate(value) {
+    const d = new Date(value || "");
+    if (!Number.isFinite(d.getTime())) return "—";
+    return d.toLocaleString("th-TH", {
+      timeZone: "Asia/Bangkok",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  function accessSetState(message = "", type = "") {
+    const node = document.getElementById("dashboardAccessState");
+    if (!node) return;
+    node.textContent = message;
+    node.className = `dash-access-state ${type}`.trim();
+  }
+
+  function ensureDashboardAccessCard() {
+    const tab = document.getElementById("biz-team");
+    const grid = tab?.querySelector(".biz-grid") || tab;
+    if (!grid || document.getElementById("dashboardAccessCard")) return;
+
+    const card = document.createElement("div");
+    card.className = "card dashboard-access-card";
+    card.id = "dashboardAccessCard";
+    card.innerHTML = `
+      <div class="dash-access-head">
+        <div>
+          <div class="dash-access-kicker">DASHBOARD ACCESS</div>
+          <h3>สิทธิ์เข้า Dashboard</h3>
+          <div class="cs">แยกลิงก์ให้แต่ละคน ไม่ต้องแชร์ลิงก์ Owner ของบริษัท</div>
+        </div>
+        <span class="dash-access-current" id="dashboardAccessCurrent">กำลังตรวจสิทธิ์…</span>
+      </div>
+
+      <div class="accounting-note dash-access-warning" style="margin:14px 0">
+        <span>สำคัญ</span>
+        <span><b>ลิงก์ Dashboard หลักของ Owner คือกุญแจเจ้าของ</b> อย่าส่งลิงก์นี้ให้พนักงาน ให้สร้างลิงก์เฉพาะคนด้านล่างแทน เมื่อพนักงานออกสามารถยกเลิกเฉพาะลิงก์คนนั้นได้ทันที</span>
+      </div>
+
+      <div id="dashboardAccessOwnerTools" hidden>
+        <div class="dash-access-form">
+          <div class="field">
+            <label>ชื่อผู้ใช้งาน</label>
+            <input id="dashboardAccessName" maxlength="120" placeholder="เช่น แนน ฝ่ายบัญชี">
+          </div>
+          <div class="field">
+            <label>สิทธิ์</label>
+            <select id="dashboardAccessRole">
+              <option value="accountant">แอดมิน / บัญชี</option>
+              <option value="approver">ผู้อนุมัติ</option>
+              <option value="viewer">ดูอย่างเดียว</option>
+            </select>
+          </div>
+          <div class="dash-access-role-help" id="dashboardAccessRoleHelp"></div>
+          <button class="btn solid" type="button" id="dashboardAccessCreate">สร้างสิทธิ์และลิงก์</button>
+        </div>
+        <div class="dash-access-state" id="dashboardAccessState"></div>
+        <div class="dash-access-list" id="dashboardAccessList">
+          <div class="empty">กำลังโหลดผู้ใช้งาน…</div>
+        </div>
+      </div>
+
+      <div id="dashboardAccessMemberInfo" hidden>
+        <div class="dash-access-member-box">
+          <b id="dashboardAccessMemberTitle">สิทธิ์ของคุณ</b>
+          <span id="dashboardAccessMemberDesc"></span>
+        </div>
+      </div>
+    `;
+
+    if (grid.firstChild) grid.insertBefore(card, grid.firstChild);
+    else grid.appendChild(card);
+
+    const roleSelect = document.getElementById("dashboardAccessRole");
+    roleSelect?.addEventListener("change", renderAccessRoleHelp);
+    document.getElementById("dashboardAccessCreate")?.addEventListener("click", createDashboardAccess);
+    document.getElementById("dashboardAccessList")?.addEventListener("click", handleAccessListClick);
+    renderAccessRoleHelp();
+  }
+
+  function renderAccessRoleHelp() {
+    const role = document.getElementById("dashboardAccessRole")?.value || "accountant";
+    const node = document.getElementById("dashboardAccessRoleHelp");
+    if (node) node.textContent = ACCESS_ROLE_DESC[role] || "";
+  }
+
+  function updateWorkspaceIdentity() {
+    if (!DASH_ACCESS_ME) return;
+    const who = document.getElementById("whoName");
+    const wrapper = who?.parentElement;
+    const small = wrapper?.querySelector("small");
+    const label = accessRoleLabel(DASH_ACCESS_ME.role);
+
+    if (who) who.textContent = DASH_ACCESS_ME.name || label;
+    if (small) small.textContent = DASH_ACCESS_ME.role === "owner" ? "Workspace owner" : label;
+
+    document.body.dataset.dashboardRole = String(DASH_ACCESS_ME.role || "");
+  }
+
+  function renderDashboardAccess() {
+    ensureDashboardAccessCard();
+    if (!DASH_ACCESS_ME) return;
+
+    const current = document.getElementById("dashboardAccessCurrent");
+    if (current) current.textContent = `คุณ: ${accessRoleLabel(DASH_ACCESS_ME.role)}`;
+
+    const ownerTools = document.getElementById("dashboardAccessOwnerTools");
+    const memberInfo = document.getElementById("dashboardAccessMemberInfo");
+    const isOwner = DASH_ACCESS_ME.role === "owner";
+
+    if (ownerTools) ownerTools.hidden = !isOwner;
+    if (memberInfo) memberInfo.hidden = isOwner;
+
+    if (!isOwner) {
+      const title = document.getElementById("dashboardAccessMemberTitle");
+      const desc = document.getElementById("dashboardAccessMemberDesc");
+      if (title) title.textContent = `${DASH_ACCESS_ME.name || "ผู้ใช้งาน"} · ${accessRoleLabel(DASH_ACCESS_ME.role)}`;
+      if (desc) {
+        desc.textContent =
+          DASH_ACCESS_ME.role === "accountant" ? ACCESS_ROLE_DESC.accountant :
+          DASH_ACCESS_ME.role === "approver" ? ACCESS_ROLE_DESC.approver :
+          ACCESS_ROLE_DESC.viewer;
+      }
+      return;
+    }
+
+    const list = document.getElementById("dashboardAccessList");
+    if (!list) return;
+
+    if (!DASH_ACCESS_ROWS.length) {
+      list.innerHTML = `
+        <div class="dash-access-empty">
+          <b>ยังไม่มีลิงก์พนักงาน</b>
+          <span>ตอนนี้มีเฉพาะ Owner ใช้งาน Dashboard อยู่</span>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = DASH_ACCESS_ROWS.map((row) => `
+      <div class="dash-access-row" data-access-token="${accessEsc(row.token || "")}">
+        <div class="dash-access-person">
+          <div class="dash-access-avatar">${accessEsc(String(row.name || "U").trim().slice(0, 1).toUpperCase())}</div>
+          <div>
+            <b>${accessEsc(row.name || accessRoleLabel(row.role))}</b>
+            <span>${accessEsc(accessRoleLabel(row.role))} · สร้าง ${accessEsc(accessDate(row.createdAt))}</span>
+          </div>
+        </div>
+        <div class="dash-access-token">${accessEsc(shortToken(row.token))}</div>
+        <div class="dash-access-actions">
+          <button class="btn small" type="button" data-access-copy="${accessEsc(row.url || "")}">คัดลอกลิงก์</button>
+          <a class="btn small" href="${accessEsc(row.url || "#")}" target="_blank" rel="noopener">เปิดทดสอบ</a>
+          <button class="btn small danger" type="button" data-access-revoke="${accessEsc(row.token || "")}" data-access-name="${accessEsc(row.name || "")}">ยกเลิกสิทธิ์</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  async function copyText(value) {
+    const text = String(value || "");
+    if (!text) return false;
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    }
+  }
+
+  async function createDashboardAccess() {
+    if (DASH_ACCESS_BUSY) return;
+    const name = document.getElementById("dashboardAccessName")?.value.trim() || "";
+    const role = document.getElementById("dashboardAccessRole")?.value || "accountant";
+    if (!name) {
+      accessSetState("กรอกชื่อผู้ใช้งานก่อน", "error");
+      document.getElementById("dashboardAccessName")?.focus();
+      return;
+    }
+
+    DASH_ACCESS_BUSY = true;
+    const btn = document.getElementById("dashboardAccessCreate");
+    if (btn) { btn.disabled = true; btn.textContent = "กำลังสร้างสิทธิ์…"; }
+    accessSetState("กำลังสร้างลิงก์เฉพาะผู้ใช้งาน…", "loading");
+
+    try {
+      const out = await accessApi("/api/accounting/access", {
+        method: "POST",
+        body: JSON.stringify({ name, role }),
+      });
+      const record = out.record || {};
+      if (record.url) await copyText(record.url);
+      document.getElementById("dashboardAccessName").value = "";
+      accessSetState(
+        record.url
+          ? `สร้าง ${accessRoleLabel(record.role)} ให้ ${record.name || name} แล้ว · คัดลอกลิงก์ไว้ใน Clipboard แล้ว`
+          : "สร้างสิทธิ์แล้ว",
+        "success"
+      );
+      await loadDashboardAccessRows();
+    } catch (error) {
+      accessSetState(error?.message || "สร้างสิทธิ์ไม่สำเร็จ", "error");
+    } finally {
+      DASH_ACCESS_BUSY = false;
+      if (btn) { btn.disabled = false; btn.textContent = "สร้างสิทธิ์และลิงก์"; }
+    }
+  }
+
+  async function handleAccessListClick(event) {
+    const copy = event.target.closest("[data-access-copy]");
+    if (copy) {
+      const ok = await copyText(copy.dataset.accessCopy || "");
+      accessSetState(ok ? "คัดลอกลิงก์แล้ว" : "คัดลอกไม่สำเร็จ", ok ? "success" : "error");
+      return;
+    }
+
+    const revoke = event.target.closest("[data-access-revoke]");
+    if (!revoke) return;
+    const token = revoke.dataset.accessRevoke || "";
+    const name = revoke.dataset.accessName || "ผู้ใช้งานนี้";
+    if (!token || !confirm(`ยกเลิกสิทธิ์ของ ${name}?\n\nลิงก์ของคนนี้จะเข้า Dashboard ไม่ได้ทันที แต่ Owner และผู้ใช้งานคนอื่นไม่กระทบ`)) return;
+
+    revoke.disabled = true;
+    accessSetState(`กำลังยกเลิกสิทธิ์ ${name}…`, "loading");
+    try {
+      await accessApi("/api/accounting/access-revoke", {
+        method: "POST",
+        body: JSON.stringify({ token }),
+      });
+      accessSetState(`ยกเลิกสิทธิ์ ${name} แล้ว`, "success");
+      await loadDashboardAccessRows();
+    } catch (error) {
+      accessSetState(error?.message || "ยกเลิกสิทธิ์ไม่สำเร็จ", "error");
+      revoke.disabled = false;
+    }
+  }
+
+  async function loadDashboardAccessRows() {
+    if (DASH_ACCESS_ME?.role !== "owner") return;
+    try {
+      const out = await accessApi("/api/accounting/access");
+      DASH_ACCESS_ROWS = Array.isArray(out.rows) ? out.rows : [];
+      renderDashboardAccess();
+    } catch (error) {
+      accessSetState(error?.message || "โหลดรายชื่อสิทธิ์ไม่สำเร็จ", "error");
+    }
+  }
+
+  async function bootDashboardAccess() {
+    ensureDashboardAccessCard();
+    try {
+      const me = await accessApi("/api/accounting/whoami");
+      DASH_ACCESS_ME = me;
+      updateWorkspaceIdentity();
+      renderDashboardAccess();
+      if (me.role === "owner") await loadDashboardAccessRows();
+    } catch (error) {
+      const current = document.getElementById("dashboardAccessCurrent");
+      if (current) current.textContent = "ตรวจสิทธิ์ไม่สำเร็จ";
+      accessSetState(error?.message || "ตรวจสิทธิ์ Dashboard ไม่สำเร็จ", "error");
+    }
+  }
+
+  const accessStyle = document.createElement("style");
+  accessStyle.textContent = `
+    .dashboard-access-card{grid-column:1/-1}
+    .dash-access-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+    .dash-access-kicker{font-size:10px;font-weight:800;letter-spacing:.11em;color:#86868b;margin-bottom:5px}
+    .dash-access-current{display:inline-flex;padding:6px 10px;border-radius:999px;background:#f2f2f7;color:#525257;font-size:11px;font-weight:750;white-space:nowrap}
+    .dash-access-warning span:first-child{white-space:nowrap}
+    .dash-access-form{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,.7fr);gap:10px;align-items:end;margin-top:12px}
+    .dash-access-form .field{margin:0}
+    .dash-access-form select,.dash-access-form input{width:100%;min-height:44px}
+    .dash-access-role-help{grid-column:1/-1;background:#f5f5f7;border-radius:12px;padding:10px 12px;color:#6e6e73;font-size:12px;line-height:1.55}
+    .dash-access-form #dashboardAccessCreate{grid-column:1/-1;justify-self:start}
+    .dash-access-state{min-height:20px;margin:10px 0;font-size:12px;color:#6e6e73}
+    .dash-access-state.success{color:#147a36}.dash-access-state.error{color:#b42318}.dash-access-state.loading{color:#6e6e73}
+    .dash-access-list{border-top:1px solid #eeeeef;margin-top:4px}
+    .dash-access-row{display:grid;grid-template-columns:minmax(180px,1fr) 110px auto;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid #eeeeef}
+    .dash-access-person{display:flex;align-items:center;gap:10px;min-width:0}
+    .dash-access-avatar{width:36px;height:36px;border-radius:11px;background:#1d1d1f;color:#fff;display:grid;place-items:center;font-weight:800;flex:0 0 auto}
+    .dash-access-person b{display:block;font-size:13px}.dash-access-person span{display:block;color:#86868b;font-size:11px;margin-top:3px}
+    .dash-access-token{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:#86868b}
+    .dash-access-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+    .dash-access-actions .danger{color:#b42318}
+    .dash-access-empty,.dash-access-member-box{padding:18px;background:#f8f8fa;border-radius:14px;margin-top:12px}
+    .dash-access-empty b,.dash-access-member-box b{display:block;font-size:13px}
+    .dash-access-empty span,.dash-access-member-box span{display:block;color:#6e6e73;font-size:12px;line-height:1.6;margin-top:5px}
+    @media(max-width:760px){
+      .dash-access-head{display:block}.dash-access-current{margin-top:10px}
+      .dash-access-form{grid-template-columns:1fr}
+      .dash-access-role-help,.dash-access-form #dashboardAccessCreate{grid-column:1}
+      .dash-access-form #dashboardAccessCreate{width:100%}
+      .dash-access-row{grid-template-columns:1fr}
+      .dash-access-token{display:none}
+      .dash-access-actions{justify-content:stretch}
+      .dash-access-actions .btn,.dash-access-actions a{flex:1;text-align:center;justify-content:center}
+    }
+  `;
+  document.head.appendChild(accessStyle);
+
+  // เริ่มหลัง core dashboard สร้าง DOM และ globals แล้ว
+  setTimeout(bootDashboardAccess, 0);
+
+  console.info("[Dashboard] v7.14 team dashboard access active");
+})();
