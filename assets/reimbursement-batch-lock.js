@@ -717,7 +717,7 @@
     const anchor = page.querySelector(".acct-status-strip") || page.firstElementChild;
     const section = document.createElement("section");
     section.id = "lineGroupMonitor";
-    section.className = "line-group-monitor";
+    section.className = "line-group-monitor line-group-monitor-compact";
     section.innerHTML = `
       <div class="line-group-head">
         <div>
@@ -733,25 +733,12 @@
       <div class="line-group-cards" id="lineGroupCards">
         <div class="line-group-loading">กำลังอ่าน LINE กลุ่ม…</div>
       </div>
-      <div class="line-group-detail" id="lineGroupDetail" hidden></div>
     `;
 
     if (anchor) page.insertBefore(section, anchor);
     else page.prepend(section);
 
     document.getElementById("lineGroupRefresh")?.addEventListener("click", () => loadLineGroups(true));
-    document.getElementById("lineGroupCards")?.addEventListener("click", (event) => {
-      const card = event.target.closest("[data-line-group]");
-      if (!card) return;
-      LINE_GROUP_SELECTED = card.dataset.lineGroup || "";
-      renderLineGroupMonitor();
-    });
-    document.getElementById("lineGroupDetail")?.addEventListener("click", (event) => {
-      if (event.target.closest("[data-close-line-group-detail]")) {
-        LINE_GROUP_SELECTED = "";
-        renderLineGroupMonitor();
-      }
-    });
   }
 
   function renderLineGroupMonitor() {
@@ -759,8 +746,7 @@
 
     const count = document.getElementById("lineGroupCount");
     const cards = document.getElementById("lineGroupCards");
-    const detail = document.getElementById("lineGroupDetail");
-    if (!cards || !detail) return;
+    if (!cards) return;
 
     const rows = visibleLineRows();
     if (count) count.textContent = String(
@@ -769,27 +755,18 @@
 
     if (!rows.length) {
       cards.innerHTML = `<div class="line-group-empty">ยังไม่พบ LINE กลุ่มที่ผูกกับบัญชีนี้</div>`;
-      detail.hidden = true;
       return;
     }
 
-    if (!LINE_GROUP_SELECTED || !rows.some((r) => r.tenant === LINE_GROUP_SELECTED)) {
-      LINE_GROUP_SELECTED =
-        rows.find((r) => r.isCurrent)?.tenant ||
-        rows.find((r) => Number(r.summary?.openCount || 0) > 0)?.tenant ||
-        rows[0].tenant;
-    }
-
     cards.innerHTML = rows.map((row) => {
-      const s = row.summary || {};
-      const selected = row.tenant === LINE_GROUP_SELECTED;
+      const summary = row.summary || {};
       const current = row.isCurrent ? `<span class="line-current">กลุ่มปัจจุบัน</span>` : "";
       const connected = row.connected
         ? `<span class="line-connected">เชื่อมอยู่</span>`
         : `<span class="line-disconnected">ตรวจการเชื่อมต่อ</span>`;
 
       return `
-        <button class="line-group-card ${selected ? "selected" : ""}" type="button" data-line-group="${esc(row.tenant || "")}">
+        <div class="line-group-card">
           <div class="line-group-card-top">
             <div class="line-group-icon">LINE</div>
             <div class="line-group-name">
@@ -799,60 +776,17 @@
             ${connected}
           </div>
           <div class="line-group-card-stats">
-            <div><span>รอดำเนินการ</span><strong>${Number(s.openCount || 0)}</strong></div>
-            <div><span>ยอดรอ</span><strong>${esc(lineGroupMoney(s.openAmount || 0))}</strong></div>
-            <div><span>จ่ายแล้ว</span><strong>${Number(s.paidCount || 0)}</strong></div>
+            <div><span>รอดำเนินการ</span><strong>${Number(summary.openCount || 0)}</strong></div>
+            <div><span>ยอดรอ</span><strong>${esc(lineGroupMoney(summary.openAmount || 0))}</strong></div>
+            <div><span>จ่ายแล้ว</span><strong>${Number(summary.paidCount || 0)}</strong></div>
           </div>
           <div class="line-group-card-foot">
             ${current}
-            <span>ล่าสุด ${esc(lineGroupDate(s.lastActivityAt))}</span>
+            <span>ล่าสุด ${esc(lineGroupDate(summary.lastActivityAt))}</span>
           </div>
-        </button>
+        </div>
       `;
     }).join("");
-
-    const selected = rows.find((r) => r.tenant === LINE_GROUP_SELECTED);
-    if (!selected) {
-      detail.hidden = true;
-      return;
-    }
-
-    const claims = Array.isArray(selected.claims) ? selected.claims : [];
-    detail.hidden = false;
-    detail.innerHTML = `
-      <div class="line-group-detail-head">
-        <div>
-          <span>รายการจากกลุ่ม</span>
-          <h4>${esc(selected.groupName || selected.businessName || "LINE Group")}</h4>
-          <small>${esc(selected.businessName || "")} · Group ${esc(maskGroupId(selected.groupId || selected.sourceId))}</small>
-        </div>
-        <div class="line-group-detail-actions">
-          ${selected.dashboardUrl ? `<a class="btn" href="${esc(selected.dashboardUrl)}&page=batches" target="_blank" rel="noopener">เปิด Dashboard กลุ่ม ↗</a>` : ""}
-          <button class="btn" type="button" data-close-line-group-detail>ย่อ</button>
-        </div>
-      </div>
-      <div class="line-group-status-mini">
-        <span>รอตรวจ <b>${Number(selected.summary?.reviewCount || 0)}</b></span>
-        <span>ต้องแก้ <b>${Number(selected.summary?.correctionCount || 0)}</b></span>
-        <span>รอโอน <b>${Number(selected.summary?.paymentCount || 0)}</b></span>
-        <span>จ่ายแล้ว <b>${Number(selected.summary?.paidCount || 0)}</b></span>
-      </div>
-      <div class="line-group-claim-list">
-        ${claims.length ? claims.map((claim) => `
-          <div class="line-group-claim">
-            <div class="line-group-claim-main">
-              <b>${esc(claim.payerName || "ไม่ระบุผู้เบิก")}</b>
-              <span>${esc(claim.vendor || claim.note || "รายการเบิก")} · ${esc(claim.date || "—")}</span>
-              ${claim.batchDocId ? `<small>ใบเบิก ${esc(claim.batchDocId)}</small>` : ""}
-            </div>
-            <div class="line-group-claim-right">
-              <strong>${esc(lineGroupMoney(claim.amount || 0))}</strong>
-              <span class="line-claim-status ${lineGroupStatusClass(claim.statusKey)}">${esc(lineGroupStatusLabel(claim.statusKey, claim.status))}</span>
-            </div>
-          </div>
-        `).join("") : `<div class="line-group-empty">กลุ่มนี้ยังไม่มีรายการเบิก</div>`}
-      </div>
-    `;
   }
 
   async function loadLineGroups(refresh = false) {
@@ -989,4 +923,22 @@
   }, 0);
 
   console.info("[Dashboard] v7.15 LINE group traceability active");
+})();
+
+/* v7.15.1 — compact LINE workspace monitor */
+(() => {
+  const style = document.createElement("style");
+  style.textContent = `
+    #lineGroupMonitor.line-group-monitor-compact .line-group-card{
+      cursor:default;
+      box-shadow:none;
+    }
+    #lineGroupMonitor.line-group-monitor-compact .line-group-card:hover{
+      border-color:#e5e5e7;
+      box-shadow:none;
+    }
+    #lineGroupMonitor .line-group-detail{display:none!important}
+  `;
+  document.head.appendChild(style);
+  console.info("[Dashboard] v7.15.1 compact LINE workspace monitor active");
 })();
