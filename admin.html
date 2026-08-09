@@ -16,7 +16,7 @@
     <input id="adminKeyInput" type="password" autocomplete="current-password" placeholder="ADMIN_KEY" required>
     <button id="loginSubmit" type="submit">เข้าสู่หลังบ้าน</button>
     <div id="loginStatus" class="login-status" role="status" aria-live="polite">พร้อมตรวจสอบ ADMIN_KEY</div>
-    <small>Key จะเก็บเฉพาะ Session ของแท็บนี้ ไม่บันทึกถาวรในเครื่อง · Admin UI v7.13.1</small>
+    <small>Key จะเก็บเฉพาะ Session ของแท็บนี้ ไม่บันทึกถาวรในเครื่อง · Admin UI v7.13.2</small>
   </form>
 </div>
 
@@ -99,7 +99,7 @@
   }
   window.__OPS_ADMIN_BOOT_FAIL__ = fail;
   const script = document.createElement('script');
-  script.src = './assets/admin.js?v=7.13.1';
+  script.src = './assets/admin.js?v=7.13.2';
   script.async = false;
   script.onerror = function(){
     fail('โหลดไฟล์ระบบหลังบ้านไม่สำเร็จ (assets/admin.js) · ให้อัปไฟล์ admin.js แล้ว Refresh หน้าอีกครั้ง');
