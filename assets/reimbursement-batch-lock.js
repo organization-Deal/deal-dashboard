@@ -641,3 +641,352 @@
 
   console.info("[Dashboard] v7.14 team dashboard access active");
 })();
+/* Dashboard v7.15 — LINE Group Traceability
+   - ดูว่าบัญชีนี้ผูก LINE กี่กลุ่ม
+   - ดูยอด/สถานะเบิกของแต่ละกลุ่ม
+   - ทุกแถวในโต๊ะเบิกจ่ายติดป้ายกลุ่มต้นทาง
+*/
+(() => {
+  "use strict";
+
+  let LINE_GROUPS = { ok:true, rows:[], groupCount:0, workspaceCount:0 };
+  let LINE_GROUP_LOADING = false;
+  let LINE_GROUP_LAST_LOAD = 0;
+  let LINE_GROUP_SELECTED = "";
+
+  function lineGroupApiUrl(refresh = false) {
+    const u = new URL(`${WORKER}/api/line-groups`);
+    u.searchParams.set("tenant", TENANT);
+    u.searchParams.set("k", K);
+    if (refresh) u.searchParams.set("refresh", "1");
+    return u.toString();
+  }
+
+  function lineGroupMoney(v) {
+    return "฿" + Number(v || 0).toLocaleString("th-TH", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  function lineGroupDate(v) {
+    if (!v) return "—";
+    const d = new Date(v);
+    if (!Number.isFinite(d.getTime())) return String(v);
+    return d.toLocaleString("th-TH", {
+      timeZone: "Asia/Bangkok",
+      day: "numeric",
+      month: "short",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  function lineGroupStatusLabel(key, raw = "") {
+    if (key === "paid") return "จ่ายแล้ว";
+    if (key === "payment") return "รอโอน";
+    if (key === "correction") return "ต้องแก้ไข";
+    if (key === "rejected") return "ไม่อนุมัติ";
+    return raw || "รอตรวจ";
+  }
+
+  function lineGroupStatusClass(key) {
+    if (key === "paid") return "paid";
+    if (key === "payment") return "payment";
+    if (key === "correction") return "correction";
+    if (key === "rejected") return "rejected";
+    return "review";
+  }
+
+  function maskGroupId(id = "") {
+    const value = String(id || "");
+    return value ? `···${value.slice(-6)}` : "—";
+  }
+
+  function visibleLineRows() {
+    const all = Array.isArray(LINE_GROUPS.rows) ? LINE_GROUPS.rows : [];
+    const chats = all.filter((r) => r.sourceType === "group" || r.sourceType === "room");
+    return chats.length ? chats : all;
+  }
+
+  function ensureLineGroupMonitor() {
+    const page = document.getElementById("page-batches");
+    if (!page || document.getElementById("lineGroupMonitor")) return;
+
+    const anchor = page.querySelector(".acct-status-strip") || page.firstElementChild;
+    const section = document.createElement("section");
+    section.id = "lineGroupMonitor";
+    section.className = "line-group-monitor";
+    section.innerHTML = `
+      <div class="line-group-head">
+        <div>
+          <div class="head-kicker">LINE WORKSPACES</div>
+          <h3>กลุ่ม LINE ที่ส่งรายการเข้าเบิก</h3>
+          <p>เช็กได้ว่ามีกี่กลุ่ม แต่ละกลุ่มมีรายการอะไร และรายการบนโต๊ะเบิกจ่ายมาจากกลุ่มไหน</p>
+        </div>
+        <div class="line-group-head-actions">
+          <div class="line-group-total"><span>กลุ่มที่เชื่อม</span><strong id="lineGroupCount">—</strong></div>
+          <button class="btn" id="lineGroupRefresh" type="button">อัปเดตกลุ่ม</button>
+        </div>
+      </div>
+      <div class="line-group-cards" id="lineGroupCards">
+        <div class="line-group-loading">กำลังอ่าน LINE กลุ่ม…</div>
+      </div>
+      <div class="line-group-detail" id="lineGroupDetail" hidden></div>
+    `;
+
+    if (anchor) page.insertBefore(section, anchor);
+    else page.prepend(section);
+
+    document.getElementById("lineGroupRefresh")?.addEventListener("click", () => loadLineGroups(true));
+    document.getElementById("lineGroupCards")?.addEventListener("click", (event) => {
+      const card = event.target.closest("[data-line-group]");
+      if (!card) return;
+      LINE_GROUP_SELECTED = card.dataset.lineGroup || "";
+      renderLineGroupMonitor();
+    });
+    document.getElementById("lineGroupDetail")?.addEventListener("click", (event) => {
+      if (event.target.closest("[data-close-line-group-detail]")) {
+        LINE_GROUP_SELECTED = "";
+        renderLineGroupMonitor();
+      }
+    });
+  }
+
+  function renderLineGroupMonitor() {
+    ensureLineGroupMonitor();
+
+    const count = document.getElementById("lineGroupCount");
+    const cards = document.getElementById("lineGroupCards");
+    const detail = document.getElementById("lineGroupDetail");
+    if (!cards || !detail) return;
+
+    const rows = visibleLineRows();
+    if (count) count.textContent = String(
+      Number(LINE_GROUPS.groupCount || 0) || rows.length || 0
+    );
+
+    if (!rows.length) {
+      cards.innerHTML = `<div class="line-group-empty">ยังไม่พบ LINE กลุ่มที่ผูกกับบัญชีนี้</div>`;
+      detail.hidden = true;
+      return;
+    }
+
+    if (!LINE_GROUP_SELECTED || !rows.some((r) => r.tenant === LINE_GROUP_SELECTED)) {
+      LINE_GROUP_SELECTED =
+        rows.find((r) => r.isCurrent)?.tenant ||
+        rows.find((r) => Number(r.summary?.openCount || 0) > 0)?.tenant ||
+        rows[0].tenant;
+    }
+
+    cards.innerHTML = rows.map((row) => {
+      const s = row.summary || {};
+      const selected = row.tenant === LINE_GROUP_SELECTED;
+      const current = row.isCurrent ? `<span class="line-current">กลุ่มปัจจุบัน</span>` : "";
+      const connected = row.connected
+        ? `<span class="line-connected">เชื่อมอยู่</span>`
+        : `<span class="line-disconnected">ตรวจการเชื่อมต่อ</span>`;
+
+      return `
+        <button class="line-group-card ${selected ? "selected" : ""}" type="button" data-line-group="${esc(row.tenant || "")}">
+          <div class="line-group-card-top">
+            <div class="line-group-icon">LINE</div>
+            <div class="line-group-name">
+              <b>${esc(row.groupName || row.businessName || "LINE Group")}</b>
+              <span>${esc(row.businessName || "")} · ${esc(maskGroupId(row.groupId || row.sourceId))}</span>
+            </div>
+            ${connected}
+          </div>
+          <div class="line-group-card-stats">
+            <div><span>รอดำเนินการ</span><strong>${Number(s.openCount || 0)}</strong></div>
+            <div><span>ยอดรอ</span><strong>${esc(lineGroupMoney(s.openAmount || 0))}</strong></div>
+            <div><span>จ่ายแล้ว</span><strong>${Number(s.paidCount || 0)}</strong></div>
+          </div>
+          <div class="line-group-card-foot">
+            ${current}
+            <span>ล่าสุด ${esc(lineGroupDate(s.lastActivityAt))}</span>
+          </div>
+        </button>
+      `;
+    }).join("");
+
+    const selected = rows.find((r) => r.tenant === LINE_GROUP_SELECTED);
+    if (!selected) {
+      detail.hidden = true;
+      return;
+    }
+
+    const claims = Array.isArray(selected.claims) ? selected.claims : [];
+    detail.hidden = false;
+    detail.innerHTML = `
+      <div class="line-group-detail-head">
+        <div>
+          <span>รายการจากกลุ่ม</span>
+          <h4>${esc(selected.groupName || selected.businessName || "LINE Group")}</h4>
+          <small>${esc(selected.businessName || "")} · Group ${esc(maskGroupId(selected.groupId || selected.sourceId))}</small>
+        </div>
+        <div class="line-group-detail-actions">
+          ${selected.dashboardUrl ? `<a class="btn" href="${esc(selected.dashboardUrl)}&page=batches" target="_blank" rel="noopener">เปิด Dashboard กลุ่ม ↗</a>` : ""}
+          <button class="btn" type="button" data-close-line-group-detail>ย่อ</button>
+        </div>
+      </div>
+      <div class="line-group-status-mini">
+        <span>รอตรวจ <b>${Number(selected.summary?.reviewCount || 0)}</b></span>
+        <span>ต้องแก้ <b>${Number(selected.summary?.correctionCount || 0)}</b></span>
+        <span>รอโอน <b>${Number(selected.summary?.paymentCount || 0)}</b></span>
+        <span>จ่ายแล้ว <b>${Number(selected.summary?.paidCount || 0)}</b></span>
+      </div>
+      <div class="line-group-claim-list">
+        ${claims.length ? claims.map((claim) => `
+          <div class="line-group-claim">
+            <div class="line-group-claim-main">
+              <b>${esc(claim.payerName || "ไม่ระบุผู้เบิก")}</b>
+              <span>${esc(claim.vendor || claim.note || "รายการเบิก")} · ${esc(claim.date || "—")}</span>
+              ${claim.batchDocId ? `<small>ใบเบิก ${esc(claim.batchDocId)}</small>` : ""}
+            </div>
+            <div class="line-group-claim-right">
+              <strong>${esc(lineGroupMoney(claim.amount || 0))}</strong>
+              <span class="line-claim-status ${lineGroupStatusClass(claim.statusKey)}">${esc(lineGroupStatusLabel(claim.statusKey, claim.status))}</span>
+            </div>
+          </div>
+        `).join("") : `<div class="line-group-empty">กลุ่มนี้ยังไม่มีรายการเบิก</div>`}
+      </div>
+    `;
+  }
+
+  async function loadLineGroups(refresh = false) {
+    if (LINE_GROUP_LOADING) return;
+    LINE_GROUP_LOADING = true;
+    ensureLineGroupMonitor();
+
+    const cards = document.getElementById("lineGroupCards");
+    const refreshBtn = document.getElementById("lineGroupRefresh");
+    if (refreshBtn) {
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = "กำลังอัปเดต…";
+    }
+    if (!LINE_GROUPS.rows?.length && cards) cards.innerHTML = `<div class="line-group-loading">กำลังอ่าน LINE กลุ่มและรายการเบิก…</div>`;
+
+    try {
+      const response = await fetch(lineGroupApiUrl(refresh), { cache: "no-store" });
+      const raw = await response.text();
+      let data = {};
+      try { data = raw ? JSON.parse(raw) : {}; } catch { data = { error: raw }; }
+      if (!response.ok || data.ok === false) throw new Error(data.message || data.error || `HTTP ${response.status}`);
+      LINE_GROUPS = data;
+      LINE_GROUP_LAST_LOAD = Date.now();
+      renderLineGroupMonitor();
+    } catch (error) {
+      if (cards) cards.innerHTML = `
+        <div class="line-group-error">
+          <b>โหลดข้อมูล LINE กลุ่มไม่สำเร็จ</b>
+          <span>${esc(error?.message || error)}</span>
+          <button class="btn" type="button" id="lineGroupRetry">ลองใหม่</button>
+        </div>`;
+      document.getElementById("lineGroupRetry")?.addEventListener("click", () => loadLineGroups(true));
+    } finally {
+      LINE_GROUP_LOADING = false;
+      if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = "อัปเดตกลุ่ม";
+      }
+    }
+  }
+
+  function currentBatchSourceGroup() {
+    return BATCH_DATA?.sourceGroup || null;
+  }
+
+  function decorateBatchRowsWithSourceGroup() {
+    const source = currentBatchSourceGroup();
+    const name = String(source?.groupName || "").trim();
+    if (!name) return;
+
+    const body = document.getElementById("batchMasterBody");
+    if (!body) return;
+    body.querySelectorAll("tr").forEach((row) => {
+      let badge = row.querySelector(".line-source-badge");
+      if (!badge) {
+        badge = document.createElement("span");
+        badge.className = "line-source-badge";
+        const target =
+          row.querySelector('[data-label="ผู้เบิก"]') ||
+          row.querySelector('[data-label="รายการ"]') ||
+          row.cells?.[3] ||
+          row;
+        target.appendChild(badge);
+      }
+      badge.textContent = `LINE · ${name}`;
+      badge.title = `รายการนี้ตั้งเบิกจากกลุ่ม ${name} (${maskGroupId(source.groupId || source.sourceId)})`;
+    });
+  }
+
+  const renderMasterBeforeLineGroups = renderMasterTable;
+  renderMasterTable = function(...args) {
+    const result = renderMasterBeforeLineGroups.apply(this, args);
+    decorateBatchRowsWithSourceGroup();
+    return result;
+  };
+
+  const renderBatchesBeforeLineGroups = renderBatches;
+  renderBatches = function(...args) {
+    const result = renderBatchesBeforeLineGroups.apply(this, args);
+    ensureLineGroupMonitor();
+    decorateBatchRowsWithSourceGroup();
+    if (!LINE_GROUP_LAST_LOAD || Date.now() - LINE_GROUP_LAST_LOAD > 60_000) {
+      loadLineGroups(false);
+    } else {
+      renderLineGroupMonitor();
+    }
+    return result;
+  };
+
+  const style = document.createElement("style");
+  style.textContent = `
+    .line-group-monitor{margin:0 0 16px;background:#fff;border:1px solid #e5e5e7;border-radius:20px;padding:18px}
+    .line-group-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+    .line-group-head h3{margin:4px 0 5px;font-size:18px}.line-group-head p{margin:0;color:#86868b;font-size:12px;line-height:1.55}
+    .line-group-head-actions{display:flex;align-items:center;gap:9px}
+    .line-group-total{background:#f5f5f7;border-radius:13px;padding:9px 12px;min-width:94px;text-align:center}
+    .line-group-total span{display:block;font-size:9px;color:#86868b;font-weight:700}.line-group-total strong{display:block;font-size:20px;margin-top:2px}
+    .line-group-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:15px}
+    .line-group-card{border:1px solid #e5e5e7;background:#fff;border-radius:16px;padding:13px;text-align:left;color:#1d1d1f}
+    .line-group-card:hover,.line-group-card.selected{border-color:#1d1d1f;box-shadow:0 5px 18px rgba(0,0,0,.05)}
+    .line-group-card-top{display:flex;align-items:center;gap:9px}.line-group-icon{width:35px;height:35px;border-radius:10px;background:#f2f2f7;display:grid;place-items:center;font-size:9px;font-weight:850}
+    .line-group-name{min-width:0;flex:1}.line-group-name b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.line-group-name span{display:block;color:#86868b;font-size:9px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .line-connected,.line-disconnected,.line-current{display:inline-flex;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:750;white-space:nowrap}
+    .line-connected{background:#edf8f0;color:#147a36}.line-disconnected{background:#fff3e8;color:#925c00}.line-current{background:#f2f2f7;color:#525257}
+    .line-group-card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
+    .line-group-card-stats div{background:#fafafa;border-radius:10px;padding:8px}.line-group-card-stats span{display:block;font-size:8px;color:#86868b}.line-group-card-stats strong{display:block;font-size:13px;margin-top:3px}
+    .line-group-card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;font-size:9px;color:#86868b}
+    .line-group-detail{margin-top:12px;background:#f7f7f9;border-radius:16px;padding:14px}
+    .line-group-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.line-group-detail-head span{font-size:9px;color:#86868b;font-weight:700}.line-group-detail-head h4{font-size:16px;margin:2px 0}.line-group-detail-head small{color:#86868b;font-size:9px}
+    .line-group-detail-actions{display:flex;gap:6px}.line-group-status-mini{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.line-group-status-mini span{background:#fff;border-radius:999px;padding:6px 9px;font-size:10px;color:#6e6e73}.line-group-status-mini b{color:#1d1d1f}
+    .line-group-claim-list{background:#fff;border-radius:13px;overflow:hidden}.line-group-claim{display:flex;align-items:center;gap:12px;padding:11px 12px;border-top:1px solid #eeeeef}.line-group-claim:first-child{border-top:0}
+    .line-group-claim-main{min-width:0;flex:1}.line-group-claim-main b{display:block;font-size:12px}.line-group-claim-main span,.line-group-claim-main small{display:block;color:#86868b;font-size:9px;margin-top:3px}
+    .line-group-claim-right{text-align:right}.line-group-claim-right strong{display:block;font-size:12px}.line-claim-status{display:inline-flex;margin-top:5px;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:750;background:#f2f2f7;color:#5f6368}
+    .line-claim-status.paid{background:#edf8f0;color:#147a36}.line-claim-status.payment{background:#eef4ff;color:#2457a7}.line-claim-status.correction,.line-claim-status.rejected{background:#fff0ef;color:#b42318}
+    .line-source-badge{display:inline-flex;margin:6px 0 0 7px;border-radius:999px;padding:4px 7px;background:#eef4ff;color:#2457a7;font-size:9px;font-weight:750;vertical-align:middle}
+    .line-group-loading,.line-group-empty,.line-group-error{grid-column:1/-1;padding:20px;text-align:center;color:#86868b;background:#fafafa;border-radius:14px;font-size:12px}
+    .line-group-error b,.line-group-error span{display:block}.line-group-error span{margin:5px 0 10px;color:#b42318}
+    @media(max-width:1000px){.line-group-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){
+      .line-group-monitor{padding:14px;margin-bottom:12px}.line-group-head{display:block}.line-group-head-actions{margin-top:10px;justify-content:space-between}
+      .line-group-cards{grid-template-columns:1fr}.line-group-card-stats{grid-template-columns:repeat(3,1fr)}
+      .line-group-detail-head{display:block}.line-group-detail-actions{margin-top:10px}.line-group-detail-actions .btn{flex:1}
+      .line-group-claim{align-items:flex-start}.line-source-badge{display:flex;width:max-content;max-width:100%;margin-left:0}
+    }
+  `;
+  document.head.appendChild(style);
+
+  setTimeout(() => {
+    if (currentPageKey() === "batches") {
+      ensureLineGroupMonitor();
+      loadLineGroups(false);
+      decorateBatchRowsWithSourceGroup();
+    }
+  }, 0);
+
+  console.info("[Dashboard] v7.15 LINE group traceability active");
+})();
