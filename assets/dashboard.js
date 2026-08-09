@@ -76,6 +76,8 @@ const DASH_CACHE_MAX_BYTES=3_500_000;
 let DASH_RETRY_TIMER=null;
 let DASH_FAILURE_COUNT=0;
 let DASH_AUTH_BLOCKED=false;
+let DASH_SETUP_BLOCKED=false;
+let CONNECTION_HEALTH={checked:false,business:false,workspace:false,gmail:false,gmailReconnect:false};
 const SETTINGS_SIGNAL_KEY=`document-settings-updated:${TENANT}`;
 const SIGNATURE_READY_KEY=`signature-ready:${TENANT}`;
 let LAST_SETTINGS_SIGNAL=localStorage.getItem(SETTINGS_SIGNAL_KEY)||"";
@@ -2305,6 +2307,67 @@ function fatal(icon,msg){
   document.body.innerHTML='<div class="fatal"><span class="ic">'+icon+'</span>'+msg+'</div>';
 }
 
+function currentBusinessConnected(){
+  return Boolean(BUSINESS_INFO?.ok===true&&(BUSINESS_INFO.businesses||[]).some(b=>b&&b.isCurrent));
+}
+function ensureConnectionHealthBanner(){
+  let box=el("connectionHealthBanner");
+  if(box)return box;
+  const main=document.querySelector(".main");if(!main)return null;
+  box=document.createElement("section");
+  box.id="connectionHealthBanner";box.className="connection-health-banner";box.hidden=true;
+  box.innerHTML=`<div class="connection-health-icon" aria-hidden="true">!</div><div class="connection-health-copy"><strong id="connectionHealthTitle">ตรวจการเชื่อมต่อ</strong><div id="connectionHealthDetail"></div><div class="connection-health-checks" id="connectionHealthChecks"></div></div><div class="connection-health-actions"><button type="button" class="btn" id="connectionHealthSecondary">ตรวจอีกครั้ง</button><button type="button" class="btn solid" id="connectionHealthPrimary">แก้ไข</button></div>`;
+  const head=main.querySelector(".head");if(head)head.insertAdjacentElement("afterend",box);else main.prepend(box);
+  el("connectionHealthSecondary")?.addEventListener("click",()=>refreshConnectionHealth({manual:true,loadAfter:true}));
+  el("connectionHealthPrimary")?.addEventListener("click",()=>{
+    const action=el("connectionHealthPrimary")?.dataset.action||"";
+    if(action==="gmail"){location.href=WORKER+`/gmail/connect?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(K)}`;return;}
+    location.href=WORKER+`/oauth/connect?tenant=${encodeURIComponent(TENANT)}`;
+  });
+  return box;
+}
+function renderConnectionHealthBanner(){
+  const box=ensureConnectionHealthBanner();if(!box)return;
+  const businessReady=CONNECTION_HEALTH.business===true;
+  const workspaceReady=CONNECTION_HEALTH.workspace===true;
+  const gmailReady=CONNECTION_HEALTH.gmail===true;
+  const critical=!businessReady||!workspaceReady;
+  const gmailIssue=!gmailReady;
+  if(!critical&&!gmailIssue){box.hidden=true;DASH_SETUP_BLOCKED=false;return;}
+  box.hidden=false;box.dataset.level=critical?"critical":"notice";
+  const title=el("connectionHealthTitle"),detail=el("connectionHealthDetail"),checks=el("connectionHealthChecks"),primary=el("connectionHealthPrimary");
+  if(title)title.textContent=critical?"การเชื่อมต่อธุรกิจยังไม่พร้อม":(CONNECTION_HEALTH.gmailReconnect?"ต้องเชื่อม Gmail ใหม่":"Gmail ยังไม่ได้เชื่อม");
+  if(detail)detail.textContent=critical?"Dashboard ยังอ่าน Google Sheet / Drive ของธุรกิจนี้ไม่ได้ จึงยังโหลดข้อมูลรายการไม่ได้":"Dashboard ใช้งานได้ตามปกติ แต่เอกสารจากอีเมลจะยังไม่เข้าระบบอัตโนมัติ";
+  if(checks)checks.innerHTML=`<span class="${businessReady?'ok':'bad'}">${businessReady?'✓':'!'} ธุรกิจ</span><span class="${workspaceReady?'ok':'bad'}">${workspaceReady?'✓':'!'} Sheet / Drive</span><span class="${gmailReady?'ok':'warn'}">${gmailReady?'✓':'!'} Gmail</span>`;
+  if(primary){primary.dataset.action=critical?"business":"gmail";primary.textContent=critical?"เชื่อมธุรกิจ / Google":(CONNECTION_HEALTH.gmailReconnect?"เชื่อม Gmail ใหม่":"เชื่อม Gmail");}
+  DASH_SETUP_BLOCKED=critical;
+}
+async function refreshConnectionHealth({manual=false,loadAfter=false}={}){
+  if(manual)syncStatus("syncing","กำลังตรวจการเชื่อมต่อ…");
+  const [settingsOk,businessOk,workspaceOk,gmailOk]=await Promise.all([
+    refreshSettings(),refreshBusinesses({quiet:true}),refreshWorkspaceLinks(),refreshGmailConnectionStatus({retries:1})
+  ]);
+  CONNECTION_HEALTH={
+    checked:true,
+    business:Boolean(businessOk&&currentBusinessConnected()&&settingsOk),
+    workspace:Boolean(workspaceOk),
+    gmail:Boolean(gmailOk),
+    gmailReconnect:EMAIL_INFO.reconnectRequired===true,
+  };
+  renderConnectionHealthBanner();
+  const criticalReady=CONNECTION_HEALTH.business&&CONNECTION_HEALTH.workspace;
+  if(criticalReady){
+    if(manual)syncStatus("ok",`การเชื่อมต่อพร้อม ${clockTime()}`);
+    if(loadAfter)await refreshData({manual:true});
+  }else{
+    clearDashboardRetry();
+    syncStatus("error","ต้องเชื่อมธุรกิจก่อน");
+    hideNetworkBanner();
+  }
+  renderOnboarding();applyWorkspaceBranding();
+  return criticalReady;
+}
+
 function ensureNetworkBanner(){
   let box=el("networkRecoveryBanner");
   if(box)return box;
@@ -2438,8 +2501,17 @@ async function refreshData({initial=false,manual=false}={}){
     console.error("dashboard refresh failed",e);
     DASH_FAILURE_COUNT+=1;
     recoverDashboardShell("network");
+    // ถ้าข้อมูลหลักล้ม ให้ตรวจ setup ก่อน อย่าบอกผู้ใช้ว่า server ช้า ทั้งที่ธุรกิจยังไม่ได้เชื่อม
+    if(DASH_FAILURE_COUNT===1){
+      const setupReady=await refreshConnectionHealth({manual:false,loadAfter:false}).catch(()=>true);
+      if(setupReady===false){
+        hideNetworkBanner();
+        syncStatus("error","ต้องเชื่อมธุรกิจก่อน");
+        return false;
+      }
+    }
     const isServer=/HTTP 5\d\d/.test(String(e?.message||""));
-    showNetworkBanner("warn",isServer?"ระบบตอบช้ากว่าปกติ":"อัปเดตข้อมูลไม่ได้","ยังใช้งานหน้าที่โหลดไว้ได้ · ระบบกำลังลองใหม่ให้อัตโนมัติ");
+    showNetworkBanner("warn",isServer?"ระบบตอบช้ากว่าปกติ":"อัปเดตข้อมูลไม่ได้","การเชื่อมต่อพื้นฐานครบแล้ว · ระบบกำลังลองโหลดข้อมูลใหม่ให้อัตโนมัติ");
     syncStatus("error","เชื่อมต่อไม่สำเร็จ — กำลังลองใหม่");
     scheduleDashboardRetry();
     return false;
@@ -2504,17 +2576,32 @@ async function load(){
   if(target==="business")openBusiness(ROUTE_BIZ,document.querySelector(`[data-biz="${ROUTE_BIZ}"]`),{soft:true,bypassSetup:true});
   else openPage(target,source,{soft:true,skipFetch:true,bypassSetup:true});
 
-  const [settingsOk]=await Promise.all([
+  const [settingsOk,businessOk,workspaceOk,gmailOk]=await Promise.all([
     refreshSettings(),
     refreshBusinesses({quiet:true}),
     refreshWorkspaceLinks(),
     refreshGmailConnectionStatus({retries:1}),
     (target==="billing"||target==="overview")?refreshSubscription({quiet:true}):Promise.resolve(true),
   ]);
-  CONNECTED=Boolean(settingsOk);
+  CONNECTION_HEALTH={
+    checked:true,
+    business:Boolean(businessOk&&currentBusinessConnected()&&settingsOk),
+    workspace:Boolean(workspaceOk),
+    gmail:Boolean(gmailOk),
+    gmailReconnect:EMAIL_INFO.reconnectRequired===true,
+  };
+  CONNECTED=CONNECTION_HEALTH.business&&CONNECTION_HEALTH.workspace;
+  renderConnectionHealthBanner();
 
   let primaryOk=true;
-  if(EXPENSE_DATA_PAGES.has(target)){
+  if(!CONNECTED){
+    // ไม่ยิง API รายการซ้ำ ๆ ถ้าธุรกิจ/Google ยังไม่พร้อม — แจ้งสาเหตุและทางแก้ให้ตรงจุด
+    ALL=[];HAS_LOADED=true;
+    try{drawAll();}catch(err){console.debug("setup placeholder render skipped",err);}
+    syncStatus("error","ต้องเชื่อมธุรกิจก่อน");
+    hideNetworkBanner();
+    primaryOk=false;
+  }else if(EXPENSE_DATA_PAGES.has(target)){
     primaryOk=await refreshData({initial:true});
   }else{
     HAS_LOADED=true;syncStatus("ok",`พร้อมใช้งาน ${clockTime()}`);
@@ -2534,7 +2621,7 @@ async function load(){
   ROUTE_BOOTSTRAPPING=false;
   // แม้ API รอบแรกพลาด หน้าเว็บยังคงอยู่และ retry ต่อเบื้องหลัง
   if(HAS_LOADED)startRealtime();
-  if(primaryOk===false&&!DASH_AUTH_BLOCKED)scheduleDashboardRetry();
+  if(primaryOk===false&&!DASH_AUTH_BLOCKED&&!DASH_SETUP_BLOCKED)scheduleDashboardRetry();
 }
 
 el("syncBtn").addEventListener("click",async()=>{const reconOpen=el("page-reconciliation")?.classList.contains("show");const incomeOpen=el("page-income")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");const billingOpen=el("page-billing")?.classList.contains("show");if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings(),refreshWorkspaceLinks()]);else if(incomeOpen)await Promise.all([refreshIncome({withReconciliation:incomeReconModalOpen()}),refreshSettings(),refreshWorkspaceLinks()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings(),refreshWorkspaceLinks()]);else if(billingOpen)await Promise.all([refreshSubscription(),refreshBusinesses(),refreshSettings(),refreshWorkspaceLinks()]);else await Promise.all([refreshData({manual:true}),refreshSettings(),refreshWorkspaceLinks()]);});
@@ -2544,7 +2631,7 @@ document.addEventListener("visibilitychange",()=>{
 window.addEventListener("focus",()=>{if(HAS_LOADED)refreshVisiblePage();});
 window.addEventListener("pageshow",()=>{if(HAS_LOADED)refreshSettingsIfAssetChanged(true);});
 window.addEventListener("storage",e=>{if(e.key===SETTINGS_SIGNAL_KEY||e.key===SIGNATURE_READY_KEY){renderOnboarding();refreshSettingsIfAssetChanged(true);}});
-window.addEventListener("online",()=>{DASH_FAILURE_COUNT=0;showNetworkBanner("syncing","กลับมาออนไลน์แล้ว","กำลังอัปเดตข้อมูลล่าสุด…");syncStatus("syncing","กลับมาออนไลน์ — กำลังซิงก์…");refreshData({manual:true});refreshSettingsIfAssetChanged(true);});
+window.addEventListener("online",()=>{DASH_FAILURE_COUNT=0;if(DASH_SETUP_BLOCKED){refreshConnectionHealth({manual:true,loadAfter:true});}else{showNetworkBanner("syncing","กลับมาออนไลน์แล้ว","กำลังอัปเดตข้อมูลล่าสุด…");syncStatus("syncing","กลับมาออนไลน์ — กำลังซิงก์…");refreshData({manual:true});}refreshSettingsIfAssetChanged(true);});
 window.addEventListener("offline",()=>{clearDashboardRetry();recoverDashboardShell("offline");showNetworkBanner("offline","ตอนนี้ออฟไลน์","ยังดูข้อมูลล่าสุดที่มีอยู่ได้ ระบบจะอัปเดตเองเมื่ออินเทอร์เน็ตกลับมา");syncStatus("error","ออฟไลน์ — รอเชื่อมต่อ");});
 
 load();
