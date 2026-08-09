@@ -1,8 +1,8 @@
-/* Dashboard v7.10 — Reimbursement hotfix
-   - ไม่แตะ BATCH_DATA
-   - ไม่มี MutationObserver
-   - รวมได้เฉพาะรายการย่อย (queue) ที่ยังไม่เคยสร้างใบเบิกหลัก
-   - ใบเบิกหลักแสดงรหัส แต่ไม่มี checkbox รวมซ้ำ
+/* Dashboard v7.11 — Reimbursement + expense status sync
+   - หน้า "รายจ่าย" ใช้ source of truth เดียวกับ "เบิกจ่าย"
+   - paid=true / batchStatus=จ่ายแล้ว / มี reimbursedAt => จ่ายแล้ว
+   - workflow status จาก batchStatus มีสิทธิ์เหนือ legacy status "รอเบิก"
+   - รวมใบเบิกได้เฉพาะ queue item ที่ยังไม่เคยสร้างใบเบิกหลัก
 */
 (() => {
   "use strict";
@@ -18,12 +18,50 @@
     ) || null;
   }
 
+  function boolish(value) {
+    if (value === true || value === 1) return true;
+    const s = String(value ?? "").trim().toLowerCase();
+    return ["true", "1", "yes", "y", "ใช่", "จ่ายแล้ว", "paid"].includes(s);
+  }
+
+  function effectiveExpenseStatus(row = {}) {
+    const batchStatus = String(row.batchStatus || "").trim();
+    const legacyStatus = String(row.status || "").trim();
+
+    const paid =
+      boolish(row.paid) ||
+      batchStatus === "จ่ายแล้ว" ||
+      !!String(row.reimbursedAt || "").trim();
+
+    if (paid) return "จ่ายแล้ว";
+
+    const workflowStatuses = new Set([
+      "รอตรวจเอกสาร",
+      "ต้องแก้ไข",
+      "รอโอนเงิน",
+      "รอหลักฐานการโอน",
+      "ขอเบิกด่วน",
+      "ยกเลิก",
+      "ไม่อนุมัติ",
+    ]);
+
+    if (workflowStatuses.has(batchStatus)) return batchStatus;
+    return legacyStatus || "รอเบิก";
+  }
+
+  function syncExpenseStatuses() {
+    if (!Array.isArray(ALL)) return;
+    for (const row of ALL) {
+      const effective = effectiveExpenseStatus(row);
+      if (effective && row.status !== effective) row.status = effective;
+    }
+  }
+
   function decorateAlreadyMergedRows() {
     const body = document.getElementById("batchMasterBody");
     if (!body) return;
 
     body.querySelectorAll("tr[data-open-batch]").forEach((row) => {
-      // ใบเบิกหลักทุกใบห้ามนำไปสร้างใบเบิกหลักซ้ำ
       row.querySelectorAll("[data-master-merge-id], .master-checkbox").forEach((node) => node.remove());
 
       const batch = findBatchById(row.dataset.openBatch);
@@ -42,7 +80,7 @@
     });
   }
 
-  // เลือกได้เฉพาะรายการย่อยที่ยังไม่เคยสร้างใบเบิกหลัก
+  // ใบเบิกหลักที่สร้างแล้วห้ามนำไปสร้างใบเบิกหลักซ้ำ
   reviewMergeSelectable = function(row) {
     return !!(row && row.kind === "queue" && row.statusKey === "review");
   };
@@ -57,12 +95,43 @@
     return result;
   };
 
-  // redraw แค่ครั้งเดียวหลังโหลด patch
+  // ทุกครั้งก่อน render หน้า expense ให้ reconcile legacy status กับ workflow status ก่อน
+  const coreRenderExp = renderExp;
+  renderExp = function(...args) {
+    syncExpenseStatuses();
+    return coreRenderExp.apply(this, args);
+  };
+
+  const coreRenderRecent = renderRecent;
+  renderRecent = function(...args) {
+    syncExpenseStatuses();
+    return coreRenderRecent.apply(this, args);
+  };
+
+  if (typeof renderReport === "function") {
+    const coreRenderReport = renderReport;
+    renderReport = function(...args) {
+      syncExpenseStatuses();
+      return coreRenderReport.apply(this, args);
+    };
+  }
+
+  const coreRenderLocalPage = renderLocalPage;
+  renderLocalPage = function(...args) {
+    syncExpenseStatuses();
+    return coreRenderLocalPage.apply(this, args);
+  };
+
+  // กรณี data โหลดเสร็จก่อน patch
   setTimeout(() => {
     try {
-      if (currentPageKey() === "batches" && BATCH_DATA) renderMasterTable();
+      syncExpenseStatuses();
+      const page = currentPageKey();
+      if (page === "batches" && BATCH_DATA) renderMasterTable();
+      else if (page === "expenses") renderExp();
+      else if (page === "overview") renderRecent();
     } catch (error) {
-      console.warn("v7.10 reimbursement redraw", error);
+      console.warn("v7.11 status sync redraw", error);
     }
   }, 0);
 
@@ -81,5 +150,5 @@
   `;
   document.head.appendChild(style);
 
-  console.info("[Dashboard] v7.10 reimbursement hotfix active");
+  console.info("[Dashboard] v7.11 expense paid-status sync active");
 })();
