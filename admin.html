@@ -14,8 +14,9 @@
     <h1>Internal Operations</h1>
     <p>หลังบ้านสำหรับทีมบริษัทเท่านั้น ใส่ ADMIN_KEY เพื่อเข้าใช้งาน</p>
     <input id="adminKeyInput" type="password" autocomplete="current-password" placeholder="ADMIN_KEY" required>
-    <button type="submit">เข้าสู่หลังบ้าน</button>
-    <small>Key จะเก็บเฉพาะ Session ของแท็บนี้ ไม่บันทึกถาวรในเครื่อง</small>
+    <button id="loginSubmit" type="submit">เข้าสู่หลังบ้าน</button>
+    <div id="loginStatus" class="login-status" role="status" aria-live="polite">พร้อมตรวจสอบ ADMIN_KEY</div>
+    <small>Key จะเก็บเฉพาะ Session ของแท็บนี้ ไม่บันทึกถาวรในเครื่อง · Admin UI v7.13.1</small>
   </form>
 </div>
 
@@ -88,6 +89,30 @@
 </div>
 
 <div class="toast" id="toast" hidden></div>
-<script src="./assets/admin.js?v=7.13"></script>
+<script>
+(function(){
+  const status = document.getElementById('loginStatus');
+  function fail(message){
+    if(status){ status.textContent = message; status.className = 'login-status error'; }
+    const btn = document.getElementById('loginSubmit');
+    if(btn){ btn.disabled = false; btn.textContent = 'เข้าสู่หลังบ้าน'; }
+  }
+  window.__OPS_ADMIN_BOOT_FAIL__ = fail;
+  const script = document.createElement('script');
+  script.src = './assets/admin.js?v=7.13.1';
+  script.async = false;
+  script.onerror = function(){
+    fail('โหลดไฟล์ระบบหลังบ้านไม่สำเร็จ (assets/admin.js) · ให้อัปไฟล์ admin.js แล้ว Refresh หน้าอีกครั้ง');
+  };
+  script.onload = function(){
+    setTimeout(function(){
+      if(window.__OPS_ADMIN_READY__ !== true){
+        fail('ไฟล์ admin.js โหลดมาแล้ว แต่ระบบเริ่มทำงานไม่สำเร็จ · เปิด Console หรืออัป admin.js v7.13.1 ทับอีกครั้ง');
+      }
+    }, 800);
+  };
+  document.body.appendChild(script);
+})();
+</script>
 </body>
 </html>
