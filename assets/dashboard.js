@@ -1,3 +1,4 @@
+/* Dashboard Core SME v7.3 — focused production UI */
 const API = "https://accoutingsuppor02.organization-23c.workers.dev/api/expenses";
 const WORKER = "https://accoutingsuppor02.organization-23c.workers.dev";
 const QS = new URLSearchParams(location.search);
@@ -8,9 +9,6 @@ const ROUTE_PAGE_RAW = QS.get("page") || "overview";
 const ROUTE_PAGE = ROUTE_PAGE_RAW === "reimburse" ? "batches" : ROUTE_PAGE_RAW;
 const ROUTE_BIZ = QS.get("biz") || "profile";
 const EXPENSE_DATA_PAGES = new Set(["overview","expenses","reports","bills","activity","settings","business"]);
-const ACCOUNTING_SUITE_PAGES = new Set(["search","payables","contacts","period-close","tax-center","ledger","migration","audit"]);
-// v7.2: Advanced accounting pages stay visible as roadmap, but are intentionally locked until ready.
-const COMING_SOON_PAGES = new Set(["search","payables","contacts","period-close","tax-center","ledger","migration","audit"]);
 let ROUTE_BOOTSTRAPPING = true;
 let CONNECTED = false;
 let SETTINGS = {};
@@ -960,20 +958,9 @@ function setBusinessTab(tab){
   document.querySelectorAll(".subnavlink[data-biz]").forEach(x=>x.classList.toggle("active",x.dataset.biz===tab));
   renderBusiness();
 }
-function comingSoonLabel(page){return TITLES?.[page]||({search:"ค้นหาทั้งระบบ",payables:"เจ้าหนี้",contacts:"ลูกค้าและผู้ขาย","period-close":"ปิดงวดบัญชี","tax-center":"ศูนย์ภาษี",ledger:"สมุดบัญชี",migration:"ย้ายข้อมูล",audit:"Audit & สิทธิ์"}[page])||"ฟีเจอร์นี้";}
-function showComingSoon(page){
-  const name=comingSoonLabel(page);
-  const modal=el("modal"),body=el("modalBody");
-  if(!modal||!body)return;
-  body.innerHTML=`<div class="coming-soon-dialog"><div class="coming-soon-lock">🔒</div><h3>${esc(name)}</h3><p>ฟีเจอร์นี้กำลังพัฒนาเพื่อให้ใช้งานง่ายและข้อมูลบัญชีถูกต้องก่อนเปิดให้ใช้งานจริง ฟังก์ชันหลักของระบบยังใช้งานได้ตามปกติ</p><button class="btn solid" type="button" data-close-coming-soon>เข้าใจแล้ว</button></div>`;
-  modal.classList.add("show");
-  body.querySelector("[data-close-coming-soon]")?.addEventListener("click",closeGlobalModal,{once:true});
-}
-
 function openPage(p,source=null,opts={}){
   const previous=currentPageKey();
   if(p==="reimburse")p="batches";
-  if(COMING_SOON_PAGES.has(p)){showComingSoon(p);return false;}
   if(!opts.bypassSetup&&requireCompanySetup(p))return;
   if(!opts.soft&&!ROUTE_BOOTSTRAPPING&&p!==previous){hardNavigate(p);return;}
   COMPANY_SETUP_ACTIVE=(p==="email"||p==="settings"||p==="billing")?p:"";
@@ -1840,7 +1827,7 @@ function download(name,text){
 }
 
 /* ---------- NAV / DRAW ---------- */
-const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",search:"ค้นหาทั้งระบบ",payables:"เจ้าหนี้",contacts:"ลูกค้าและผู้ขาย","period-close":"ปิดงวดบัญชี","tax-center":"ศูนย์ภาษี",ledger:"สมุดบัญชี",migration:"ย้ายข้อมูล",audit:"Audit & สิทธิ์",reimburse:"เบิกจ่าย",batches:"เบิกจ่าย",reconciliation:"กระทบยอดธนาคาร",reports:"รายงานและภาษี",bills:"ศูนย์เอกสารบัญชี",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",billing:"แพ็กเกจ",settings:"ตั้งค่าการใช้งาน",business:"จัดการธุรกิจ"};
+const TITLES={overview:"ภาพรวม",expenses:"รายจ่าย",income:"รายรับ",reimburse:"เบิกจ่าย",batches:"เบิกจ่าย",reconciliation:"กระทบยอดธนาคาร",reports:"รายงานและภาษี",bills:"ศูนย์เอกสารบัญชี",email:"เอกสารจากอีเมล",subscriptions:"รายจ่ายประจำ",activity:"ประวัติการบันทึก",billing:"แพ็กเกจ",settings:"ตั้งค่าการใช้งาน",business:"จัดการธุรกิจ"};
 
 function closeMobileMore(){const box=el("mobileMoreBackdrop");if(box)box.hidden=true;document.body.classList.remove("mobile-more-open");}
 function openMobileMore(){const box=el("mobileMoreBackdrop");if(!box)return;closeBusinessSwitcher();box.hidden=false;document.body.classList.add("mobile-more-open");}
@@ -1858,7 +1845,6 @@ document.querySelectorAll("[data-mobile-external]").forEach(b=>b.addEventListene
   if(kind==="sheet"||kind==="drive")window.open(href,"_blank","noopener,noreferrer");else location.href=href;
 }));
 
-document.querySelectorAll("[data-coming-soon]").forEach(b=>b.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();closeMobileMore();showComingSoon(b.dataset.comingSoon);}));
 document.querySelectorAll("[data-p]").forEach(b=>b.addEventListener("click",()=>openPage(b.dataset.p,b)));
 if(el("businessSwitcherBtn"))el("businessSwitcherBtn").addEventListener("click",e=>{e.stopPropagation();toggleBusinessSwitcher();});
 if(el("mobileWorkspaceCard"))el("mobileWorkspaceCard").addEventListener("click",async()=>{await refreshBusinesses({quiet:true});openBusinessManager();});
@@ -2404,10 +2390,8 @@ function refreshVisiblePage({manual=false}={}){
   const billingOpen=el("page-billing")?.classList.contains("show");
   const currentKey=currentPageKey();
 
-  // หน้าเบิกจ่าย/บัญชี v7 ใช้ API ของตัวเอง ไม่ยิง /api/expenses ซ้ำ
-  if(ACCOUNTING_SUITE_PAGES.has(currentKey)){
-    if(manual)window.AccountingSuiteRefresh?.(currentKey);
-  }else if(batchOpen){
+  // หน้าเบิกจ่าย/กระทบยอด/รายรับใช้ API ของตัวเอง ไม่ยิง /api/expenses ซ้ำ
+  if(batchOpen){
     if(BATCH_SELECTED.size===0&&REVIEW_BATCH_SELECTED.size===0&&TRANSFER_SELECTED.size===0)refreshBatchData({quiet:true});
   }else if(reconciliationOpen){
     refreshReconciliation({quiet:true});
@@ -2443,9 +2427,7 @@ async function load(){
     fatal("⚠️","<b>ลิงก์ไม่สมบูรณ์</b><br><br>กรุณาเปิดแดชบอร์ดจากปุ่มในแชท LINE<br>หรือพิมพ์ <b>แดชบอร์ด</b> ในกลุ่มเพื่อขอลิงก์ใหม่");
     return;
   }
-  const requestedTarget=el("page-"+ROUTE_PAGE)?ROUTE_PAGE:"overview";
-  const lockedRequested=COMING_SOON_PAGES.has(requestedTarget);
-  const target=lockedRequested?"overview":requestedTarget;
+  const target=el("page-"+ROUTE_PAGE)?ROUTE_PAGE:"overview";
   const source=document.querySelector(`[data-p="${target}"]`);
   if(target==="business")openBusiness(ROUTE_BIZ,document.querySelector(`[data-biz="${ROUTE_BIZ}"]`),{soft:true,bypassSetup:true});
   else openPage(target,source,{soft:true,skipFetch:true,bypassSetup:true});
@@ -2479,10 +2461,9 @@ async function load(){
   }
   ROUTE_BOOTSTRAPPING=false;
   if(primaryOk!==false)startRealtime();
-  if(lockedRequested)setTimeout(()=>showComingSoon(requestedTarget),120);
 }
 
-el("syncBtn").addEventListener("click",async()=>{const current=currentPageKey();const reconOpen=el("page-reconciliation")?.classList.contains("show");const incomeOpen=el("page-income")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");const billingOpen=el("page-billing")?.classList.contains("show");if(ACCOUNTING_SUITE_PAGES.has(current)){await Promise.all([window.AccountingSuiteRefresh?.(current),refreshSettings(),refreshWorkspaceLinks()]);}else if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings(),refreshWorkspaceLinks()]);else if(incomeOpen)await Promise.all([refreshIncome({withReconciliation:incomeReconModalOpen()}),refreshSettings(),refreshWorkspaceLinks()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings(),refreshWorkspaceLinks()]);else if(billingOpen)await Promise.all([refreshSubscription(),refreshBusinesses(),refreshSettings(),refreshWorkspaceLinks()]);else await Promise.all([refreshData({manual:true}),refreshSettings(),refreshWorkspaceLinks()]);});
+el("syncBtn").addEventListener("click",async()=>{const reconOpen=el("page-reconciliation")?.classList.contains("show");const incomeOpen=el("page-income")?.classList.contains("show");const batchOpen=el("page-batches")?.classList.contains("show");const billingOpen=el("page-billing")?.classList.contains("show");if(reconOpen)await Promise.all([refreshReconciliation(),refreshSettings(),refreshWorkspaceLinks()]);else if(incomeOpen)await Promise.all([refreshIncome({withReconciliation:incomeReconModalOpen()}),refreshSettings(),refreshWorkspaceLinks()]);else if(batchOpen)await Promise.all([refreshBatchData(),refreshSettings(),refreshWorkspaceLinks()]);else if(billingOpen)await Promise.all([refreshSubscription(),refreshBusinesses(),refreshSettings(),refreshWorkspaceLinks()]);else await Promise.all([refreshData({manual:true}),refreshSettings(),refreshWorkspaceLinks()]);});
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden&&HAS_LOADED){refreshVisiblePage();refreshSettingsIfAssetChanged();}
 });
