@@ -283,6 +283,8 @@
   let LINE_MEMBER_WORKSPACE_NAME_V7261 = "";
   let LINE_MEMBER_WORKSPACE_TYPE_V7261 = "";
   let LINE_MEMBER_LOADING_V726 = false;
+  let LINE_GROUP_OPTIONS_V7262 = [];
+  let LINE_GROUP_SELECTED_V7262 = "";
 
   const accessEsc = (v) =>
     String(v ?? "").replace(/[&<>"']/g, (ch) => ({
@@ -388,11 +390,18 @@
             </select>
           </div>
           <div class="field dash-access-line-field-v726" id="dashboardAccessLineFieldV726" hidden>
+            <div class="dash-access-group-picker-v7262" id="dashboardAccessGroupPickerV7262">
+              <label>กลุ่ม LINE ที่ใช้ค้นหาผู้อนุมัติ</label>
+              <select id="dashboardAccessLineGroupV7262">
+                <option value="">กำลังอ่านกลุ่ม LINE…</option>
+              </select>
+              <small id="dashboardAccessGroupHintV7262">เลือกกลุ่มเพื่ออ่านชื่อสมาชิก โดยสิทธิ์ที่สร้างยังเป็นของธุรกิจที่กำลังเปิดอยู่</small>
+            </div>
             <label id="dashboardAccessLineLabelV7261">LINE ผู้อนุมัติ</label>
             <select id="dashboardAccessLineUserV726">
               <option value="">กำลังโหลดสมาชิก LINE…</option>
             </select>
-            <small id="dashboardAccessLineHintV726">เลือกคนใน Workspace นี้ ระบบจะผูก LINE User ID ให้อัตโนมัติ</small>
+            <small id="dashboardAccessLineHintV726">เลือกคนที่ต้องการให้รับแจ้งเตือนอนุมัติ</small>
           </div>
           <div class="dash-access-role-help" id="dashboardAccessRoleHelp"></div>
           <button class="btn solid" type="button" id="dashboardAccessCreate">สร้างสิทธิ์และลิงก์</button>
@@ -419,6 +428,13 @@
       renderAccessRoleHelp();
       renderLineApproverFieldV726();
     });
+    document.getElementById("dashboardAccessLineGroupV7262")?.addEventListener("change", async (event) => {
+      LINE_GROUP_SELECTED_V7262 = String(event.target.value || "");
+      const row = LINE_GROUP_OPTIONS_V7262.find((x) => String(x.tenant || "") === LINE_GROUP_SELECTED_V7262);
+      LINE_MEMBER_WORKSPACE_NAME_V7261 = String(row?.groupName || row?.businessName || "");
+      LINE_MEMBER_WORKSPACE_TYPE_V7261 = row ? "group" : "";
+      await loadLineMembersV726(true);
+    });
     document.getElementById("dashboardAccessLineUserV726")?.addEventListener("change", (event) => {
       const row = LINE_MEMBER_ROWS_V726.find((x) => String(x.userId) === String(event.target.value || ""));
       const nameInput = document.getElementById("dashboardAccessName");
@@ -432,12 +448,52 @@
 
   function lineWorkspaceLabelV7261() {
     const name = String(LINE_MEMBER_WORKSPACE_NAME_V7261 || "").trim();
-    if (!name) return LINE_MEMBER_WORKSPACE_TYPE_V7261 === "group" ? "กลุ่ม LINE นี้" : "Workspace นี้";
+    if (!name) return LINE_MEMBER_WORKSPACE_TYPE_V7261 === "group" ? "กลุ่ม LINE นี้" : "ธุรกิจนี้";
     return LINE_MEMBER_WORKSPACE_TYPE_V7261 === "group" ? `กลุ่ม “${name}”` : `“${name}”`;
   }
 
+  function validLineUserV7262(value) {
+    return /^U[0-9a-f]{32}$/i.test(String(value || "").trim());
+  }
+
+  function mergeKnownTeamMembersV7262(rows = []) {
+    const map = new Map();
+
+    const add = (row, source = "") => {
+      const userId = String(row?.userId || row?.lineUserId || row?.payerId || "").trim();
+      if (!validLineUserV7262(userId)) return;
+      const current = map.get(userId) || {};
+      map.set(userId, {
+        ...current,
+        userId,
+        displayName: String(row?.displayName || row?.name || current.displayName || `LINE ${userId.slice(-6)}`).trim(),
+        pictureUrl: row?.pictureUrl || current.pictureUrl || "",
+        active: row?.active !== false,
+        source: row?.source || source || current.source || "",
+      });
+    };
+
+    (Array.isArray(rows) ? rows : []).forEach((row) => add(row, "line-directory"));
+
+    // หน้า "ทีมของฉัน" รู้อยู่แล้วว่าใครมี LINE User ID
+    try {
+      (Array.isArray(TEAM_RENDERED) ? TEAM_RENDERED : []).forEach((row) => add(row, "team-rendered"));
+    } catch {}
+
+    // fallback จาก _settings.team_members โดยตรง
+    try {
+      const raw = SETTINGS?.team_members;
+      const saved = Array.isArray(raw) ? raw : (raw ? JSON.parse(raw) : []);
+      (Array.isArray(saved) ? saved : []).forEach((row) => add(row, "team-members"));
+    } catch {}
+
+    return [...map.values()].sort((a, b) =>
+      String(a.displayName || a.userId).localeCompare(String(b.displayName || b.userId), "th")
+    );
+  }
+
   function lineMemberOptionsV726(selected = "") {
-    const rows = LINE_MEMBER_ROWS_V726.filter((row) => row.active !== false);
+    const rows = mergeKnownTeamMembersV7262(LINE_MEMBER_ROWS_V726).filter((row) => row.active !== false);
     const workspace = lineWorkspaceLabelV7261();
     if (!rows.length) {
       return `<option value="">ยังไม่พบสมาชิกใน ${accessEsc(workspace)} · ให้คนนั้นส่งข้อความ 1 ครั้ง</option>`;
@@ -446,6 +502,39 @@
       const label = row.displayName || `LINE ${String(row.userId || "").slice(-6)}`;
       return `<option value="${accessEsc(row.userId || "")}" ${String(row.userId) === String(selected) ? "selected" : ""}>${accessEsc(label)}</option>`;
     }).join("");
+  }
+
+  function renderLineGroupPickerV7262() {
+    const select = document.getElementById("dashboardAccessLineGroupV7262");
+    const hint = document.getElementById("dashboardAccessGroupHintV7262");
+    if (!select) return;
+
+    const groups = LINE_GROUP_OPTIONS_V7262;
+    if (!groups.length) {
+      select.innerHTML = `<option value="">ยังไม่มีกลุ่ม LINE ที่ผูกกับบัญชีนี้</option>`;
+      select.disabled = true;
+      if (hint) hint.textContent = "ถ้ากลุ่มที่ต้องการไม่ขึ้น แปลว่ากลุ่มนั้นยังไม่ได้อยู่ในบัญชี/Workspace ชุดนี้";
+      return;
+    }
+
+    select.disabled = false;
+    if (!LINE_GROUP_SELECTED_V7262 || !groups.some((x) => String(x.tenant) === LINE_GROUP_SELECTED_V7262)) {
+      const current = groups.find((x) => String(x.tenant) === String(TENANT));
+      LINE_GROUP_SELECTED_V7262 = String(current?.tenant || groups[0]?.tenant || "");
+    }
+
+    select.innerHTML = groups.map((row) => {
+      const groupName = String(row.groupName || row.businessName || `LINE Group ···${String(row.tenant || "").slice(-6)}`);
+      const business = row.businessName && row.businessName !== groupName ? ` · ${row.businessName}` : "";
+      return `<option value="${accessEsc(row.tenant || "")}" ${String(row.tenant) === LINE_GROUP_SELECTED_V7262 ? "selected" : ""}>${accessEsc(groupName + business)}</option>`;
+    }).join("");
+
+    const selected = groups.find((x) => String(x.tenant) === LINE_GROUP_SELECTED_V7262);
+    if (selected) {
+      LINE_MEMBER_WORKSPACE_NAME_V7261 = String(selected.groupName || selected.businessName || "");
+      LINE_MEMBER_WORKSPACE_TYPE_V7261 = "group";
+    }
+    if (hint) hint.textContent = "เลือกกลุ่มเพื่อค้นหาคนที่จะรับแจ้งเตือนอนุมัติของธุรกิจที่กำลังเปิดอยู่";
   }
 
   function renderLineApproverFieldV726() {
@@ -464,6 +553,7 @@
     field.hidden = role !== "approver";
     if (role !== "approver") return;
 
+    renderLineGroupPickerV7262();
     const current = select.value || "";
     select.innerHTML = LINE_MEMBER_LOADING_V726
       ? `<option value="">กำลังโหลดสมาชิก LINE…</option>`
@@ -476,25 +566,43 @@
     }
   }
 
-  async function loadLineMembersV726() {
+  async function loadLineMembersV726(force = false) {
     if (DASH_ACCESS_ME?.role !== "owner" || LINE_MEMBER_LOADING_V726) return;
     LINE_MEMBER_LOADING_V726 = true;
     renderLineApproverFieldV726();
     try {
-      const out = await accessApi("/api/line-members");
-      LINE_MEMBER_ROWS_V726 = Array.isArray(out.members) ? out.members : [];
+      const sourceTenant = LINE_GROUP_SELECTED_V7262 || "";
+      const suffix = sourceTenant ? `?sourceTenant=${encodeURIComponent(sourceTenant)}${force ? "&refresh=1" : ""}` : (force ? "?refresh=1" : "");
+      const out = await accessApi(`/api/line-members${suffix}`);
+      LINE_MEMBER_ROWS_V726 = mergeKnownTeamMembersV7262(Array.isArray(out.members) ? out.members : []);
       LINE_MEMBER_MODE_V726 = String(out.directoryMode || "");
-      LINE_MEMBER_WORKSPACE_NAME_V7261 = String(out.workspaceName || "");
-      LINE_MEMBER_WORKSPACE_TYPE_V7261 = String(out.workspaceType || "");
+      if (!LINE_MEMBER_WORKSPACE_NAME_V7261) LINE_MEMBER_WORKSPACE_NAME_V7261 = String(out.workspaceName || "");
+      if (!LINE_MEMBER_WORKSPACE_TYPE_V7261) LINE_MEMBER_WORKSPACE_TYPE_V7261 = String(out.workspaceType || "");
     } catch (error) {
       console.warn("load LINE members", error);
-      LINE_MEMBER_ROWS_V726 = [];
-      LINE_MEMBER_MODE_V726 = "";
-      LINE_MEMBER_WORKSPACE_NAME_V7261 = "";
-      LINE_MEMBER_WORKSPACE_TYPE_V7261 = "";
+      // อย่าทิ้งสมาชิกที่หน้า Team รู้อยู่แล้ว เพียงเพราะ LINE API โหลดไม่สำเร็จ
+      LINE_MEMBER_ROWS_V726 = mergeKnownTeamMembersV7262([]);
+      LINE_MEMBER_MODE_V726 = "team-fallback";
     } finally {
       LINE_MEMBER_LOADING_V726 = false;
       renderLineApproverFieldV726();
+    }
+  }
+
+  async function loadLineGroupsForApproverV7262() {
+    if (DASH_ACCESS_ME?.role !== "owner") return;
+    try {
+      const out = await accessApi("/api/line-groups?refresh=1");
+      LINE_GROUP_OPTIONS_V7262 = (Array.isArray(out.rows) ? out.rows : [])
+        .filter((row) => String(row.sourceType || "") === "group" || String(row.groupId || "").startsWith("C"));
+      const current = LINE_GROUP_OPTIONS_V7262.find((x) => String(x.tenant || "") === String(TENANT));
+      if (current) LINE_GROUP_SELECTED_V7262 = String(current.tenant || "");
+      else if (!LINE_GROUP_SELECTED_V7262 && LINE_GROUP_OPTIONS_V7262.length === 1) LINE_GROUP_SELECTED_V7262 = String(LINE_GROUP_OPTIONS_V7262[0].tenant || "");
+      renderLineGroupPickerV7262();
+    } catch (error) {
+      console.warn("load LINE groups for approver", error);
+      LINE_GROUP_OPTIONS_V7262 = [];
+      renderLineGroupPickerV7262();
     }
   }
 
@@ -600,7 +708,7 @@
     const lineUserId = role === "approver"
       ? (document.getElementById("dashboardAccessLineUserV726")?.value || "")
       : "";
-    const selectedLine = LINE_MEMBER_ROWS_V726.find((row) => String(row.userId || "") === String(lineUserId));
+    const selectedLine = mergeKnownTeamMembersV7262(LINE_MEMBER_ROWS_V726).find((row) => String(row.userId || "") === String(lineUserId));
     const name = document.getElementById("dashboardAccessName")?.value.trim()
       || selectedLine?.displayName
       || "";
@@ -694,7 +802,8 @@
       updateWorkspaceIdentity();
       renderDashboardAccess();
       if (me.role === "owner") {
-        await Promise.all([loadDashboardAccessRows(), loadLineMembersV726()]);
+        await Promise.all([loadDashboardAccessRows(), loadLineGroupsForApproverV7262()]);
+        await loadLineMembersV726();
       }
     } catch (error) {
       const current = document.getElementById("dashboardAccessCurrent");
@@ -715,6 +824,8 @@
     .dash-access-form select,.dash-access-form input{width:100%;min-height:44px}
     .dash-access-line-field-v726{grid-column:1/-1;background:#f7f7f9;border-radius:12px;padding:10px 12px}
     .dash-access-line-field-v726 small{display:block;color:#86868b;font-size:10px;line-height:1.45;margin-top:6px}
+    .dash-access-group-picker-v7262{margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #e5e5e7}
+    .dash-access-group-picker-v7262 label{display:block;margin-bottom:6px}
     .dash-access-role-help{grid-column:1/-1;background:#f5f5f7;border-radius:12px;padding:10px 12px;color:#6e6e73;font-size:12px;line-height:1.55}
     .dash-access-form #dashboardAccessCreate{grid-column:1/-1;justify-self:start}
     .dash-access-state{min-height:20px;margin:10px 0;font-size:12px;color:#6e6e73}
