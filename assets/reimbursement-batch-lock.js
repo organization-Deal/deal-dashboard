@@ -2273,3 +2273,146 @@
 
   console.info("[Dashboard]", CHILD_FLOW_VERSION, "active");
 })();
+
+/* Dashboard v7.20 — INITIAL LOADING IS NOT AN ERROR
+   Never show connection failure or real-looking zero balances before the first health/data check finishes.
+*/
+(() => {
+  "use strict";
+  const VERSION = "INITIAL_LOADING_NOT_ERROR_V7_20_20260811";
+
+  let INITIAL_WORKSPACE_LOADING_V720 = true;
+
+  function setInitialLoadingUiV720() {
+    if (!INITIAL_WORKSPACE_LOADING_V720) return;
+
+    // A health check has not finished yet. Hide failure UI completely.
+    const health = el("connectionHealthBanner");
+    if (health) health.hidden = true;
+
+    // Don't present zero as real accounting data before the first data response.
+    const placeholders = [
+      ["kSpend", "—"],
+      ["kCount", "—"],
+      ["kPending", "—"],
+      ["kPendingCount", "กำลังโหลดข้อมูล…"],
+      ["kPaid", "—"],
+      ["kPaidCount", "กำลังโหลดข้อมูล…"],
+    ];
+    placeholders.forEach(([id, value]) => {
+      const node = el(id);
+      if (node) node.textContent = value;
+    });
+
+    const trend = el("trend");
+    if (trend && !HAS_LOADED) {
+      trend.innerHTML = '<text x="300" y="80" text-anchor="middle" fill="#86868b" font-size="13">กำลังโหลดข้อมูล…</text>';
+    }
+
+    const cats = el("cats");
+    if (cats && !HAS_LOADED) cats.innerHTML = '<div class="empty">กำลังโหลดข้อมูล…</div>';
+
+    const vendors = el("vendors");
+    if (vendors && !HAS_LOADED) vendors.innerHTML = '<div class="empty">กำลังโหลดข้อมูล…</div>';
+
+    const recent = el("recent");
+    if (recent && !HAS_LOADED) recent.innerHTML = '<div class="empty">กำลังโหลดข้อมูล…</div>';
+  }
+
+  function finishInitialLoadingV720() {
+    INITIAL_WORKSPACE_LOADING_V720 = false;
+    document.documentElement.classList.remove("workspace-initial-loading-v720");
+  }
+
+  document.documentElement.classList.add("workspace-initial-loading-v720");
+  setInitialLoadingUiV720();
+
+  // Final guard: checked:false means "unknown / loading", never "broken".
+  const renderConnectionHealthBannerCoreV720 = renderConnectionHealthBanner;
+  renderConnectionHealthBanner = function(...args) {
+    if (CONNECTION_HEALTH?.checked !== true) {
+      const box = ensureConnectionHealthBanner();
+      if (box) box.hidden = true;
+      DASH_SETUP_BLOCKED = false;
+      return;
+    }
+    return renderConnectionHealthBannerCoreV720.apply(this, args);
+  };
+
+  // Any real data render means loading is complete.
+  const refreshDataCoreV720 = refreshData;
+  refreshData = async function(...args) {
+    const out = await refreshDataCoreV720.apply(this, args);
+    if (out === true || HAS_LOADED) finishInitialLoadingV720();
+    return out;
+  };
+
+  // Health check completed: only from here can a red warning be legitimate.
+  const refreshConnectionHealthCoreV720 = refreshConnectionHealth;
+  refreshConnectionHealth = async function(...args) {
+    const out = await refreshConnectionHealthCoreV720.apply(this, args);
+    if (CONNECTION_HEALTH?.checked === true) {
+      finishInitialLoadingV720();
+      renderConnectionHealthBanner();
+    }
+    return out;
+  };
+
+  // load() in dashboard.js already started before this cumulative patch was parsed.
+  // Watch the actual state transition instead of rendering an error from the initial false values.
+  let ticks = 0;
+  const timer = setInterval(() => {
+    ticks += 1;
+
+    if (CONNECTION_HEALTH?.checked === true) {
+      finishInitialLoadingV720();
+      clearInterval(timer);
+      renderConnectionHealthBanner();
+      return;
+    }
+
+    if (HAS_LOADED) {
+      finishInitialLoadingV720();
+      clearInterval(timer);
+      return;
+    }
+
+    setInitialLoadingUiV720();
+
+    // Safety only: leave the page in loading state rather than inventing a connection error.
+    if (ticks >= 120) clearInterval(timer);
+  }, 100);
+
+  const style = document.createElement("style");
+  style.textContent = `
+    .workspace-initial-loading-v720 #connectionHealthBanner{display:none!important}
+    .workspace-initial-loading-v720 #kSpend,
+    .workspace-initial-loading-v720 #kCount,
+    .workspace-initial-loading-v720 #kPending,
+    .workspace-initial-loading-v720 #kPaid{
+      opacity:.5
+    }
+    .workspace-initial-loading-v720 .kpi{
+      position:relative;
+      overflow:hidden
+    }
+    .workspace-initial-loading-v720 .kpi::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);
+      transform:translateX(-100%);
+      animation:workspaceLoadingSweepV720 1.25s infinite
+    }
+    @keyframes workspaceLoadingSweepV720{
+      to{transform:translateX(100%)}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .workspace-initial-loading-v720 .kpi::after{animation:none}
+    }
+  `;
+  document.head.appendChild(style);
+
+  console.info("[Dashboard]", VERSION, "active");
+})();
