@@ -280,6 +280,8 @@
   let DASH_ACCESS_BUSY = false;
   let LINE_MEMBER_ROWS_V726 = [];
   let LINE_MEMBER_MODE_V726 = "";
+  let LINE_MEMBER_WORKSPACE_NAME_V7261 = "";
+  let LINE_MEMBER_WORKSPACE_TYPE_V7261 = "";
   let LINE_MEMBER_LOADING_V726 = false;
 
   const accessEsc = (v) =>
@@ -386,7 +388,7 @@
             </select>
           </div>
           <div class="field dash-access-line-field-v726" id="dashboardAccessLineFieldV726" hidden>
-            <label>LINE ผู้อนุมัติ</label>
+            <label id="dashboardAccessLineLabelV7261">LINE ผู้อนุมัติ</label>
             <select id="dashboardAccessLineUserV726">
               <option value="">กำลังโหลดสมาชิก LINE…</option>
             </select>
@@ -428,12 +430,19 @@
     renderLineApproverFieldV726();
   }
 
+  function lineWorkspaceLabelV7261() {
+    const name = String(LINE_MEMBER_WORKSPACE_NAME_V7261 || "").trim();
+    if (!name) return LINE_MEMBER_WORKSPACE_TYPE_V7261 === "group" ? "กลุ่ม LINE นี้" : "Workspace นี้";
+    return LINE_MEMBER_WORKSPACE_TYPE_V7261 === "group" ? `กลุ่ม “${name}”` : `“${name}”`;
+  }
+
   function lineMemberOptionsV726(selected = "") {
     const rows = LINE_MEMBER_ROWS_V726.filter((row) => row.active !== false);
+    const workspace = lineWorkspaceLabelV7261();
     if (!rows.length) {
-      return `<option value="">ยังไม่พบสมาชิก · ให้คนนั้นส่งข้อความในกลุ่ม 1 ครั้ง</option>`;
+      return `<option value="">ยังไม่พบสมาชิกใน ${accessEsc(workspace)} · ให้คนนั้นส่งข้อความ 1 ครั้ง</option>`;
     }
-    return `<option value="">เลือกคนที่จะเป็นผู้อนุมัติ</option>` + rows.map((row) => {
+    return `<option value="">เลือกผู้อนุมัติจาก ${accessEsc(workspace)}</option>` + rows.map((row) => {
       const label = row.displayName || `LINE ${String(row.userId || "").slice(-6)}`;
       return `<option value="${accessEsc(row.userId || "")}" ${String(row.userId) === String(selected) ? "selected" : ""}>${accessEsc(label)}</option>`;
     }).join("");
@@ -444,7 +453,13 @@
     const field = document.getElementById("dashboardAccessLineFieldV726");
     const select = document.getElementById("dashboardAccessLineUserV726");
     const hint = document.getElementById("dashboardAccessLineHintV726");
+    const label = document.getElementById("dashboardAccessLineLabelV7261");
     if (!field || !select) return;
+
+    const workspace = lineWorkspaceLabelV7261();
+    if (label) label.textContent = LINE_MEMBER_WORKSPACE_NAME_V7261
+      ? `LINE ผู้อนุมัติ · ${workspace}`
+      : "LINE ผู้อนุมัติ";
 
     field.hidden = role !== "approver";
     if (role !== "approver") return;
@@ -456,8 +471,8 @@
 
     if (hint) {
       hint.textContent = LINE_MEMBER_MODE_V726 === "line-full-group"
-        ? "ดึงสมาชิกจากกลุ่ม LINE ได้โดยตรง · ผู้อนุมัติควรเพิ่ม LINE OA เป็นเพื่อนเพื่อรับแจ้งเตือนส่วนตัว"
-        : "แสดงคนที่ระบบเคยเห็นในกลุ่ม/เคยกรอกข้อมูลผู้เบิก · ถ้าไม่พบ ให้คนนั้นพิมพ์ในกลุ่ม 1 ครั้ง";
+        ? `กำลังใช้สมาชิกจาก ${workspace} · ดึงรายชื่อจาก LINE ได้โดยตรง · ผู้อนุมัติควรเพิ่ม LINE OA เป็นเพื่อน`
+        : `กำลังใช้สมาชิกจาก ${workspace} · แสดงคนที่ระบบเคยเห็น ถ้าไม่พบ ให้คนนั้นพิมพ์ในกลุ่ม 1 ครั้ง`;
     }
   }
 
@@ -469,10 +484,14 @@
       const out = await accessApi("/api/line-members");
       LINE_MEMBER_ROWS_V726 = Array.isArray(out.members) ? out.members : [];
       LINE_MEMBER_MODE_V726 = String(out.directoryMode || "");
+      LINE_MEMBER_WORKSPACE_NAME_V7261 = String(out.workspaceName || "");
+      LINE_MEMBER_WORKSPACE_TYPE_V7261 = String(out.workspaceType || "");
     } catch (error) {
       console.warn("load LINE members", error);
       LINE_MEMBER_ROWS_V726 = [];
       LINE_MEMBER_MODE_V726 = "";
+      LINE_MEMBER_WORKSPACE_NAME_V7261 = "";
+      LINE_MEMBER_WORKSPACE_TYPE_V7261 = "";
     } finally {
       LINE_MEMBER_LOADING_V726 = false;
       renderLineApproverFieldV726();
