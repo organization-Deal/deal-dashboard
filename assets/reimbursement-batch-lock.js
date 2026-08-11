@@ -2901,3 +2901,636 @@
   addEventListener("resize", clarifyMobileTourButton);
   console.info("[Dashboard] v7.23 mobile guided tour clarity active");
 })();
+
+/* Dashboard v7.24 — AUTO BACKUP & RESTORE */
+(() => {
+  "use strict";
+
+  let BACKUP_DATA_V724 = null;
+  let BACKUP_LOADING_V724 = false;
+
+  function backupApiV724(path) {
+    const url = new URL(`${WORKER}${path}`);
+    url.searchParams.set("tenant", TENANT);
+    url.searchParams.set("k", K);
+    return url.toString();
+  }
+
+  function backupDateV724(value) {
+    if (!value) return "—";
+    const d = new Date(value);
+    if (!Number.isFinite(d.getTime())) return "—";
+    return d.toLocaleString("th-TH", {
+      timeZone:"Asia/Bangkok",
+      day:"numeric",
+      month:"short",
+      year:"2-digit",
+      hour:"2-digit",
+      minute:"2-digit",
+    });
+  }
+
+  function backupKindV724(kind) {
+    return kind === "daily" ? "รายวัน" :
+      kind === "monthly" ? "รายเดือน" :
+      kind === "manual" ? "สำรองเอง" :
+      kind === "restore-copy" ? "สำเนากู้คืน" : String(kind || "Backup");
+  }
+
+  function backupCanManageV724() {
+    const role = String(document.body?.dataset?.dashboardRole || "");
+    // Before whoami finishes, do not expose Owner-only actions.
+    return role === "owner";
+  }
+
+  function ensureBackupPanelV724() {
+    const page = document.getElementById("page-settings");
+    if (!page || document.getElementById("backupPanelV724")) return;
+
+    const panel = document.createElement("section");
+    panel.id = "backupPanelV724";
+    panel.className = "backup-panel-v724";
+    panel.innerHTML = `
+      <div class="backup-head-v724">
+        <div>
+          <div class="head-kicker">BACKUP & RESTORE</div>
+          <h3>สำรองข้อมูลอัตโนมัติ</h3>
+          <p>สำรอง Google Sheet ของ Workspace นี้ไว้ใน Google Drive ของบริษัททุกวัน โดยไม่เขียนทับข้อมูลปัจจุบัน</p>
+        </div>
+        <span class="backup-auto-chip-v724">● Auto Backup</span>
+      </div>
+
+      <div class="backup-summary-v724" id="backupSummaryV724">
+        <div><span>Backup ล่าสุด</span><strong>กำลังโหลด…</strong><small>กำลังตรวจสอบ</small></div>
+        <div><span>รายวัน</span><strong>30 วัน</strong><small>เก็บย้อนหลังอัตโนมัติ</small></div>
+        <div><span>รายเดือน</span><strong>12 เดือน</strong><small>เก็บเดือนละ 1 ชุด</small></div>
+      </div>
+
+      <div class="backup-actions-v724">
+        <button class="btn solid" id="backupNowV724" type="button">สำรองตอนนี้</button>
+        <a class="btn" id="backupFolderV724" href="#" target="_blank" rel="noopener" hidden>เปิดโฟลเดอร์ Backup ↗</a>
+        <button class="btn" id="backupRefreshV724" type="button">อัปเดต</button>
+      </div>
+
+      <div class="backup-note-v724">
+        Restore จะสร้าง <b>สำเนาใหม่</b> ให้ตรวจสอบก่อนเสมอ ระบบจะไม่เอา Backup ไปเขียนทับ Sheet ปัจจุบันอัตโนมัติ
+      </div>
+
+      <div class="backup-list-v724" id="backupListV724">
+        <div class="backup-empty-v724">กำลังโหลดประวัติ Backup…</div>
+      </div>
+    `;
+
+    page.appendChild(panel);
+
+    document.getElementById("backupNowV724")?.addEventListener("click", () => runManualBackupV724());
+    document.getElementById("backupRefreshV724")?.addEventListener("click", () => loadBackupsV724(true));
+    document.getElementById("backupListV724")?.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-restore-backup-v724]");
+      if (button) restoreBackupCopyV724(button.dataset.restoreBackupV724 || "", button);
+    });
+  }
+
+  function renderBackupsV724() {
+    ensureBackupPanelV724();
+    const data = BACKUP_DATA_V724 || {};
+    const status = data.status || {};
+    const summary = document.getElementById("backupSummaryV724");
+    const list = document.getElementById("backupListV724");
+    const folder = document.getElementById("backupFolderV724");
+    const nowButton = document.getElementById("backupNowV724");
+
+    if (folder) {
+      folder.hidden = !data.backupFolderUrl;
+      folder.href = data.backupFolderUrl || "#";
+    }
+    if (nowButton) nowButton.hidden = !backupCanManageV724();
+
+    if (summary) {
+      const bad = status.state === "error";
+      summary.innerHTML = `
+        <div class="${bad ? "bad" : status.lastSuccessAt ? "ok" : ""}">
+          <span>Backup ล่าสุด</span>
+          <strong>${status.lastSuccessAt ? esc(backupDateV724(status.lastSuccessAt)) : "ยังไม่มี"}</strong>
+          <small>${bad ? esc(status.lastError || "Backup ไม่สำเร็จ") : status.lastSuccessAt ? "สำเร็จ" : "ระบบจะสำรองอัตโนมัติคืนนี้"}</small>
+        </div>
+        <div><span>รายวัน</span><strong>${Number(data.dailyRetentionDays || 30)} วัน</strong><small>${esc(data.schedule || "ทุกคืน")}</small></div>
+        <div><span>รายเดือน</span><strong>${Number(data.monthlyRetentionMonths || 12)} เดือน</strong><small>เก็บเดือนละ 1 ชุด</small></div>
+      `;
+    }
+
+    if (!list) return;
+    const rows = Array.isArray(data.rows) ? data.rows : [];
+
+    if (!rows.length) {
+      list.innerHTML = `<div class="backup-empty-v724">ยังไม่มี Backup · ระบบจะสร้างอัตโนมัติในรอบถัดไป หรือ Owner กด “สำรองตอนนี้” ได้เลย</div>`;
+      return;
+    }
+
+    list.innerHTML = rows.slice(0, 20).map((row) => `
+      <article class="backup-row-v724">
+        <div class="backup-row-icon-v724">✓</div>
+        <div class="backup-row-main-v724">
+          <b>${esc(backupKindV724(row.kind))}</b>
+          <span>${esc(backupDateV724(row.createdTime || row.createdAt))}</span>
+          <small>${esc(row.name || "")}</small>
+        </div>
+        <div class="backup-row-actions-v724">
+          ${row.webViewLink ? `<a class="btn small" href="${escAttr(row.webViewLink)}" target="_blank" rel="noopener">เปิด</a>` : ""}
+          ${backupCanManageV724() ? `<button class="btn small" type="button" data-restore-backup-v724="${escAttr(row.id || "")}">กู้เป็นสำเนา</button>` : ""}
+        </div>
+      </article>
+    `).join("");
+  }
+
+  async function loadBackupsV724(force = false) {
+    ensureBackupPanelV724();
+    if (BACKUP_LOADING_V724) return;
+    if (!force && BACKUP_DATA_V724) {
+      renderBackupsV724();
+      return;
+    }
+
+    BACKUP_LOADING_V724 = true;
+    const refresh = document.getElementById("backupRefreshV724");
+    if (refresh) {
+      refresh.disabled = true;
+      refresh.textContent = "กำลังอัปเดต…";
+    }
+
+    try {
+      const response = await fetch(backupApiV724("/api/backup-status"), { cache:"no-store" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.ok === false) throw new Error(data.error || `HTTP ${response.status}`);
+      BACKUP_DATA_V724 = data;
+      renderBackupsV724();
+    } catch (error) {
+      const list = document.getElementById("backupListV724");
+      if (list) {
+        list.innerHTML = `<div class="backup-error-v724"><b>โหลดสถานะ Backup ไม่สำเร็จ</b><span>${esc(error?.message || error)}</span></div>`;
+      }
+    } finally {
+      BACKUP_LOADING_V724 = false;
+      if (refresh) {
+        refresh.disabled = false;
+        refresh.textContent = "อัปเดต";
+      }
+    }
+  }
+
+  async function runManualBackupV724() {
+    if (!backupCanManageV724()) return;
+    const button = document.getElementById("backupNowV724");
+    if (!button || button.disabled) return;
+
+    button.disabled = true;
+    button.textContent = "กำลังสำรอง…";
+
+    try {
+      const response = await fetch(backupApiV724("/api/backup-now"), {
+        method:"POST",
+        headers:{ "content-type":"application/json" },
+        body:"{}",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.ok === false) throw new Error(data.error || "Backup ไม่สำเร็จ");
+
+      button.textContent = "สำรองสำเร็จ ✓";
+      BACKUP_DATA_V724 = null;
+      setTimeout(() => loadBackupsV724(true), 400);
+    } catch (error) {
+      alert(`สำรองข้อมูลไม่สำเร็จ\n${error?.message || error}`);
+      button.textContent = "ลองสำรองอีกครั้ง";
+    } finally {
+      setTimeout(() => {
+        button.disabled = false;
+        button.textContent = "สำรองตอนนี้";
+      }, 1400);
+    }
+  }
+
+  async function restoreBackupCopyV724(fileId, button) {
+    if (!fileId || !backupCanManageV724()) return;
+
+    const ok = confirm(
+      "กู้ Backup เป็นสำเนาใหม่?\n\nระบบจะสร้าง Google Sheet สำเนาใหม่ให้ตรวจสอบก่อน และจะไม่แตะข้อมูลปัจจุบัน"
+    );
+    if (!ok) return;
+
+    const old = button?.textContent || "";
+    if (button) {
+      button.disabled = true;
+      button.textContent = "กำลังกู้…";
+    }
+
+    try {
+      const response = await fetch(backupApiV724("/api/backup-restore-copy"), {
+        method:"POST",
+        headers:{ "content-type":"application/json" },
+        body:JSON.stringify({ backupFileId:fileId }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.ok === false) throw new Error(data.error || "กู้ Backup ไม่สำเร็จ");
+
+      const open = confirm("สร้างสำเนากู้คืนสำเร็จแล้ว ✓\n\nต้องการเปิด Google Sheet สำเนานี้เพื่อตรวจสอบเลยไหม?");
+      if (open && data.restoreUrl) window.open(data.restoreUrl, "_blank", "noopener");
+    } catch (error) {
+      alert(`กู้ Backup ไม่สำเร็จ\n${error?.message || error}`);
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = old || "กู้เป็นสำเนา";
+      }
+    }
+  }
+
+  // Hook settings rendering/page navigation.
+  const renderSettingsCoreV724 = renderSettings;
+  renderSettings = function(...args) {
+    const out = renderSettingsCoreV724.apply(this, args);
+    ensureBackupPanelV724();
+    loadBackupsV724(false);
+    return out;
+  };
+
+  const style = document.createElement("style");
+  style.textContent = `
+    .backup-panel-v724{
+      margin-top:16px;
+      padding:18px;
+      background:#fff;
+      border:1px solid #e5e5e7;
+      border-radius:20px;
+    }
+    .backup-head-v724{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:15px;
+    }
+    .backup-head-v724 h3{margin:4px 0 5px;font-size:18px}
+    .backup-head-v724 p{margin:0;color:#86868b;font-size:11px;line-height:1.55}
+    .backup-auto-chip-v724{
+      display:inline-flex;
+      align-items:center;
+      white-space:nowrap;
+      background:#edf8f0;
+      color:#147a36;
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:10px;
+      font-weight:800;
+    }
+    .backup-summary-v724{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:9px;
+      margin-top:15px;
+    }
+    .backup-summary-v724>div{
+      background:#f7f7f9;
+      border-radius:14px;
+      padding:12px;
+    }
+    .backup-summary-v724 span,.backup-summary-v724 small{display:block;color:#86868b;font-size:9px}
+    .backup-summary-v724 strong{display:block;margin:4px 0;font-size:15px}
+    .backup-summary-v724 .ok strong{color:#16a34a}
+    .backup-summary-v724 .bad strong,.backup-summary-v724 .bad small{color:#d92d20}
+    .backup-actions-v724{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .backup-note-v724{
+      margin-top:12px;
+      border-radius:12px;
+      background:#f7f7f9;
+      padding:10px 12px;
+      color:#6e6e73;
+      font-size:10px;
+      line-height:1.55;
+    }
+    .backup-list-v724{
+      margin-top:12px;
+      border:1px solid #eeeeef;
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .backup-row-v724{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:11px 12px;
+      border-top:1px solid #eeeeef;
+    }
+    .backup-row-v724:first-child{border-top:0}
+    .backup-row-icon-v724{
+      width:28px;height:28px;border-radius:50%;
+      display:grid;place-items:center;
+      background:#edf8f0;color:#147a36;font-size:11px;font-weight:900;
+      flex:0 0 28px;
+    }
+    .backup-row-main-v724{min-width:0;flex:1}
+    .backup-row-main-v724 b{display:block;font-size:11px}
+    .backup-row-main-v724 span,.backup-row-main-v724 small{
+      display:block;color:#86868b;font-size:9px;margin-top:2px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+    }
+    .backup-row-actions-v724{display:flex;gap:6px}
+    .backup-empty-v724,.backup-error-v724{
+      padding:18px;text-align:center;color:#86868b;font-size:11px;background:#fafafa;
+    }
+    .backup-error-v724 b,.backup-error-v724 span{display:block}
+    .backup-error-v724 span{margin-top:4px;color:#d92d20}
+    @media(max-width:760px){
+      .backup-panel-v724{padding:14px;border-radius:17px}
+      .backup-head-v724{display:block}
+      .backup-auto-chip-v724{margin-top:10px}
+      .backup-summary-v724{grid-template-columns:1fr}
+      .backup-actions-v724>.btn,.backup-actions-v724>a{flex:1;justify-content:center}
+      .backup-row-v724{align-items:flex-start;flex-wrap:wrap}
+      .backup-row-main-v724{min-width:calc(100% - 40px)}
+      .backup-row-actions-v724{width:100%;padding-left:38px}
+      .backup-row-actions-v724 .btn{flex:1}
+    }
+  `;
+  document.head.appendChild(style);
+
+  setTimeout(() => {
+    if (currentPageKey() === "settings") {
+      ensureBackupPanelV724();
+      loadBackupsV724(false);
+    }
+  }, 0);
+
+  console.info("[Dashboard] v7.24 Auto Backup & Restore active");
+})();
+
+/* Dashboard v7.25 — ROLE SECURITY & REVOKE PRIVACY HARDENING
+   Security rules:
+   - revoked/invalid token => purge cached financial data from this browser
+   - approver UI exposes approve/reject only
+   - viewer UI is read-only
+   - accountant cannot change package
+*/
+(() => {
+  "use strict";
+
+  const VERSION = "ROLE_SECURITY_HARDENING_V7_25_20260811";
+  let AUTH_PURGED_V725 = false;
+
+  function roleV725() {
+    return String(document.body?.dataset?.dashboardRole || "").trim();
+  }
+
+  function purgeSensitiveWorkspaceStateV725() {
+    if (AUTH_PURGED_V725) return;
+    AUTH_PURGED_V725 = true;
+
+    // Financial rows are cached in sessionStorage by dashboard.js.
+    try { sessionStorage.removeItem(`dashboard:last-good:${TENANT}`); } catch {}
+
+    // Readiness flags are not financial data, but clearing them prevents a revoked browser
+    // from presenting stale "ready" state as if it were still connected.
+    try {
+      localStorage.removeItem(`company-setup-complete:${TENANT}`);
+      localStorage.removeItem(`document-settings-updated:${TENANT}`);
+      localStorage.removeItem(`signature-ready:${TENANT}`);
+    } catch {}
+
+    try { ALL = []; } catch {}
+    try { LAST_SIGNATURE = ""; } catch {}
+    try { CONNECTED = false; } catch {}
+    try { HAS_LOADED = true; } catch {}
+    try { SETTINGS = {}; } catch {}
+    try { WORKSPACE_LINKS = { sheetUrl:"", driveUrl:"" }; } catch {}
+    try { EMAIL_DOCS = []; } catch {}
+    try { SUBSCRIPTIONS = []; } catch {}
+    try { PLAN_INFO = {}; } catch {}
+    try {
+      BATCH_DATA = {
+        pending:{groups:[],itemCount:0,total:0,urgentCount:0,people:0},
+        batches:[],
+        settings:{}
+      };
+      BATCH_SELECTED?.clear?.();
+      REVIEW_BATCH_SELECTED?.clear?.();
+      TRANSFER_SELECTED?.clear?.();
+    } catch {}
+    try {
+      RECON_DATA = {rows:[],paidBatches:[],summary:{}};
+      ACTIVE_RECON_ID = "";
+    } catch {}
+    try {
+      INCOME_DATA = {
+        ok:true,records:[],payments:[],reconciliation:[],
+        reconciliationSummary:{},summary:{},categories:[]
+      };
+      ACTIVE_INCOME_ID = "";
+    } catch {}
+
+    // Clear rendered financial content immediately so revoked users cannot keep reading
+    // the old DOM after the API rejects their token.
+    [
+      "rows","recent","cats","vendors",
+      "batchMasterBody","batchDrawerBody",
+      "reconBody","reconDrawerBody",
+      "incomeBody","incomeReconList",
+      "emailList","subscriptionList",
+      "billGrid","activityRows","repCatBody"
+    ].forEach((id) => {
+      try { document.getElementById(id)?.replaceChildren(); } catch {}
+    });
+
+    ["kSpend","kPending","kPaid"].forEach((id) => {
+      const node = document.getElementById(id);
+      if (node) node.textContent = "—";
+    });
+    ["kCount","kPendingCount","kPaidCount"].forEach((id) => {
+      const node = document.getElementById(id);
+      if (node) node.textContent = "สิทธิ์ถูกยกเลิก";
+    });
+
+    document.body.classList.add("dashboard-access-revoked-v725");
+    try { closeGlobalModal?.(); } catch {}
+  }
+
+  // dashboard.js used to restore the last-good cache when auth failed.
+  // Network/offline failures may still use cache; auth failure must never do so.
+  if (typeof recoverDashboardShell === "function") {
+    const coreRecoverDashboardShellV725 = recoverDashboardShell;
+    recoverDashboardShell = function(reason = "network") {
+      if (reason === "auth") {
+        purgeSensitiveWorkspaceStateV725();
+        return true;
+      }
+      return coreRecoverDashboardShellV725(reason);
+    };
+  }
+
+  // Replace the old misleading auth message:
+  // "ข้อมูลเดิมยังแสดงได้" is forbidden after revoke.
+  if (typeof showNetworkBanner === "function") {
+    const coreShowNetworkBannerV725 = showNetworkBanner;
+    showNetworkBanner = function(mode, title, detail, retryLabel) {
+      if (mode === "auth") {
+        purgeSensitiveWorkspaceStateV725();
+        return coreShowNetworkBannerV725(
+          "auth",
+          "สิทธิ์ Dashboard ถูกยกเลิกหรือหมดอายุ",
+          "เพื่อความปลอดภัย ข้อมูลที่บันทึกไว้ในเครื่องนี้ถูกล้างแล้ว กรุณาขอลิงก์ใหม่จาก Owner",
+          "เปิดใหม่"
+        );
+      }
+      return coreShowNetworkBannerV725(mode, title, detail, retryLabel);
+    };
+  }
+
+  // Catch 401 from any Worker endpoint, not only the main /api/expenses refresh.
+  const coreFetchV725 = window.fetch.bind(window);
+  window.fetch = async function(input, init) {
+    const response = await coreFetchV725(input, init);
+    try {
+      const rawUrl =
+        typeof input === "string" ? input :
+        input instanceof URL ? input.href :
+        String(input?.url || "");
+
+      if (
+        response.status === 401 &&
+        rawUrl &&
+        typeof WORKER !== "undefined" &&
+        rawUrl.startsWith(String(WORKER))
+      ) {
+        purgeSensitiveWorkspaceStateV725();
+      }
+    } catch {}
+    return response;
+  };
+
+  function setHiddenV725(node, hidden) {
+    if (!node) return;
+    node.classList.toggle("role-hidden-v725", Boolean(hidden));
+    node.setAttribute("aria-hidden", hidden ? "true" : "false");
+    if ("disabled" in node && hidden) node.disabled = true;
+  }
+
+  function hardenRoleUiV725() {
+    const role = roleV725();
+    if (!role) return;
+
+    document.body.classList.toggle("role-owner-v725", role === "owner");
+    document.body.classList.toggle("role-accountant-v725", role === "accountant");
+    document.body.classList.toggle("role-approver-v725", role === "approver");
+    document.body.classList.toggle("role-viewer-v725", role === "viewer");
+
+    // Package selection is Owner-only. Accountant may still view usage/package status.
+    if (role !== "owner") {
+      document.querySelectorAll(".plan-action,[data-select-plan]").forEach((node) => setHiddenV725(node, true));
+    }
+
+    // Approver = reimbursement review only. Backend v7.25 enforces this too.
+    if (role === "approver") {
+      [
+        "#batchMasterCreate",
+        "#batchMasterUrgent",
+        "#batchMasterMarkTransfer",
+        "#batchMasterPaymentInput",
+        "[data-payment-channel-select]",
+        "[data-batch-slip]",
+        "[data-open-finance]",
+        "[data-open-team]"
+      ].forEach((selector) => {
+        document.querySelectorAll(selector).forEach((node) => {
+          const wrapper =
+            node.id === "batchMasterPaymentInput"
+              ? (node.closest("label") || node)
+              : node;
+          setHiddenV725(wrapper, true);
+        });
+      });
+
+      document.querySelectorAll("[data-drawer-action]").forEach((node) => {
+        const action = String(node.dataset.drawerAction || "");
+        const allowed = new Set(["close","approve","reject","queue-approve","queue-reject"]);
+        setHiddenV725(node, !allowed.has(action));
+      });
+
+      // Hide areas whose backend endpoints are outside Approver read/write scope.
+      [
+        '[data-p="income"]',
+        '[data-p="reconciliation"]',
+        '#businessGroup',
+        '[data-p="settings"]',
+        '[data-p="billing"]',
+        '#connBtn',
+        '[data-mobile-page="reconciliation"]',
+        '[data-mobile-page="email"]',
+        '[data-mobile-page="subscriptions"]',
+        '[data-mobile-biz]',
+        '[data-mobile-page="settings"]',
+        '[data-mobile-page="billing"]'
+      ].forEach((selector) => {
+        document.querySelectorAll(selector).forEach((node) => setHiddenV725(node, true));
+      });
+    }
+
+    // Viewer = read-only. Remove reimbursement/reconciliation write controls.
+    if (role === "viewer") {
+      [
+        "#batchMasterCreate",
+        "#batchMasterUrgent",
+        "#batchMasterMarkTransfer",
+        "#batchMasterPaymentInput",
+        "[data-payment-channel-select]",
+        "[data-batch-slip]",
+        "[data-open-finance]",
+        "[data-open-team]",
+        "[data-drawer-action]:not([data-drawer-action='close'])",
+        "#reconConfirmSuggested",
+        "[data-recon-confirm]",
+        "[data-recon-pick]",
+        "[data-recon-unlink]",
+        "[data-recon-ignore]",
+        ".plan-action",
+        "[data-select-plan]"
+      ].forEach((selector) => {
+        document.querySelectorAll(selector).forEach((node) => {
+          const wrapper =
+            node.id === "batchMasterPaymentInput"
+              ? (node.closest("label") || node)
+              : node;
+          setHiddenV725(wrapper, true);
+        });
+      });
+
+      // Business/configuration pages are not useful to a read-only viewer.
+      [
+        "#businessGroup",
+        "#connBtn",
+        '[data-mobile-biz]'
+      ].forEach((selector) => {
+        document.querySelectorAll(selector).forEach((node) => setHiddenV725(node, true));
+      });
+    }
+  }
+
+  // New DOM controls are rendered after API refreshes, so keep applying role restrictions.
+  const observerV725 = new MutationObserver(() => hardenRoleUiV725());
+  observerV725.observe(document.body, { childList:true, subtree:true });
+
+  // body.dataset.dashboardRole is populated asynchronously by v7.14 /whoami.
+  let ticksV725 = 0;
+  const roleTimerV725 = setInterval(() => {
+    ticksV725 += 1;
+    hardenRoleUiV725();
+    if (roleV725() || ticksV725 > 100) clearInterval(roleTimerV725);
+  }, 100);
+
+  const style = document.createElement("style");
+  style.textContent = `
+    .role-hidden-v725{display:none!important}
+    .dashboard-access-revoked-v725 .page{
+      user-select:none;
+    }
+  `;
+  document.head.appendChild(style);
+
+  console.info("[Dashboard]", VERSION, "active");
+})();
