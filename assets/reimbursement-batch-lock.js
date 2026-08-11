@@ -670,7 +670,7 @@
           <div class="dash-access-avatar">${accessEsc(String(row.name || "U").trim().slice(0, 1).toUpperCase())}</div>
           <div>
             <b>${accessEsc(row.name || accessRoleLabel(row.role))}</b>
-            <span>${accessEsc(accessRoleLabel(row.role))} · สร้าง ${accessEsc(accessDate(row.createdAt))}${row.role === "approver" ? (row.lineUserId ? " · LINE แจ้งตรง ✓" : " · ยังไม่ผูก LINE") : ""}</span>
+            <span>${accessEsc(accessRoleLabel(row.role))} · สร้าง ${accessEsc(accessDate(row.createdAt))}${row.role === "approver" ? (row.lineUserId ? ` · LINE แจ้งตรง ✓${row.lineGroupName ? ` · ${accessEsc(row.lineGroupName)}` : ""}` : " · ยังไม่ผูก LINE") : ""}</span>
           </div>
         </div>
         <div class="dash-access-token">${accessEsc(shortToken(row.token))}</div>
@@ -709,6 +709,18 @@
       ? (document.getElementById("dashboardAccessLineUserV726")?.value || "")
       : "";
     const selectedLine = mergeKnownTeamMembersV7262(LINE_MEMBER_ROWS_V726).find((row) => String(row.userId || "") === String(lineUserId));
+    const selectedGroup = LINE_GROUP_OPTIONS_V7262.find((row) => String(row.tenant || "") === String(LINE_GROUP_SELECTED_V7262 || ""));
+    const lineGroupTenant = role === "approver" ? String(selectedGroup?.tenant || LINE_GROUP_SELECTED_V7262 || "") : "";
+    const lineGroupName = role === "approver"
+      ? String(selectedGroup?.groupName || LINE_MEMBER_WORKSPACE_NAME_V7261 || "")
+      : "";
+    const companyName = String(
+      selectedGroup?.businessName
+      || SETTINGS?.company_name
+      || (typeof CONAME !== "undefined" ? CONAME : "")
+      || "บริษัทนี้"
+    ).trim();
+
     const name = document.getElementById("dashboardAccessName")?.value.trim()
       || selectedLine?.displayName
       || "";
@@ -733,17 +745,31 @@
     try {
       const out = await accessApi("/api/accounting/access", {
         method: "POST",
-        body: JSON.stringify({ name, role, lineUserId }),
+        body: JSON.stringify({ name, role, lineUserId, lineGroupTenant, lineGroupName, companyName }),
       });
       const record = out.record || {};
       if (record.url) await copyText(record.url);
       document.getElementById("dashboardAccessName").value = "";
       if (document.getElementById("dashboardAccessLineUserV726")) document.getElementById("dashboardAccessLineUserV726").value = "";
+      const notify = out.lineNotification || {};
+      let successText = record.url
+        ? `สร้าง ${accessRoleLabel(record.role)} ให้ ${record.name || name} แล้ว`
+        : "สร้างสิทธิ์แล้ว";
+
+      if (record.role === "approver" && record.lineUserId) {
+        if (notify.sent || notify.accepted) {
+          successText += ` · ส่ง LINE ส่วนตัวแล้ว ✓`;
+          if (notify.companyName || companyName) successText += ` · บริษัท ${notify.companyName || companyName}`;
+          if (notify.lineGroupName || lineGroupName) successText += ` · กลุ่ม ${notify.lineGroupName || lineGroupName}`;
+        } else {
+          successText += ` · แต่ส่ง LINE ส่วนตัวยังไม่สำเร็จ ⚠️ ให้ ${record.name || name} เพิ่ม LINE OA เป็นเพื่อน แล้วลองสร้างสิทธิ์ใหม่`;
+        }
+      }
+
+      if (record.url) successText += " · คัดลอกลิงก์ไว้ใน Clipboard แล้ว";
       accessSetState(
-        record.url
-          ? `สร้าง ${accessRoleLabel(record.role)} ให้ ${record.name || name} แล้ว${record.role === "approver" && record.lineUserId ? " · ผูก LINE แจ้งเตือนตรงแล้ว" : ""} · คัดลอกลิงก์ไว้ใน Clipboard แล้ว`
-          : "สร้างสิทธิ์แล้ว",
-        "success"
+        successText,
+        (record.role === "approver" && record.lineUserId && !(notify.sent || notify.accepted)) ? "error" : "success"
       );
       await loadDashboardAccessRows();
     } catch (error) {
