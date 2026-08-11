@@ -1395,3 +1395,161 @@
 
   console.info("[Dashboard] v7.16 cash position active");
 })();
+
+/* Dashboard v7.16.3 — Bank / Provider Dropdown */
+(() => {
+  "use strict";
+
+  const BANK_OPTIONS = [
+    ["", "เลือกธนาคาร"],
+    ["กสิกร", "ธนาคารกสิกรไทย (KBank)"],
+    ["ไทยพาณิชย์", "ธนาคารไทยพาณิชย์ (SCB)"],
+    ["กรุงเทพ", "ธนาคารกรุงเทพ (BBL)"],
+    ["กรุงไทย", "ธนาคารกรุงไทย (KTB)"],
+    ["กรุงศรีอยุธยา", "ธนาคารกรุงศรีอยุธยา (Krungsri)"],
+    ["ทหารไทยธนชาต", "ธนาคารทหารไทยธนชาต (ttb)"],
+    ["ออมสิน", "ธนาคารออมสิน (GSB)"],
+    ["ยูโอบี", "ธนาคารยูโอบี (UOB)"],
+    ["ทิสโก้", "ธนาคารทิสโก้ (TISCO)"],
+    ["ธกส", "ธ.ก.ส. (BAAC)"],
+    ["แลนด์ แอนด์ เฮ้าส์", "ธนาคารแลนด์ แอนด์ เฮ้าส์ (LH Bank)"],
+    ["ไอซีบีซี ไทย", "ธนาคารไอซีบีซี (ไทย) (ICBC)"],
+    ["ซีไอเอ็มบี ไทย", "ธนาคารซีไอเอ็มบี ไทย (CIMB)"],
+    ["เครดิตยูเนี่ยน", "เครดิตยูเนี่ยน"],
+  ];
+
+  function financeTypeNow() {
+    return String(document.getElementById("finType")?.value || "bank");
+  }
+
+  function bankSelectNeeded(type = financeTypeNow()) {
+    return type === "bank" || type === "promptpay";
+  }
+
+  function copyControlAttributes(from, to) {
+    if (!from || !to) return;
+    to.id = "finBank";
+    to.name = from.name || "finBank";
+    to.className = from.className || "";
+    to.disabled = from.disabled;
+    to.required = from.required;
+    if (from.getAttribute("aria-label")) to.setAttribute("aria-label", from.getAttribute("aria-label"));
+  }
+
+  function addLegacyBankOption(select, value) {
+    const val = String(value || "").trim();
+    if (!val) return;
+    if ([...select.options].some((o) => o.value === val)) return;
+    const option = document.createElement("option");
+    option.value = val;
+    option.textContent = `${val} (ข้อมูลเดิม)`;
+    select.appendChild(option);
+  }
+
+  function makeBankSelect(currentValue = "") {
+    const select = document.createElement("select");
+    select.innerHTML = BANK_OPTIONS.map(([value, label]) =>
+      `<option value="${escAttr(value)}">${esc(label)}</option>`
+    ).join("");
+    addLegacyBankOption(select, currentValue);
+    select.value = String(currentValue || "");
+    return select;
+  }
+
+  function makeProviderInput(currentValue = "", type = financeTypeNow()) {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = String(currentValue || "");
+    input.autocomplete = "off";
+    input.placeholder = type === "ewallet"
+      ? "เช่น TrueMoney, ShopeePay"
+      : type === "cash"
+        ? "ไม่ต้องระบุสำหรับเงินสด"
+        : "ธนาคาร / ผู้ให้บริการ";
+    return input;
+  }
+
+  function syncFinanceBankControl({ value, focus = false } = {}) {
+    const current = document.getElementById("finBank");
+    if (!current) return null;
+    const type = financeTypeNow();
+    const currentValue = value !== undefined ? String(value || "") : String(current.value || "");
+    const wantSelect = bankSelectNeeded(type);
+    const isSelect = current.tagName === "SELECT";
+
+    if (wantSelect === isSelect) {
+      if (wantSelect) addLegacyBankOption(current, currentValue);
+      if (value !== undefined) current.value = currentValue;
+      current.required = type !== "cash";
+      current.disabled = type === "cash";
+      if (focus) current.focus();
+      return current;
+    }
+
+    const next = wantSelect ? makeBankSelect(currentValue) : makeProviderInput(currentValue, type);
+    copyControlAttributes(current, next);
+    next.required = type !== "cash";
+    next.disabled = type === "cash";
+    current.replaceWith(next);
+    if (focus) next.focus();
+    return next;
+  }
+
+  function installFinanceTypeListener() {
+    const type = document.getElementById("finType");
+    if (!type || type.dataset.bankDropdownInstalled === "1") return;
+    type.dataset.bankDropdownInstalled = "1";
+    type.addEventListener("change", () => {
+      const existing = document.getElementById("finBank");
+      const oldValue = existing?.value || "";
+      const next = syncFinanceBankControl({ value: financeTypeNow() === "cash" ? "" : oldValue });
+      if (next && financeTypeNow() === "cash") next.value = "";
+    });
+  }
+
+  const coreResetFinanceForm = resetFinanceForm;
+  resetFinanceForm = function(...args) {
+    const result = coreResetFinanceForm.apply(this, args);
+    syncFinanceBankControl({ value: "" });
+    installFinanceTypeListener();
+    return result;
+  };
+
+  const coreFillFinanceForm = fillFinanceForm;
+  fillFinanceForm = function(index, ...args) {
+    const channel = financeChannels(false)[index];
+    if (channel && document.getElementById("finType")) {
+      document.getElementById("finType").value = channel.type || "bank";
+      syncFinanceBankControl({ value: channel.bank || "" });
+    }
+    const result = coreFillFinanceForm.call(this, index, ...args);
+    syncFinanceBankControl({ value: channel?.bank || "" });
+    installFinanceTypeListener();
+    return result;
+  };
+
+  const coreRenderBusinessBankDropdown = renderBusiness;
+  renderBusiness = function(...args) {
+    const result = coreRenderBusinessBankDropdown.apply(this, args);
+    if (BUSINESS_TAB === "finance") {
+      syncFinanceBankControl();
+      installFinanceTypeListener();
+    }
+    return result;
+  };
+
+  const style = document.createElement("style");
+  style.textContent = `
+    #finBank{width:100%;min-height:46px}
+    #finBank:disabled{opacity:.55;cursor:not-allowed}
+  `;
+  document.head.appendChild(style);
+
+  setTimeout(() => {
+    syncFinanceBankControl();
+    installFinanceTypeListener();
+  }, 0);
+
+  console.info("[Dashboard] v7.16.3 bank dropdown active");
+})();
+
