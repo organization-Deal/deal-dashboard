@@ -1553,3 +1553,376 @@
   console.info("[Dashboard] v7.16.3 bank dropdown active");
 })();
 
+
+/* Dashboard v7.17 — FC-style Guided Tours */
+(() => {
+  "use strict";
+
+  const TOUR_RED = "#ff3b30";
+  let tourState = null;
+  let tourRaf = 0;
+  let tourResizeTimer = 0;
+
+  const tours = {
+    overview: {
+      title: "ภาพรวมการเงิน",
+      steps: [
+        { target: "#page-overview .kpis", title: "สรุปตัวเลขสำคัญ", text: "ดูเงินที่จ่ายจริง ยอดรอดำเนินการ และยอดตั้งเบิกทั้งหมดจากตรงนี้" },
+        { target: "#trend", title: "แนวโน้มเงินออกจริง", text: "กราฟนี้นับเฉพาะรายการที่บันทึกว่าจ่ายแล้ว เพื่อให้เห็น Cash Out จริง" },
+        { target: "#recent", title: "รายการล่าสุด", text: "ดูรายการที่เพิ่งเข้าระบบล่าสุด แล้วเปิดรายละเอียดต่อได้จากหน้านี้" },
+      ],
+    },
+    batches: {
+      title: "เบิกจ่าย",
+      steps: [
+        { target: "#lineGroupMonitor", title: "LINE Workspaces", text: "ดูว่ารายการเบิกมาจาก LINE กลุ่มไหน และแต่ละกลุ่มมียอดเบิกรวม ยอดรอ และยอดที่จ่ายแล้วเท่าไร" },
+        { target: "#cashPositionBoard", title: "ยอดเงินพร้อมจ่าย", text: "ดูยอดคงเหลือแต่ละบัญชี เปรียบเทียบกับยอดรอจ่าย และอัปเดตยอดบัญชีล่าสุดได้เอง" },
+        { target: "#batchMasterBody", title: "โต๊ะทำงานเบิกจ่าย", text: "งานทั้งหมดอยู่ในตารางนี้ ตั้งแต่รอตรวจ ต้องแก้ รอโอน จนถึงจ่ายแล้ว" },
+        { target: "#batchMasterCreate, #mobileBatchDockCreate", title: "รวมเป็นใบเบิก", text: "เลือกรายการที่ต้องการ แล้วรวมเป็นใบเบิกตามรอบได้จากปุ่มนี้" },
+        { target: "#batchMasterPaymentInput, #batchMasterBody", title: "บันทึกการโอน", text: "เมื่อเอกสารผ่าน ให้เลือกบัญชีที่จ่าย อัปโหลดหลักฐานการโอน แล้วระบบจะเปลี่ยนสถานะเป็นจ่ายแล้ว" },
+      ],
+    },
+    expenses: {
+      title: "ทะเบียนรายจ่าย",
+      steps: [
+        { target: "#expenseStatusTabs", title: "กรองตามสถานะ", text: "เลือกดูรายการตามสถานะ เช่น รอดำเนินการหรือจ่ายแล้วได้ทันที" },
+        { target: "#page-expenses .expense-toolbar", title: "ค้นหาและกรอง", text: "ค้นหาร้าน ผู้เบิก หมวด ช่วงวันที่ หรือเรียงยอดได้จากแถบนี้" },
+        { target: "#page-expenses .expense-table-wrap", title: "รายการรายจ่าย", text: "ดูผู้เบิก ยอด สถานะ และเอกสารในตารางเดียว กดรายการเพื่อดูรายละเอียดเพิ่มเติม" },
+      ],
+    },
+    income: {
+      title: "รายรับและลูกหนี้",
+      steps: [
+        { target: "#page-income .income-kpis", title: "สรุปรายรับ", text: "ดูยอดขาย เงินเข้าจริง ลูกหนี้คงค้าง VAT และรายการเกินกำหนด" },
+        { target: "#incomeCreate", title: "บันทึกรายรับ", text: "สร้างรายรับหรือ Invoice ใหม่จากปุ่มนี้ และเลือกรับเงินทันทีได้" },
+        { target: "#page-income .income-table-wrap", title: "ติดตามลูกหนี้", text: "ดูว่าแต่ละลูกค้ารับเงินแล้วเท่าไร คงค้างเท่าไร และสถานะล่าสุด" },
+        { target: "#incomeReconBtn", title: "กระทบเงินเข้า", text: "ใช้จับคู่รายการเงินเข้าจากธนาคารกับรายรับที่บันทึกไว้" },
+      ],
+    },
+    reconciliation: {
+      title: "กระทบยอด",
+      steps: [
+        { target: "#page-reconciliation", title: "กระทบยอดธนาคาร", text: "นำ Statement เข้ามา แล้วตรวจว่ารายการไหนจับคู่กับเงินที่จ่ายหรือรับในระบบแล้ว" },
+      ],
+    },
+    reports: {
+      title: "รายงานและภาษี",
+      steps: [
+        { target: "#page-reports", title: "รายงานสำหรับบัญชี", text: "เลือกช่วงเวลา ตรวจยอด แล้วส่งออกข้อมูลให้ฝ่ายบัญชีจากหน้านี้" },
+      ],
+    },
+    bills: {
+      title: "เอกสารทั้งหมด",
+      steps: [
+        { target: "#page-bills", title: "ศูนย์รวมเอกสาร", text: "ดูใบเบิก ใบแทน หลักฐาน และเอกสารที่ระบบสร้างไว้จากที่นี่" },
+      ],
+    },
+    email: {
+      title: "เอกสารจากอีเมล",
+      steps: [
+        { target: "#page-email", title: "รับเอกสารจาก Gmail", text: "เอกสารที่ระบบพบจาก Gmail จะมาอยู่หน้านี้ให้ตรวจและนำเข้าระบบ" },
+      ],
+    },
+    subscriptions: {
+      title: "รายจ่ายประจำ",
+      steps: [
+        { target: "#page-subscriptions", title: "ติดตามรายจ่ายประจำ", text: "ดูรายการที่เกิดซ้ำและตรวจเอกสารประจำจากหน้านี้" },
+      ],
+    },
+    activity: {
+      title: "ประวัติการทำงาน",
+      steps: [
+        { target: "#page-activity", title: "ประวัติการทำงาน", text: "ดูว่าใครทำอะไรกับรายการและเอกสารล่าสุดในระบบ" },
+      ],
+    },
+    settings: {
+      title: "ระบบและการเชื่อมต่อ",
+      steps: [
+        { target: "#page-settings", title: "ตรวจการเชื่อมต่อ", text: "ใช้หน้านี้ตรวจ Google, Sheet, Drive และการเชื่อมต่อที่ระบบต้องใช้" },
+      ],
+    },
+    billing: {
+      title: "แพ็กเกจ",
+      steps: [
+        { target: "#page-billing", title: "แพ็กเกจและโควตา", text: "ดูแพ็กเกจปัจจุบัน จำนวนเอกสารที่ใช้ และสิทธิ์ของบริษัทจากหน้านี้" },
+      ],
+    },
+    business_profile: {
+      title: "ข้อมูลบริษัท",
+      steps: [
+        { target: "#biz-profile", title: "ข้อมูลบริษัท", text: "กรอกข้อมูลบริษัทที่ใช้ในเอกสารและ Dashboard ให้ครบจากหน้านี้" },
+      ],
+    },
+    business_approver: {
+      title: "ผู้อนุมัติและลายเซ็น",
+      steps: [
+        { target: "#biz-approver", title: "ผู้อนุมัติ", text: "กำหนดชื่อผู้อนุมัติและลายเซ็นที่จะใช้กับเอกสารเบิกจ่าย" },
+      ],
+    },
+    business_finance: {
+      title: "บัญชีและช่องทางการเงิน",
+      steps: [
+        { target: "#finType", title: "เลือกประเภทบัญชี", text: "เลือกว่าช่องทางนี้เป็นบัญชีธนาคาร พร้อมเพย์ e-Wallet หรือเงินสด" },
+        { target: "#finBank", title: "เลือกธนาคาร", text: "เลือกธนาคารจาก Dropdown ระบบจะใช้ชื่อเดียวกันกับโลโก้และการตรวจสลิป" },
+        { target: "#addFinance", title: "บันทึกช่องทาง", text: "กรอกเลขบัญชีและชื่อบัญชีให้ครบ แล้วบันทึกช่องทางการเงิน" },
+        { target: "#financeList", title: "บัญชีที่ใช้งาน", text: "บัญชีทั้งหมดอยู่ตรงนี้ สามารถแก้ไข ปิดใช้งาน ตั้งบัญชีหลัก และอัปเดตยอดคงเหลือได้" },
+      ],
+    },
+    business_team: {
+      title: "ทีมและผู้ใช้งาน",
+      steps: [
+        { target: "#dashboardAccessCard", title: "สิทธิ์เข้า Dashboard", text: "Owner สร้างลิงก์แยกให้บัญชี ผู้อนุมัติ หรือผู้ดูอย่างเดียวได้จากตรงนี้" },
+        { target: "#biz-team", title: "ข้อมูลผู้ใช้งาน", text: "จัดการข้อมูลผู้เบิกและข้อมูลบัญชีรับเงินของทีมในบริษัท" },
+      ],
+    },
+    business_categories: {
+      title: "หมวดหมู่",
+      steps: [
+        { target: "#biz-categories", title: "หมวดหมู่ของธุรกิจ", text: "เพิ่มหรือตรวจหมวดหมู่ที่บริษัทใช้กับรายรับและรายจ่าย" },
+      ],
+    },
+  };
+
+  function tourKey() {
+    const page = typeof currentPageKey === "function" ? currentPageKey() : "overview";
+    if (page === "business") return `business_${String(BUSINESS_TAB || "profile")}`;
+    return page;
+  }
+
+  function currentTour() {
+    return tours[tourKey()] || null;
+  }
+
+  function ensureTourButton() {
+    const head = document.querySelector(".main > .head");
+    if (!head) return;
+    let button = document.getElementById("guidedTourButton");
+    if (!button) {
+      button = document.createElement("button");
+      button.id = "guidedTourButton";
+      button.type = "button";
+      button.className = "guided-tour-button";
+      button.innerHTML = `<span>?</span><b>วิธีใช้งาน</b>`;
+      button.addEventListener("click", () => startTour());
+      const sync = document.getElementById("syncState");
+      if (sync) head.insertBefore(button, sync);
+      else head.appendChild(button);
+    }
+    const tour = currentTour();
+    button.hidden = !tour;
+    button.title = tour ? `วิธีใช้งาน · ${tour.title}` : "วิธีใช้งาน";
+  }
+
+  function ensureTourDom() {
+    if (document.getElementById("guidedTourLayer")) return;
+    const layer = document.createElement("div");
+    layer.id = "guidedTourLayer";
+    layer.className = "guided-tour-layer";
+    layer.hidden = true;
+    layer.innerHTML = `
+      <div class="tour-mask tour-mask-top"></div>
+      <div class="tour-mask tour-mask-left"></div>
+      <div class="tour-mask tour-mask-right"></div>
+      <div class="tour-mask tour-mask-bottom"></div>
+      <div class="tour-focus-box"><span class="tour-step-pin">1</span></div>
+      <section class="tour-card" role="dialog" aria-modal="true" aria-live="polite">
+        <div class="tour-card-top"><span class="tour-progress">1/1</span><button class="tour-close" type="button" aria-label="ปิด">×</button></div>
+        <h3 class="tour-title"></h3>
+        <p class="tour-text"></p>
+        <div class="tour-actions">
+          <button class="tour-skip" type="button">ข้าม</button>
+          <div>
+            <button class="tour-prev" type="button">ย้อนกลับ</button>
+            <button class="tour-next" type="button">ถัดไป</button>
+          </div>
+        </div>
+      </section>
+    `;
+    document.body.appendChild(layer);
+    layer.querySelector(".tour-close").addEventListener("click", endTour);
+    layer.querySelector(".tour-skip").addEventListener("click", endTour);
+    layer.querySelector(".tour-prev").addEventListener("click", () => moveTour(-1));
+    layer.querySelector(".tour-next").addEventListener("click", () => moveTour(1));
+  }
+
+  function visibleTarget(selector) {
+    const nodes = [...document.querySelectorAll(selector)];
+    return nodes.find((node) => {
+      const r = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return r.width > 0 && r.height > 0 && style.display !== "none" && style.visibility !== "hidden";
+    }) || null;
+  }
+
+  function validSteps(def) {
+    return (def?.steps || []).filter((step) => visibleTarget(step.target));
+  }
+
+  function startTour() {
+    const def = currentTour();
+    if (!def) return;
+    ensureTourDom();
+    const steps = validSteps(def);
+    if (!steps.length) return;
+    tourState = { key: tourKey(), title: def.title, steps, index: 0 };
+    const layer = document.getElementById("guidedTourLayer");
+    layer.hidden = false;
+    document.body.classList.add("guided-tour-open");
+    showTourStep(true);
+  }
+
+  function endTour() {
+    cancelAnimationFrame(tourRaf);
+    tourState = null;
+    const layer = document.getElementById("guidedTourLayer");
+    if (layer) layer.hidden = true;
+    document.body.classList.remove("guided-tour-open");
+  }
+
+  function moveTour(delta) {
+    if (!tourState) return;
+    const next = tourState.index + delta;
+    if (next >= tourState.steps.length) {
+      endTour();
+      return;
+    }
+    if (next < 0) return;
+    tourState.index = next;
+    showTourStep(true);
+  }
+
+  function setMask(el, left, top, width, height) {
+    Object.assign(el.style, {
+      left: `${Math.max(0, left)}px`,
+      top: `${Math.max(0, top)}px`,
+      width: `${Math.max(0, width)}px`,
+      height: `${Math.max(0, height)}px`,
+    });
+  }
+
+  function positionTour() {
+    if (!tourState) return;
+    const layer = document.getElementById("guidedTourLayer");
+    const step = tourState.steps[tourState.index];
+    const target = visibleTarget(step.target);
+    if (!layer || !target) return;
+
+    const vw = innerWidth;
+    const vh = innerHeight;
+    const pad = vw <= 760 ? 7 : 10;
+    const raw = target.getBoundingClientRect();
+    const left = Math.max(6, raw.left - pad);
+    const top = Math.max(6, raw.top - pad);
+    const right = Math.min(vw - 6, raw.right + pad);
+    const bottom = Math.min(vh - 6, raw.bottom + pad);
+    const width = Math.max(20, right - left);
+    const height = Math.max(20, bottom - top);
+
+    setMask(layer.querySelector(".tour-mask-top"), 0, 0, vw, top);
+    setMask(layer.querySelector(".tour-mask-left"), 0, top, left, height);
+    setMask(layer.querySelector(".tour-mask-right"), right, top, vw - right, height);
+    setMask(layer.querySelector(".tour-mask-bottom"), 0, bottom, vw, vh - bottom);
+
+    const focus = layer.querySelector(".tour-focus-box");
+    Object.assign(focus.style, {
+      left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px`,
+    });
+
+    const pin = layer.querySelector(".tour-step-pin");
+    pin.textContent = String(tourState.index + 1);
+
+    const card = layer.querySelector(".tour-card");
+    const cardWidth = Math.min(vw - 24, 380);
+    card.style.width = `${cardWidth}px`;
+    card.style.left = `${Math.min(Math.max(12, left), vw - cardWidth - 12)}px`;
+    card.style.top = "12px";
+
+    const cardRect = card.getBoundingClientRect();
+    const below = bottom + 14;
+    const above = top - cardRect.height - 14;
+    let cardTop;
+    if (below + cardRect.height <= vh - 12) cardTop = below;
+    else if (above >= 12) cardTop = above;
+    else cardTop = Math.max(12, Math.min(vh - cardRect.height - 12, vh / 2 - cardRect.height / 2));
+    card.style.top = `${cardTop}px`;
+  }
+
+  function showTourStep(scroll) {
+    if (!tourState) return;
+    const layer = document.getElementById("guidedTourLayer");
+    const step = tourState.steps[tourState.index];
+    const target = visibleTarget(step.target);
+    if (!target) {
+      moveTour(1);
+      return;
+    }
+
+    layer.querySelector(".tour-progress").textContent = `${tourState.index + 1}/${tourState.steps.length}`;
+    layer.querySelector(".tour-title").textContent = step.title;
+    layer.querySelector(".tour-text").textContent = step.text;
+    const prev = layer.querySelector(".tour-prev");
+    prev.disabled = tourState.index === 0;
+    layer.querySelector(".tour-next").textContent = tourState.index === tourState.steps.length - 1 ? "เข้าใจแล้ว" : "ถัดไป";
+
+    const doPosition = () => {
+      cancelAnimationFrame(tourRaf);
+      tourRaf = requestAnimationFrame(positionTour);
+    };
+
+    if (scroll) {
+      target.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+      setTimeout(doPosition, 260);
+      setTimeout(doPosition, 520);
+    } else doPosition();
+  }
+
+  const style = document.createElement("style");
+  style.textContent = `
+    .guided-tour-button{height:36px;border:1px solid #dedee2;background:#fff;color:#1d1d1f;border-radius:12px;padding:0 11px;display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:11px;font-weight:750;white-space:nowrap;cursor:pointer}
+    .guided-tour-button:hover{background:#f7f7f9}.guided-tour-button>span{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#1d1d1f;color:#fff;font-size:11px;font-weight:850}
+    .guided-tour-layer[hidden]{display:none!important}.guided-tour-layer{position:fixed;inset:0;z-index:2147483000;pointer-events:none}
+    .tour-mask{position:fixed;background:rgba(0,0,0,.68);pointer-events:auto;transition:all .18s ease}
+    .tour-focus-box{position:fixed;border:4px solid ${TOUR_RED};border-radius:14px;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 28px rgba(255,59,48,.28);pointer-events:none;transition:all .18s ease;z-index:2}
+    .tour-step-pin{position:absolute;left:-14px;top:-14px;width:31px;height:31px;border-radius:50%;background:${TOUR_RED};color:#fff;display:grid;place-items:center;font-size:14px;font-weight:900;box-shadow:0 3px 12px rgba(0,0,0,.28)}
+    .tour-card{position:fixed;background:#fff;border-radius:18px;padding:16px;box-shadow:0 18px 60px rgba(0,0,0,.28);pointer-events:auto;z-index:3;color:#1d1d1f}
+    .tour-card-top{display:flex;align-items:center;justify-content:space-between}.tour-progress{display:inline-flex;background:#fff0ef;color:#d92d20;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:850}.tour-close{width:28px;height:28px;border:0;border-radius:50%;background:#f2f2f7;color:#6e6e73;font-size:18px;cursor:pointer}
+    .tour-title{font-size:18px;margin:12px 0 5px}.tour-text{margin:0;color:#6e6e73;font-size:12px;line-height:1.6}
+    .tour-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:15px}.tour-actions>div{display:flex;gap:7px}.tour-actions button{height:36px;border-radius:10px;border:1px solid #dedee2;background:#fff;padding:0 11px;font:inherit;font-size:11px;font-weight:750;cursor:pointer}.tour-actions .tour-next{background:#1d1d1f;color:#fff;border-color:#1d1d1f}.tour-actions .tour-skip{border:0;color:#86868b;background:transparent;padding-left:0}.tour-actions button:disabled{opacity:.35;cursor:default}
+    .guided-tour-open{overflow:hidden}
+    @media(max-width:760px){
+      .guided-tour-button{height:34px;padding:0 8px}.guided-tour-button b{display:none}.guided-tour-button>span{width:22px;height:22px}
+      .tour-focus-box{border-width:3px;border-radius:11px}.tour-card{border-radius:16px;padding:14px}.tour-title{font-size:17px}.tour-text{font-size:12px}
+    }
+  `;
+  document.head.appendChild(style);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && tourState) endTour();
+    if (event.key === "ArrowRight" && tourState) moveTour(1);
+    if (event.key === "ArrowLeft" && tourState) moveTour(-1);
+  });
+
+  addEventListener("resize", () => {
+    clearTimeout(tourResizeTimer);
+    tourResizeTimer = setTimeout(() => {
+      ensureTourButton();
+      if (tourState) positionTour();
+    }, 80);
+  });
+
+  addEventListener("scroll", () => {
+    if (tourState) positionTour();
+  }, true);
+
+  // หน้า Dashboard เปลี่ยนแบบ SPA — อัปเดตชื่อ/สถานะปุ่มตามหน้าปัจจุบันเสมอ
+  const observer = new MutationObserver(() => {
+    ensureTourButton();
+    if (tourState && tourState.key !== tourKey()) endTour();
+  });
+  observer.observe(document.body, { subtree: true, attributes: true, attributeFilter: ["class"] });
+
+  setTimeout(ensureTourButton, 0);
+  setTimeout(ensureTourButton, 700);
+  window.startDashboardTour = startTour;
+  console.info("[Dashboard] v7.17 FC-style guided tours active");
+})();
