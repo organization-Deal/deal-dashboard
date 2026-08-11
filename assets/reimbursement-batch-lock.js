@@ -1702,7 +1702,7 @@
       button.id = "guidedTourButton";
       button.type = "button";
       button.className = "guided-tour-button";
-      button.innerHTML = `<span>?</span><b>วิธีใช้งาน</b>`;
+      button.innerHTML = `<span>▶</span><b>วิธีใช้หน้านี้</b>`;
       button.addEventListener("click", () => startTour());
       const sync = document.getElementById("syncState");
       if (sync) head.insertBefore(button, sync);
@@ -1726,11 +1726,11 @@
       <div class="tour-mask tour-mask-bottom"></div>
       <div class="tour-focus-box"><span class="tour-step-pin">1</span></div>
       <section class="tour-card" role="dialog" aria-modal="true" aria-live="polite">
-        <div class="tour-card-top"><span class="tour-progress">1/1</span><button class="tour-close" type="button" aria-label="ปิด">×</button></div>
+        <div class="tour-card-top"><span class="tour-progress">ขั้นตอน 1 จาก 1</span><button class="tour-close" type="button" aria-label="ปิด">×</button></div>
         <h3 class="tour-title"></h3>
         <p class="tour-text"></p>
         <div class="tour-actions">
-          <button class="tour-skip" type="button">ข้าม</button>
+          <button class="tour-skip" type="button">ออกจากวิธีใช้</button>
           <div>
             <button class="tour-prev" type="button">ย้อนกลับ</button>
             <button class="tour-next" type="button">ถัดไป</button>
@@ -1832,19 +1832,33 @@
     pin.textContent = String(tourState.index + 1);
 
     const card = layer.querySelector(".tour-card");
-    const cardWidth = Math.min(vw - 24, 380);
-    card.style.width = `${cardWidth}px`;
-    card.style.left = `${Math.min(Math.max(12, left), vw - cardWidth - 12)}px`;
-    card.style.top = "12px";
+    const mobile = vw <= 760;
 
-    const cardRect = card.getBoundingClientRect();
-    const below = bottom + 14;
-    const above = top - cardRect.height - 14;
-    let cardTop;
-    if (below + cardRect.height <= vh - 12) cardTop = below;
-    else if (above >= 12) cardTop = above;
-    else cardTop = Math.max(12, Math.min(vh - cardRect.height - 12, vh / 2 - cardRect.height / 2));
-    card.style.top = `${cardTop}px`;
+    if (mobile) {
+      // Mobile = stable bottom sheet. Do not chase the highlighted target around the screen.
+      // Keep it above the dashboard bottom navigation and safe area.
+      card.style.width = `${Math.max(260, vw - 24)}px`;
+      card.style.left = "12px";
+      card.style.right = "12px";
+      card.style.top = "auto";
+      card.style.bottom = "calc(92px + env(safe-area-inset-bottom, 0px))";
+    } else {
+      card.style.bottom = "auto";
+      card.style.right = "auto";
+      const cardWidth = Math.min(vw - 24, 380);
+      card.style.width = `${cardWidth}px`;
+      card.style.left = `${Math.min(Math.max(12, left), vw - cardWidth - 12)}px`;
+      card.style.top = "12px";
+
+      const cardRect = card.getBoundingClientRect();
+      const below = bottom + 14;
+      const above = top - cardRect.height - 14;
+      let cardTop;
+      if (below + cardRect.height <= vh - 12) cardTop = below;
+      else if (above >= 12) cardTop = above;
+      else cardTop = Math.max(12, Math.min(vh - cardRect.height - 12, vh / 2 - cardRect.height / 2));
+      card.style.top = `${cardTop}px`;
+    }
   }
 
   function showTourStep(scroll) {
@@ -1857,7 +1871,7 @@
       return;
     }
 
-    layer.querySelector(".tour-progress").textContent = `${tourState.index + 1}/${tourState.steps.length}`;
+    layer.querySelector(".tour-progress").textContent = `ขั้นตอน ${tourState.index + 1} จาก ${tourState.steps.length}`;
     layer.querySelector(".tour-title").textContent = step.title;
     layer.querySelector(".tour-text").textContent = step.text;
     const prev = layer.querySelector(".tour-prev");
@@ -1870,9 +1884,17 @@
     };
 
     if (scroll) {
-      target.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+      if (innerWidth <= 760) {
+        const rect = target.getBoundingClientRect();
+        const desiredTop = Math.max(110, Math.round(innerHeight * 0.22));
+        const nextTop = Math.max(0, window.scrollY + rect.top - desiredTop);
+        window.scrollTo({ top: nextTop, behavior: "smooth" });
+      } else {
+        target.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+      }
       setTimeout(doPosition, 260);
       setTimeout(doPosition, 520);
+      setTimeout(doPosition, 760);
     } else doPosition();
   }
 
@@ -1890,8 +1912,92 @@
     .tour-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:15px}.tour-actions>div{display:flex;gap:7px}.tour-actions button{height:36px;border-radius:10px;border:1px solid #dedee2;background:#fff;padding:0 11px;font:inherit;font-size:11px;font-weight:750;cursor:pointer}.tour-actions .tour-next{background:#1d1d1f;color:#fff;border-color:#1d1d1f}.tour-actions .tour-skip{border:0;color:#86868b;background:transparent;padding-left:0}.tour-actions button:disabled{opacity:.35;cursor:default}
     .guided-tour-open{overflow:hidden}
     @media(max-width:760px){
-      .guided-tour-button{height:34px;padding:0 8px}.guided-tour-button b{display:none}.guided-tour-button>span{width:22px;height:22px}
-      .tour-focus-box{border-width:3px;border-radius:11px}.tour-card{border-radius:16px;padding:14px}.tour-title{font-size:17px}.tour-text{font-size:12px}
+      .guided-tour-button{
+        height:38px!important;
+        width:auto!important;
+        min-width:0!important;
+        max-width:max-content!important;
+        flex:0 0 auto!important;
+        padding:0 12px!important;
+        gap:7px!important;
+        border-radius:12px!important;
+        box-sizing:border-box!important;
+      }
+      .guided-tour-button b{
+        display:inline!important;
+        font-size:11px!important;
+        white-space:nowrap!important;
+      }
+      .guided-tour-button>span{
+        width:20px!important;
+        height:20px!important;
+        font-size:9px!important;
+        flex:0 0 20px!important;
+      }
+
+      .tour-focus-box{
+        border-width:4px;
+        border-radius:12px;
+        box-shadow:0 0 0 2px rgba(255,255,255,.95),0 0 0 9999px rgba(0,0,0,.05),0 0 28px rgba(255,59,48,.42);
+      }
+      .tour-step-pin{
+        left:-10px;
+        top:-15px;
+        width:34px;
+        height:34px;
+        font-size:15px;
+      }
+
+      .tour-card{
+        border-radius:20px;
+        padding:16px;
+        max-height:min(280px,38vh);
+        overflow:auto;
+        box-shadow:0 14px 50px rgba(0,0,0,.32);
+      }
+      .tour-card::before{
+        content:"วิธีใช้หน้านี้";
+        display:block;
+        color:#86868b;
+        font-size:9px;
+        font-weight:850;
+        letter-spacing:.08em;
+        margin-bottom:8px;
+      }
+      .tour-progress{
+        font-size:10px;
+        padding:6px 9px;
+      }
+      .tour-title{
+        font-size:19px;
+        line-height:1.25;
+        margin:10px 0 6px;
+      }
+      .tour-text{
+        font-size:13px;
+        line-height:1.55;
+      }
+      .tour-actions{
+        margin-top:14px;
+        align-items:stretch;
+      }
+      .tour-actions>div{
+        flex:1;
+      }
+      .tour-actions button{
+        min-height:42px;
+        height:auto;
+        font-size:12px;
+      }
+      .tour-actions>div .tour-prev,
+      .tour-actions>div .tour-next{
+        flex:1;
+      }
+      .tour-actions .tour-skip{
+        font-size:10px;
+        max-width:76px;
+        line-height:1.2;
+      }
     }
   `;
   document.head.appendChild(style);
@@ -2758,4 +2864,40 @@
 
   setTimeout(renderUnifiedReadinessV721, 0);
   console.info("[Dashboard]", VERSION, "active");
+})();
+
+/* Dashboard v7.23 — Mobile Guided Tour clarity */
+(() => {
+  "use strict";
+
+  function clarifyMobileTourButton() {
+    const btn = document.getElementById("guidedTourButton");
+    if (!btn) return;
+    if (innerWidth <= 760) {
+      btn.setAttribute("aria-label", "เปิดวิธีใช้หน้านี้แบบทีละขั้น");
+      btn.title = "เปิดวิธีใช้หน้านี้แบบทีละขั้น";
+    }
+  }
+
+  const style = document.createElement("style");
+  style.textContent = `
+    @media(max-width:760px){
+      .main>.head #guidedTourButton{
+        order:90;
+        align-self:flex-start;
+      }
+      .guided-tour-open #guidedTourButton{
+        visibility:hidden;
+      }
+      .guided-tour-open .mobile-bottom-nav,
+      .guided-tour-open .bottom-nav{
+        pointer-events:none;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  setTimeout(clarifyMobileTourButton, 0);
+  addEventListener("resize", clarifyMobileTourButton);
+  console.info("[Dashboard] v7.23 mobile guided tour clarity active");
 })();
