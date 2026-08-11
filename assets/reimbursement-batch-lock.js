@@ -775,10 +775,10 @@
             </div>
             ${connected}
           </div>
-          <div class="line-group-card-stats">
-            <div><span>รอดำเนินการ</span><strong>${Number(summary.openCount || 0)}</strong></div>
-            <div><span>ยอดรอ</span><strong>${esc(lineGroupMoney(summary.openAmount || 0))}</strong></div>
-            <div><span>จ่ายแล้ว</span><strong>${Number(summary.paidCount || 0)}</strong></div>
+          <div class="line-group-card-stats line-group-money-board">
+            <div><span>ยอดเบิกรวม</span><strong>${esc(lineGroupMoney(Number(summary.openAmount || 0) + Number(summary.paidAmount || 0)))}</strong><small>${Number(summary.totalCount || 0)} รายการ</small></div>
+            <div><span>ยอดรอจ่าย</span><strong>${esc(lineGroupMoney(summary.openAmount || 0))}</strong><small>${Number(summary.openCount || 0)} รายการ</small></div>
+            <div><span>จ่ายแล้ว</span><strong>${esc(lineGroupMoney(summary.paidAmount || 0))}</strong><small>${Number(summary.paidCount || 0)} รายการ</small></div>
           </div>
           <div class="line-group-card-foot">
             ${current}
@@ -809,8 +809,10 @@
       try { data = raw ? JSON.parse(raw) : {}; } catch { data = { error: raw }; }
       if (!response.ok || data.ok === false) throw new Error(data.message || data.error || `HTTP ${response.status}`);
       LINE_GROUPS = data;
+      window.__LINE_GROUPS = data;
       LINE_GROUP_LAST_LOAD = Date.now();
       renderLineGroupMonitor();
+      if (typeof window.renderCashPositionBoard === "function") window.renderCashPositionBoard();
     } catch (error) {
       if (cards) cards.innerHTML = `
         <div class="line-group-error">
@@ -941,4 +943,368 @@
   `;
   document.head.appendChild(style);
   console.info("[Dashboard] v7.15.1 compact LINE workspace monitor active");
+})();
+
+/* Dashboard v7.16 — Reimbursement Money Board + Manual Cash Position */
+(() => {
+  "use strict";
+
+  const BALANCE_SETTING_KEY = "finance_balances";
+  let BALANCE_EDIT_CHANNEL_ID = "";
+
+  function balanceMap() {
+    const raw = SETTINGS?.[BALANCE_SETTING_KEY];
+    if (!raw) return {};
+    if (typeof raw === "object" && !Array.isArray(raw)) return raw;
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function balanceRecord(channelId) {
+    return balanceMap()[String(channelId || "")] || {};
+  }
+
+  function n(v) {
+    const x = Number(String(v ?? "").replace(/,/g, ""));
+    return Number.isFinite(x) ? x : 0;
+  }
+
+  function money(v) {
+    return "฿" + n(v).toLocaleString("th-TH", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  function updatedText(v) {
+    if (!v) return "ยังไม่เคยอัปเดต";
+    const d = new Date(v);
+    if (!Number.isFinite(d.getTime())) return "ยังไม่เคยอัปเดต";
+    return "อัปเดต " + d.toLocaleString("th-TH", {
+      timeZone: "Asia/Bangkok",
+      day: "numeric",
+      month: "short",
+      year: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  function activeAccounts() {
+    return financeChannels(false).filter((x) => x.active !== false);
+  }
+
+  function totals() {
+    const accounts = activeAccounts();
+    const balances = balanceMap();
+    let totalBalance = 0;
+    let updatedCount = 0;
+
+    for (const account of accounts) {
+      const rec = balances[account.id];
+      if (!rec || rec.balance === "" || rec.balance == null) continue;
+      totalBalance += n(rec.balance);
+      updatedCount++;
+    }
+
+    const groupRows = Array.isArray(window.__LINE_GROUPS?.rows) ? window.__LINE_GROUPS.rows : [];
+    const waiting = groupRows.reduce((sum, row) => sum + n(row?.summary?.openAmount), 0);
+
+    return {
+      totalBalance,
+      waiting,
+      after: totalBalance - waiting,
+      updatedCount,
+      accountCount: accounts.length,
+    };
+  }
+
+  function ensureModal() {
+    if (document.getElementById("cashBalanceModal")) return;
+    const modal = document.createElement("div");
+    modal.id = "cashBalanceModal";
+    modal.className = "cash-balance-modal";
+    modal.hidden = true;
+    modal.innerHTML = `
+      <div class="cash-balance-backdrop" data-cash-close></div>
+      <section class="cash-balance-dialog" role="dialog" aria-modal="true">
+        <div class="cash-balance-dialog-head">
+          <div>
+            <span>MANUAL BALANCE</span>
+            <h3 id="cashBalanceTitle">อัปเดตยอดคงเหลือ</h3>
+            <p id="cashBalanceSubtitle"></p>
+          </div>
+          <button type="button" class="cash-balance-x" data-cash-close>×</button>
+        </div>
+        <form id="cashBalanceForm">
+          <label>
+            <span>ยอดคงเหลือปัจจุบัน</span>
+            <div class="cash-balance-input-wrap"><b>฿</b><input id="cashBalanceAmount" type="number" step="0.01" inputmode="decimal" required placeholder="0.00"></div>
+          </label>
+          <label>
+            <span>หมายเหตุ (ไม่บังคับ)</span>
+            <input id="cashBalanceNote" maxlength="160" placeholder="เช่น เช็กจาก K PLUS เวลา 10:30">
+          </label>
+          <div class="cash-balance-info">
+            ยอดนี้เป็นตัวเลขที่ทีมอัปเดตเอง ระบบไม่ได้ดึงยอดสดจากธนาคาร และจะบันทึกเวลาอัปเดตล่าสุดทุกครั้ง
+          </div>
+          <div class="cash-balance-actions">
+            <button class="btn" type="button" data-cash-close>ยกเลิก</button>
+            <button class="btn solid" id="cashBalanceSave" type="submit">บันทึกยอดล่าสุด</button>
+          </div>
+        </form>
+      </section>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener("click", (event) => {
+      if (event.target.closest("[data-cash-close]")) closeBalanceModal();
+    });
+    document.getElementById("cashBalanceForm")?.addEventListener("submit", saveBalance);
+  }
+
+  function openBalanceModal(channelId) {
+    ensureModal();
+    const channel = financeChannels(false).find((x) => String(x.id) === String(channelId));
+    if (!channel) return alert("ไม่พบบัญชีนี้");
+
+    BALANCE_EDIT_CHANNEL_ID = String(channel.id);
+    const rec = balanceRecord(channel.id);
+
+    document.getElementById("cashBalanceTitle").textContent = `อัปเดตยอด · ${financeChannelTitle(channel)}`;
+    document.getElementById("cashBalanceSubtitle").textContent = financeChannelDetail(channel);
+    document.getElementById("cashBalanceAmount").value =
+      rec.balance === "" || rec.balance == null ? "" : String(rec.balance);
+    document.getElementById("cashBalanceNote").value = String(rec.note || "");
+
+    document.getElementById("cashBalanceModal").hidden = false;
+    document.body.classList.add("cash-balance-open");
+    setTimeout(() => document.getElementById("cashBalanceAmount")?.focus(), 0);
+  }
+
+  function closeBalanceModal() {
+    const modal = document.getElementById("cashBalanceModal");
+    if (modal) modal.hidden = true;
+    BALANCE_EDIT_CHANNEL_ID = "";
+    document.body.classList.remove("cash-balance-open");
+  }
+
+  async function saveBalance(event) {
+    event.preventDefault();
+    const channelId = BALANCE_EDIT_CHANNEL_ID;
+    const value = String(document.getElementById("cashBalanceAmount")?.value ?? "").trim();
+    if (!channelId || value === "" || !Number.isFinite(Number(value))) {
+      alert("กรอกยอดคงเหลือให้ถูกต้อง");
+      return;
+    }
+
+    const button = document.getElementById("cashBalanceSave");
+    if (button) {
+      button.disabled = true;
+      button.textContent = "กำลังบันทึก…";
+    }
+
+    const map = balanceMap();
+    map[channelId] = {
+      balance: Number(value),
+      note: String(document.getElementById("cashBalanceNote")?.value || "").trim(),
+      updatedAt: new Date().toISOString(),
+      source: "manual",
+    };
+
+    try {
+      const ok = await saveSettings({ [BALANCE_SETTING_KEY]: JSON.stringify(map) });
+      if (!ok) throw new Error("บันทึกยอดไม่สำเร็จ");
+      closeBalanceModal();
+      renderCashPositionBoard();
+      decorateFinanceCards();
+    } catch (error) {
+      alert(error?.message || "บันทึกยอดไม่สำเร็จ");
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = "บันทึกยอดล่าสุด";
+      }
+    }
+  }
+
+  function ensureBoard() {
+    const page = document.getElementById("page-batches");
+    if (!page || document.getElementById("cashPositionBoard")) return;
+
+    const lineBoard = document.getElementById("lineGroupMonitor");
+    const board = document.createElement("section");
+    board.id = "cashPositionBoard";
+    board.className = "cash-position-board";
+    board.innerHTML = `
+      <div class="cash-position-head">
+        <div>
+          <div class="head-kicker">CASH POSITION</div>
+          <h3>ยอดเงินแต่ละบัญชี</h3>
+          <p>อัปเดตยอดเองเพื่อให้ทีมรู้ว่าตอนนี้มีเงินพร้อมจ่ายเท่าไร · ไม่ได้เชื่อมยอดสดจากธนาคาร</p>
+        </div>
+        <button class="btn" id="cashManageAccounts" type="button">จัดการบัญชี</button>
+      </div>
+      <div class="cash-position-summary" id="cashPositionSummary"></div>
+      <div class="cash-account-cards" id="cashAccountCards"></div>
+    `;
+
+    if (lineBoard) lineBoard.insertAdjacentElement("afterend", board);
+    else page.prepend(board);
+
+    document.getElementById("cashManageAccounts")?.addEventListener("click", () => {
+      openBusiness("finance", document.querySelector('[data-biz="finance"]'));
+    });
+
+    document.getElementById("cashAccountCards")?.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-update-cash]");
+      if (button) openBalanceModal(button.dataset.updateCash || "");
+    });
+  }
+
+  function renderCashPositionBoard() {
+    ensureBoard();
+    const summary = document.getElementById("cashPositionSummary");
+    const cards = document.getElementById("cashAccountCards");
+    if (!summary || !cards) return;
+
+    const t = totals();
+    summary.innerHTML = `
+      <div><span>เงินคงเหลือรวม</span><strong>${money(t.totalBalance)}</strong><small>${t.updatedCount}/${t.accountCount} บัญชีมีการอัปเดตยอด</small></div>
+      <div><span>ยอดรอจ่ายจากใบเบิก</span><strong>${money(t.waiting)}</strong><small>รวมทุก LINE Workspace</small></div>
+      <div class="${t.after < 0 ? "negative" : ""}"><span>คงเหลือหลังจ่ายยอดรอ</span><strong>${money(t.after)}</strong><small>${t.after < 0 ? "เงินที่อัปเดตล่าสุดไม่พอยอดรอจ่าย" : "ประมาณการจากยอดที่กรอกล่าสุด"}</small></div>
+    `;
+
+    const accounts = activeAccounts();
+    if (!accounts.length) {
+      cards.innerHTML = `<div class="cash-empty"><b>ยังไม่มีบัญชีสำหรับติดตามยอด</b><span>เพิ่มได้ที่ จัดการธุรกิจ → บัญชีและช่องทางการเงิน</span></div>`;
+      return;
+    }
+
+    cards.innerHTML = accounts.map((account) => {
+      const rec = balanceRecord(account.id);
+      const hasBalance = rec.balance !== "" && rec.balance != null;
+      return `
+        <article class="cash-account-card ${hasBalance && n(rec.balance) < 0 ? "negative" : ""}">
+          <div class="cash-account-top">
+            <div class="finance-account-icon">${esc(financeChannelIcon(account))}</div>
+            <div>
+              <b>${esc(financeChannelTitle(account))}</b>
+              <span>${esc(financeChannelDetail(account))}</span>
+            </div>
+          </div>
+          <div class="cash-account-balance ${hasBalance ? "" : "empty"}">${hasBalance ? esc(money(rec.balance)) : "ยังไม่ใส่ยอด"}</div>
+          <div class="cash-account-meta">
+            <span>${esc(updatedText(rec.updatedAt))}</span>
+            ${rec.note ? `<small>${esc(rec.note)}</small>` : ""}
+          </div>
+          <button class="btn small" type="button" data-update-cash="${escAttr(account.id)}">${hasBalance ? "อัปเดตยอด" : "+ ใส่ยอดปัจจุบัน"}</button>
+        </article>
+      `;
+    }).join("");
+  }
+
+  function decorateFinanceCards() {
+    const list = document.getElementById("financeList");
+    if (!list) return;
+
+    const accounts = financeChannels(false);
+    list.querySelectorAll(".finance-account-card").forEach((card, index) => {
+      const account = accounts[index];
+      if (!account) return;
+
+      card.querySelector(".finance-balance-inline")?.remove();
+      const rec = balanceRecord(account.id);
+      const hasBalance = rec.balance !== "" && rec.balance != null;
+
+      const block = document.createElement("div");
+      block.className = "finance-balance-inline";
+      block.innerHTML = `
+        <div>
+          <span>ยอดคงเหลือล่าสุด</span>
+          <strong>${hasBalance ? esc(money(rec.balance)) : "ยังไม่ใส่ยอด"}</strong>
+          <small>${esc(updatedText(rec.updatedAt))}</small>
+        </div>
+        <button class="btn small" type="button" data-finance-balance="${escAttr(account.id)}">${hasBalance ? "อัปเดตยอด" : "+ ใส่ยอด"}</button>
+      `;
+
+      const actions = card.querySelector(".finance-account-actions");
+      if (actions) card.insertBefore(block, actions);
+      else card.appendChild(block);
+    });
+  }
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-finance-balance]");
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openBalanceModal(button.dataset.financeBalance || "");
+  });
+
+  const renderBusinessCore = renderBusiness;
+  renderBusiness = function(...args) {
+    const result = renderBusinessCore.apply(this, args);
+    if (BUSINESS_TAB === "finance") decorateFinanceCards();
+    return result;
+  };
+
+  const renderBatchesCore = renderBatches;
+  renderBatches = function(...args) {
+    const result = renderBatchesCore.apply(this, args);
+    renderCashPositionBoard();
+    return result;
+  };
+
+  window.renderCashPositionBoard = renderCashPositionBoard;
+
+  const style = document.createElement("style");
+  style.textContent = `
+    .line-group-money-board div small{display:block;margin-top:3px;font-size:8px;color:#86868b;font-weight:500}
+    .cash-position-board{margin:0 0 16px;background:#fff;border:1px solid #e5e5e7;border-radius:20px;padding:18px}
+    .cash-position-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+    .cash-position-head h3{margin:4px 0 5px;font-size:18px}.cash-position-head p{margin:0;color:#86868b;font-size:12px;line-height:1.5}
+    .cash-position-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:15px}
+    .cash-position-summary>div{background:#f7f7f9;border-radius:14px;padding:12px}
+    .cash-position-summary span{display:block;color:#86868b;font-size:9px}.cash-position-summary strong{display:block;font-size:19px;margin-top:4px}.cash-position-summary small{display:block;color:#86868b;font-size:9px;margin-top:3px}
+    .cash-position-summary .negative strong,.cash-account-card.negative .cash-account-balance{color:#d92d20}
+    .cash-account-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:10px}
+    .cash-account-card{border:1px solid #e5e5e7;border-radius:15px;padding:12px;background:#fff}
+    .cash-account-top{display:flex;align-items:center;gap:9px;min-width:0}.cash-account-top>div:last-child{min-width:0}
+    .cash-account-top b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cash-account-top span{display:block;color:#86868b;font-size:8px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cash-account-balance{font-size:18px;font-weight:800;margin-top:13px}.cash-account-balance.empty{font-size:12px;color:#86868b;font-weight:650}
+    .cash-account-meta{min-height:29px;margin:5px 0 9px}.cash-account-meta span,.cash-account-meta small{display:block;color:#86868b;font-size:8px;line-height:1.4}.cash-account-meta small{color:#6e6e73;margin-top:2px}
+    .cash-account-card>.btn{width:100%}
+    .cash-empty{grid-column:1/-1;background:#fafafa;border-radius:14px;padding:18px;text-align:center}.cash-empty b,.cash-empty span{display:block}.cash-empty span{font-size:10px;color:#86868b;margin-top:4px}
+    .finance-balance-inline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0;padding:10px 12px;background:#f7f7f9;border-radius:12px}
+    .finance-balance-inline span,.finance-balance-inline small{display:block;color:#86868b;font-size:9px}.finance-balance-inline strong{display:block;font-size:16px;margin:2px 0}
+    .cash-balance-modal[hidden]{display:none!important}.cash-balance-modal{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:18px}
+    .cash-balance-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.28);backdrop-filter:blur(3px)}
+    .cash-balance-dialog{position:relative;width:min(440px,100%);background:#fff;border-radius:22px;padding:20px;box-shadow:0 24px 80px rgba(0,0,0,.2)}
+    .cash-balance-dialog-head{display:flex;justify-content:space-between;gap:15px}.cash-balance-dialog-head span{font-size:9px;font-weight:800;letter-spacing:.08em;color:#86868b}.cash-balance-dialog-head h3{margin:4px 0;font-size:20px}.cash-balance-dialog-head p{margin:0;color:#86868b;font-size:10px}
+    .cash-balance-x{border:0;background:#f2f2f7;border-radius:50%;width:32px;height:32px;font-size:20px}
+    #cashBalanceForm{display:grid;gap:13px;margin-top:18px}#cashBalanceForm label>span{display:block;font-size:10px;font-weight:700;margin-bottom:6px;color:#6e6e73}
+    #cashBalanceForm input{width:100%;height:46px;border:1px solid #e5e5e7;border-radius:12px;padding:0 12px;font:inherit}
+    .cash-balance-input-wrap{position:relative}.cash-balance-input-wrap b{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px}.cash-balance-input-wrap input{padding-left:32px!important;font-size:18px!important;font-weight:750}
+    .cash-balance-info{font-size:10px;line-height:1.55;color:#6e6e73;background:#f7f7f9;border-radius:12px;padding:10px 12px}
+    .cash-balance-actions{display:flex;justify-content:flex-end;gap:8px}.cash-balance-open{overflow:hidden}
+    @media(max-width:1100px){.cash-account-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){
+      .cash-position-board{padding:14px}.cash-position-head{display:block}.cash-position-head>.btn{margin-top:10px;width:100%}
+      .cash-position-summary{grid-template-columns:1fr}.cash-account-cards{grid-template-columns:1fr}
+      .cash-balance-actions .btn{flex:1}
+    }
+  `;
+  document.head.appendChild(style);
+
+  ensureModal();
+  setTimeout(() => {
+    if (currentPageKey() === "batches") renderCashPositionBoard();
+    if (currentPageKey() === "business" && BUSINESS_TAB === "finance") decorateFinanceCards();
+  }, 0);
+
+  console.info("[Dashboard] v7.16 cash position active");
 })();
