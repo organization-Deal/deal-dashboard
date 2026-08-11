@@ -1926,3 +1926,350 @@
   window.startDashboardTour = startTour;
   console.info("[Dashboard] v7.17 FC-style guided tours active");
 })();
+
+/* Dashboard v7.19 — CHILD BUSINESS FLOW
+   Account-level Google/Gmail ownership:
+   - Root workspace handles account integration
+   - Child workspaces setup only business profile, approver/signature, finance
+   - Child workspace must never be marked incomplete only because Gmail isn't connected per-tenant
+*/
+(() => {
+  "use strict";
+
+  const CHILD_FLOW_VERSION = "CHILD_BUSINESS_FLOW_V7_19_20260811";
+
+  function currentBusinessRecordV719() {
+    const rows = Array.isArray(BUSINESS_INFO?.businesses) ? BUSINESS_INFO.businesses : [];
+    return rows.find((b) => b?.isCurrent) || rows.find((b) => String(b?.tenant || "") === String(TENANT)) || null;
+  }
+
+  function isChildWorkspaceV719() {
+    const current = currentBusinessRecordV719();
+    if (current) return current.isRoot === false;
+    const root = String(BUSINESS_INFO?.rootTenant || "");
+    const now = String(BUSINESS_INFO?.currentTenant || TENANT || "");
+    return Boolean(root && now && root !== now);
+  }
+
+  function rootBusinessUrlV719() {
+    const rows = Array.isArray(BUSINESS_INFO?.businesses) ? BUSINESS_INFO.businesses : [];
+    return String(rows.find((b) => b?.isRoot)?.dashboardUrl || "");
+  }
+
+  function childSetupV719() {
+    const profileMissing = [];
+    if (!String(SETTINGS.company_name || "").trim()) profileMissing.push("ชื่อบริษัท");
+    if (!String(SETTINGS.tax_id || "").trim()) profileMissing.push("เลขผู้เสียภาษี");
+    if (!companyLogoUrl()) profileMissing.push("โลโก้บริษัท");
+
+    const approverMissing = [];
+    if (!String(SETTINGS.approver_name || "").trim()) approverMissing.push("ชื่อผู้อนุมัติ");
+    if (!hasApproverSignature()) approverMissing.push("ลายเซ็น");
+
+    const financeCount = financeChannels(true).length;
+
+    return {
+      company_profile: profileMissing.length === 0,
+      company_approver: approverMissing.length === 0,
+      finance: financeCount > 0,
+      profileMissing,
+      approverMissing,
+      financeCount,
+    };
+  }
+
+  const companySetupStateCoreV719 = companySetupState;
+  companySetupState = function() {
+    if (!isChildWorkspaceV719()) return companySetupStateCoreV719();
+    const x = childSetupV719();
+    const ready = x.company_profile && x.company_approver && x.finance;
+    return {
+      // compatibility fields: Gmail is not a requirement for child workspaces
+      owner_gmail: true,
+      gmailReady: true,
+      inheritedAccountIntegration: true,
+
+      company_profile: x.company_profile,
+      company_approver: x.company_approver,
+      company_documents: x.company_profile && x.company_approver,
+      finance: x.finance,
+      financeCount: x.financeCount,
+      profileMissing: x.profileMissing,
+      approverMissing: x.approverMissing,
+      documentMissing: [...x.profileMissing, ...x.approverMissing],
+      ready,
+    };
+  };
+
+  function setupStepTextV719(button, label) {
+    if (!button) return;
+    const spans = button.querySelectorAll("span");
+    const target = [...spans].find((node) => !node.classList.contains("step-dot"));
+    if (target) target.textContent = label;
+  }
+
+  function configureChildSetupDomV719() {
+    if (!isChildWorkspaceV719()) return false;
+
+    const steps = [...document.querySelectorAll(".onboard-step")];
+    if (steps[0]) {
+      steps[0].dataset.step = "company_profile";
+      setupStepTextV719(steps[0], "ข้อมูลบริษัท Tax ID และโลโก้");
+    }
+    if (steps[1]) {
+      steps[1].dataset.step = "company_approver";
+      setupStepTextV719(steps[1], "ผู้อนุมัติและลายเซ็น");
+    }
+    if (steps[2]) {
+      steps[2].dataset.step = "finance";
+      setupStepTextV719(steps[2], "เพิ่มช่องทางการโอนเงิน");
+    }
+
+    const title = el("onboardingCard")?.querySelector(".onboarding-head strong");
+    if (title) title.textContent = "ตั้งค่าธุรกิจนี้";
+
+    // Full setup gate is normally hidden, but keep its copy correct if it is ever opened.
+    const first = el("companySetupGmail");
+    if (first) {
+      const strong = first.querySelector(".company-setup-copy strong");
+      const small = first.querySelector(".company-setup-copy small");
+      const button = first.querySelector("[data-company-setup]");
+      if (strong) strong.textContent = "ข้อมูลบริษัทและโลโก้";
+      if (small) small.textContent = "กรอกชื่อบริษัท เลขผู้เสียภาษี และโลโก้ของธุรกิจนี้";
+      if (button) {
+        button.dataset.companySetup = "company_profile";
+        button.textContent = "ตั้งค่าธุรกิจ";
+      }
+    }
+
+    const second = el("companySetupDocuments");
+    if (second) {
+      const strong = second.querySelector(".company-setup-copy strong");
+      const small = second.querySelector(".company-setup-copy small");
+      const button = second.querySelector("[data-company-setup]");
+      if (strong) strong.textContent = "ผู้อนุมัติและลายเซ็น";
+      if (small) small.textContent = "กำหนดผู้อนุมัติและลายเซ็นที่ใช้บนเอกสารของธุรกิจนี้";
+      if (button) {
+        button.dataset.companySetup = "company_approver";
+        button.textContent = "ตั้งค่าผู้อนุมัติ";
+      }
+    }
+
+    return true;
+  }
+
+  const renderCompanySetupGateCoreV719 = renderCompanySetupGate;
+  renderCompanySetupGate = function(options = {}) {
+    if (!isChildWorkspaceV719()) return renderCompanySetupGateCoreV719(options);
+
+    configureChildSetupDomV719();
+    const gate = el("companySetupGate");
+    const st = companySetupState();
+    const order = ["company_profile", "company_approver", "finance"];
+    const done = order.filter((key) => st[key]).length;
+
+    if (el("companySetupCount")) el("companySetupCount").textContent = `${done}/3 ขั้นตอน`;
+    if (el("companySetupBar")) el("companySetupBar").style.width = `${done / 3 * 100}%`;
+
+    setCompanySetupStep(
+      "companySetupGmail",
+      st.company_profile,
+      st.company_profile ? "ข้อมูลบริษัทและโลโก้พร้อม" : `ยังขาด ${st.profileMissing.join(" · ")}`,
+      st.company_profile ? "ตรวจสอบ" : "ตั้งค่าธุรกิจ"
+    );
+    setCompanySetupStep(
+      "companySetupDocuments",
+      st.company_approver,
+      st.company_approver ? "ผู้อนุมัติและลายเซ็นพร้อม" : `ยังขาด ${st.approverMissing.join(" · ")}`,
+      st.company_approver ? "ตรวจสอบ" : "ตั้งค่าผู้อนุมัติ"
+    );
+    setCompanySetupStep(
+      "companySetupFinance",
+      st.finance,
+      st.finance ? `พร้อมใช้งาน ${st.financeCount} ช่องทาง` : "ยังไม่มีบัญชีหรือช่องทางที่ใช้โอนเงิน",
+      st.finance ? "ตรวจสอบ" : "เพิ่มช่องทาง"
+    );
+
+    if (gate) gate.hidden = true;
+    document.body.classList.remove("company-setup-required");
+
+    if (st.ready) {
+      COMPANY_SETUP_ACTIVE = "";
+      localStorage.setItem(`company-setup-complete:${TENANT}`, "1");
+    } else {
+      localStorage.removeItem(`company-setup-complete:${TENANT}`);
+    }
+  };
+
+  const renderOnboardingCoreV719 = renderOnboarding;
+  renderOnboarding = function() {
+    if (!isChildWorkspaceV719()) return renderOnboardingCoreV719();
+
+    configureChildSetupDomV719();
+    const st = companySetupState();
+    const order = ["company_profile", "company_approver", "finance"];
+    const done = order.filter((key) => st[key]).length;
+
+    if (el("onboardingCount")) el("onboardingCount").textContent = `${done}/3`;
+    if (el("onboardingBar")) el("onboardingBar").style.width = `${done / 3 * 100}%`;
+
+    const card = el("onboardingCard");
+    const title = card?.querySelector(".onboarding-head strong");
+    if (card) card.classList.toggle("complete", done === 3);
+    if (title) title.textContent = done === 3 ? "ธุรกิจพร้อมใช้งาน" : "ตั้งค่าธุรกิจนี้";
+    if (done === 3 && card) card.classList.add("closed");
+
+    let foundNext = false;
+    document.querySelectorAll(".onboard-step").forEach((button) => {
+      const yes = Boolean(st[button.dataset.step]);
+      button.classList.toggle("done", yes);
+      button.classList.remove("next");
+      const dot = button.querySelector(".step-dot");
+      if (dot) dot.textContent = yes ? "✓" : "";
+      if (!yes && !foundNext) {
+        button.classList.add("next");
+        foundNext = true;
+      }
+    });
+
+    renderCompanySetupGate();
+  };
+
+  const openCompanySetupStepCoreV719 = openCompanySetupStep;
+  openCompanySetupStep = function(step) {
+    if (!isChildWorkspaceV719()) return openCompanySetupStepCoreV719(step);
+
+    const actual = step === "owner_gmail" ? "company_profile" : step;
+    COMPANY_SETUP_ACTIVE = actual;
+    const gate = el("companySetupGate");
+    if (gate) gate.hidden = true;
+    document.body.classList.remove("company-setup-required");
+
+    if (actual === "company_profile" || actual === "company_documents") {
+      openBusiness("profile", document.querySelector('[data-biz="profile"]'));
+      return;
+    }
+    if (actual === "company_approver") {
+      openBusiness("approver", document.querySelector('[data-biz="approver"]'));
+      return;
+    }
+    if (actual === "finance") {
+      openBusiness("finance", document.querySelector('[data-biz="finance"]'));
+      return;
+    }
+  };
+
+  const renderConnectionHealthBannerCoreV719 = renderConnectionHealthBanner;
+  renderConnectionHealthBanner = function() {
+    if (!isChildWorkspaceV719()) return renderConnectionHealthBannerCoreV719();
+
+    const businessReady = CONNECTION_HEALTH.business === true;
+    const workspaceReady = CONNECTION_HEALTH.workspace === true;
+
+    // Gmail is account-level for child workspaces. It must never create a warning banner here.
+    if (businessReady && workspaceReady) {
+      const box = ensureConnectionHealthBanner();
+      if (box) box.hidden = true;
+      DASH_SETUP_BLOCKED = false;
+      return;
+    }
+
+    // Business/Sheet/Drive issues remain real and must still be shown.
+    return renderConnectionHealthBannerCoreV719();
+  };
+
+  function ensureChildGmailNoticeV719() {
+    const page = el("page-email");
+    if (!page) return;
+
+    let notice = el("childAccountGmailNotice");
+    if (!isChildWorkspaceV719()) {
+      if (notice) notice.remove();
+      return;
+    }
+
+    if (!notice) {
+      notice = document.createElement("div");
+      notice.id = "childAccountGmailNotice";
+      notice.className = "child-account-gmail-notice";
+      page.prepend(notice);
+    }
+
+    const rootUrl = rootBusinessUrlV719();
+    notice.innerHTML = `
+      <div>
+        <span class="child-account-gmail-badge">ACCOUNT INTEGRATION</span>
+        <strong>ธุรกิจนี้ไม่ต้องเชื่อม Gmail ซ้ำ</strong>
+        <p>Google / Gmail จัดการจากธุรกิจหลักของบัญชีนี้ ส่วนเอกสารของ Workspace นี้ยังรับผ่าน LINE ได้ตามปกติ</p>
+      </div>
+      ${rootUrl ? `<a class="btn" href="${escAttr(rootUrl)}&page=email">ไปจัดการ Gmail ที่ธุรกิจหลัก ↗</a>` : ""}
+    `;
+
+    if (el("gmailDisconnected")) el("gmailDisconnected").hidden = true;
+    if (el("gmailConnected")) el("gmailConnected").hidden = true;
+  }
+
+  const renderEmailInboxCoreV719 = renderEmailInbox;
+  renderEmailInbox = function(...args) {
+    const result = renderEmailInboxCoreV719.apply(this, args);
+    ensureChildGmailNoticeV719();
+    return result;
+  };
+
+  const renderSettingsCoreV719 = renderSettings;
+  renderSettings = function(...args) {
+    const result = renderSettingsCoreV719.apply(this, args);
+    if (!isChildWorkspaceV719()) return result;
+
+    const gm = el("setGmailState");
+    if (gm) {
+      gm.className = "integration-state ok";
+      gm.innerHTML = `<span class="state-dot"></span><span>จัดการจากธุรกิจหลัก</span>`;
+    }
+    const action = el("setGmailAction");
+    if (action) {
+      action.hidden = true;
+      action.style.display = "none";
+    }
+    return result;
+  };
+
+  const refreshBusinessesCoreV719 = refreshBusinesses;
+  refreshBusinesses = async function(...args) {
+    const out = await refreshBusinessesCoreV719.apply(this, args);
+    configureChildSetupDomV719();
+    renderOnboarding();
+    renderConnectionHealthBanner();
+    if (currentPageKey() === "settings") renderSettings();
+    if (currentPageKey() === "email") ensureChildGmailNoticeV719();
+    return out;
+  };
+
+  const style = document.createElement("style");
+  style.textContent = `
+    .child-account-gmail-notice{
+      display:flex;align-items:center;justify-content:space-between;gap:18px;
+      margin:0 0 16px;padding:16px 18px;border:1px solid #e5e5e7;border-radius:18px;background:#fff
+    }
+    .child-account-gmail-notice strong{display:block;font-size:15px;margin:4px 0}
+    .child-account-gmail-notice p{margin:0;color:#6e6e73;font-size:11px;line-height:1.55}
+    .child-account-gmail-badge{font-size:9px;font-weight:800;letter-spacing:.08em;color:#86868b}
+    @media(max-width:760px){
+      .child-account-gmail-notice{display:block;padding:14px}
+      .child-account-gmail-notice .btn{display:flex;width:100%;justify-content:center;margin-top:12px}
+    }
+  `;
+  document.head.appendChild(style);
+
+  // dashboard.js starts async load() before this cumulative patch is parsed.
+  // Apply once now; refreshBusinesses wrapper will apply again after BUSINESS_INFO arrives.
+  setTimeout(() => {
+    configureChildSetupDomV719();
+    renderOnboarding();
+    renderConnectionHealthBanner();
+    if (currentPageKey() === "settings") renderSettings();
+    if (currentPageKey() === "email") ensureChildGmailNoticeV719();
+  }, 0);
+
+  console.info("[Dashboard]", CHILD_FLOW_VERSION, "active");
+})();
