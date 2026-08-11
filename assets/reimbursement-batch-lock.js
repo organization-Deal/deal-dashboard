@@ -952,6 +952,88 @@
   const BALANCE_SETTING_KEY = "finance_balances";
   let BALANCE_EDIT_CHANNEL_ID = "";
 
+  const BANK_LOGO_DIR = "/assets/bank-logos";
+  const BANK_LOGO_BASES = {
+    kbank: "กสิกร",
+    scb: "ไทยพาณิชย์",
+    bbl: "กรุงเทพ",
+    ktb: "กรุงไทย",
+    bay: "กรุงศรีอยุธยา",
+    ttb: "ทหารไทยธนชาต",
+    gsb: "ออมสิน",
+    uob: "ยูโอบี",
+    tisco: "ทิสโก้",
+    baac: "ธกส",
+    lhbank: "แลนด์ แอนด์ เฮ้าส์",
+    icbc: "ไอซีบีซี ไทย",
+    cimb: "ซีไอเอ็มบี ไทย",
+    creditunion: "เครดิตยูเนี่ยน",
+  };
+
+  function bankLogoKey(account = {}) {
+    const raw = [account.bank, account.label, account.name]
+      .filter(Boolean).join(" ").normalize("NFKC").toLowerCase()
+      .replace(/\s+/g, " ").trim();
+    if (!raw) return "";
+    if (/กสิกร|kasikorn|kbank/.test(raw)) return "kbank";
+    if (/ไทยพาณิชย์|siam commercial|\bscb\b/.test(raw)) return "scb";
+    if (/กรุงเทพ|bangkok bank|\bbbl\b/.test(raw)) return "bbl";
+    if (/กรุงไทย|krung thai|krungthai|\bktb\b/.test(raw)) return "ktb";
+    if (/กรุงศรี|อยุธยา|krungsri|bank of ayudhya|\bbay\b/.test(raw)) return "bay";
+    if (/ทหารไทยธนชาต|ทีทีบี|\bttb\b|tmbthanachart/.test(raw)) return "ttb";
+    if (/ออมสิน|government savings|\bgsb\b/.test(raw)) return "gsb";
+    if (/ยูโอบี|\buob\b|united overseas/.test(raw)) return "uob";
+    if (/ทิสโก้|\btisco\b/.test(raw)) return "tisco";
+    if (/ธ\.?ก\.?ส|เพื่อการเกษตร|baac/.test(raw)) return "baac";
+    if (/แลนด์\s*แอนด์\s*เฮ้าส์|แลนด์.*เฮ้าส์|land and houses|lh bank|lhbank/.test(raw)) return "lhbank";
+    if (/ไอซีบีซี|\bicbc\b/.test(raw)) return "icbc";
+    if (/ซีไอเอ็มบี|\bcimb\b/.test(raw)) return "cimb";
+    if (/เครดิตยูเนี่ยน|credit union/.test(raw)) return "creditunion";
+    return "";
+  }
+
+  function bankLogoCandidates(account = {}) {
+    const key = bankLogoKey(account);
+    const canonical = key ? BANK_LOGO_BASES[key] : "";
+    const rawNames = [canonical, account.bank, account.label]
+      .map((x) => String(x || "").trim())
+      .filter(Boolean);
+    const uniqueNames = [...new Set(rawNames)];
+    const exts = ["png", "jpg", "jpeg", "webp"];
+    return uniqueNames.flatMap((name) => exts.map((ext) =>
+      `${BANK_LOGO_DIR}/${encodeURIComponent(name)}.${ext}`
+    ));
+  }
+
+  function bankLogoMarkup(account = {}) {
+    const candidates = bankLogoCandidates(account);
+    const fallback = financeChannelIcon(account);
+    if (!candidates.length) return `<span class="bank-logo-fallback">${esc(fallback)}</span>`;
+    return `<img class="bank-logo-img" src="${escAttr(candidates[0])}" data-bank-logo-list="${escAttr(candidates.join("|"))}" data-bank-logo-index="0" data-bank-logo-fallback="${escAttr(fallback)}" alt="${escAttr(financeChannelTitle(account))}">`;
+  }
+
+  function applyBankLogoToNode(node, account = {}) {
+    if (!node) return;
+    node.classList.add("has-bank-logo");
+    node.innerHTML = bankLogoMarkup(account);
+  }
+
+  document.addEventListener("error", (event) => {
+    const img = event.target;
+    if (!(img instanceof HTMLImageElement) || !img.classList.contains("bank-logo-img")) return;
+    const list = String(img.dataset.bankLogoList || "").split("|").filter(Boolean);
+    const nextIndex = Number(img.dataset.bankLogoIndex || 0) + 1;
+    if (nextIndex < list.length) {
+      img.dataset.bankLogoIndex = String(nextIndex);
+      img.src = list[nextIndex];
+      return;
+    }
+    const span = document.createElement("span");
+    span.className = "bank-logo-fallback";
+    span.textContent = img.dataset.bankLogoFallback || "FIN";
+    img.replaceWith(span);
+  }, true);
+
   function balanceMap() {
     const raw = SETTINGS?.[BALANCE_SETTING_KEY];
     if (!raw) return {};
@@ -1173,9 +1255,9 @@
 
     const t = totals();
     summary.innerHTML = `
-      <div><span>เงินคงเหลือรวม</span><strong>${money(t.totalBalance)}</strong><small>${t.updatedCount}/${t.accountCount} บัญชีมีการอัปเดตยอด</small></div>
-      <div><span>ยอดรอจ่ายจากใบเบิก</span><strong>${money(t.waiting)}</strong><small>รวมทุก LINE Workspace</small></div>
-      <div class="${t.after < 0 ? "negative" : ""}"><span>คงเหลือหลังจ่ายยอดรอ</span><strong>${money(t.after)}</strong><small>${t.after < 0 ? "เงินที่อัปเดตล่าสุดไม่พอยอดรอจ่าย" : "ประมาณการจากยอดที่กรอกล่าสุด"}</small></div>
+      <div class="${t.totalBalance > 0 ? "positive" : t.totalBalance < 0 ? "negative" : ""}"><span>เงินคงเหลือรวม</span><strong>${money(t.totalBalance)}</strong><small>${t.updatedCount}/${t.accountCount} บัญชีมีการอัปเดตยอด</small></div>
+      <div class="${t.waiting > 0 ? "positive" : t.waiting < 0 ? "negative" : ""}"><span>ยอดรอจ่ายจากใบเบิก</span><strong>${money(t.waiting)}</strong><small>รวมทุก LINE Workspace</small></div>
+      <div class="${t.after > 0 ? "positive" : t.after < 0 ? "negative" : ""}"><span>คงเหลือหลังจ่ายยอดรอ</span><strong>${money(t.after)}</strong><small>${t.after < 0 ? "เงินที่อัปเดตล่าสุดไม่พอยอดรอจ่าย" : "ประมาณการจากยอดที่กรอกล่าสุด"}</small></div>
     `;
 
     const accounts = activeAccounts();
@@ -1188,15 +1270,15 @@
       const rec = balanceRecord(account.id);
       const hasBalance = rec.balance !== "" && rec.balance != null;
       return `
-        <article class="cash-account-card ${hasBalance && n(rec.balance) < 0 ? "negative" : ""}">
+        <article class="cash-account-card ${hasBalance && n(rec.balance) > 0 ? "positive" : hasBalance && n(rec.balance) < 0 ? "negative" : ""}">
           <div class="cash-account-top">
-            <div class="finance-account-icon">${esc(financeChannelIcon(account))}</div>
+            <div class="finance-account-icon has-bank-logo">${bankLogoMarkup(account)}</div>
             <div>
               <b>${esc(financeChannelTitle(account))}</b>
               <span>${esc(financeChannelDetail(account))}</span>
             </div>
           </div>
-          <div class="cash-account-balance ${hasBalance ? "" : "empty"}">${hasBalance ? esc(money(rec.balance)) : "ยังไม่ใส่ยอด"}</div>
+          <div class="cash-account-balance ${hasBalance ? (n(rec.balance) > 0 ? "positive" : n(rec.balance) < 0 ? "negative" : "") : "empty"}">${hasBalance ? esc(money(rec.balance)) : "ยังไม่ใส่ยอด"}</div>
           <div class="cash-account-meta">
             <span>${esc(updatedText(rec.updatedAt))}</span>
             ${rec.note ? `<small>${esc(rec.note)}</small>` : ""}
@@ -1216,12 +1298,13 @@
       const account = accounts[index];
       if (!account) return;
 
+      applyBankLogoToNode(card.querySelector(".finance-account-icon"), account);
       card.querySelector(".finance-balance-inline")?.remove();
       const rec = balanceRecord(account.id);
       const hasBalance = rec.balance !== "" && rec.balance != null;
 
       const block = document.createElement("div");
-      block.className = "finance-balance-inline";
+      block.className = `finance-balance-inline ${hasBalance && n(rec.balance) > 0 ? "positive" : hasBalance && n(rec.balance) < 0 ? "negative" : ""}`;
       block.innerHTML = `
         <div>
           <span>ยอดคงเหลือล่าสุด</span>
@@ -1270,11 +1353,15 @@
     .cash-position-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:15px}
     .cash-position-summary>div{background:#f7f7f9;border-radius:14px;padding:12px}
     .cash-position-summary span{display:block;color:#86868b;font-size:9px}.cash-position-summary strong{display:block;font-size:19px;margin-top:4px}.cash-position-summary small{display:block;color:#86868b;font-size:9px;margin-top:3px}
-    .cash-position-summary .negative strong,.cash-account-card.negative .cash-account-balance{color:#d92d20}
+    .cash-position-summary .positive strong,.cash-account-card.positive .cash-account-balance,.cash-account-balance.positive,.finance-balance-inline.positive strong{color:#16a34a}
+    .cash-position-summary .negative strong,.cash-account-card.negative .cash-account-balance,.cash-account-balance.negative,.finance-balance-inline.negative strong{color:#d92d20}
     .cash-account-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:10px}
     .cash-account-card{border:1px solid #e5e5e7;border-radius:15px;padding:12px;background:#fff}
     .cash-account-top{display:flex;align-items:center;gap:9px;min-width:0}.cash-account-top>div:last-child{min-width:0}
     .cash-account-top b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cash-account-top span{display:block;color:#86868b;font-size:8px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .finance-account-icon.has-bank-logo{overflow:hidden;background:#fff;border:1px solid #ececf0;padding:3px}
+    .bank-logo-img{display:block;width:100%;height:100%;object-fit:contain;border-radius:7px;background:#fff}
+    .bank-logo-fallback{display:grid;width:100%;height:100%;place-items:center;font-size:10px;font-weight:800;color:#1d1d1f}
     .cash-account-balance{font-size:18px;font-weight:800;margin-top:13px}.cash-account-balance.empty{font-size:12px;color:#86868b;font-weight:650}
     .cash-account-meta{min-height:29px;margin:5px 0 9px}.cash-account-meta span,.cash-account-meta small{display:block;color:#86868b;font-size:8px;line-height:1.4}.cash-account-meta small{color:#6e6e73;margin-top:2px}
     .cash-account-card>.btn{width:100%}
