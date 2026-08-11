@@ -271,13 +271,16 @@
 
   const ACCESS_ROLE_DESC = {
     accountant: "ดูและทำงานบัญชี/เบิกจ่ายได้ รวมตรวจเบิก โอน แนบหลักฐาน กระทบยอด และรายงาน แต่จัดการแพ็กเกจ/สิทธิ์ทีมไม่ได้",
-    approver: "ดูงานที่เกี่ยวข้องและอนุมัติหรือตีกลับเอกสารได้ โดยไม่เข้าถึงการจัดการแพ็กเกจและสิทธิ์ทีม",
+    approver: "อนุมัติหรือตีกลับเอกสารได้ และเมื่อผูกกับสมาชิก LINE ระบบจะส่งงานรออนุมัติเข้า LINE ส่วนตัวของคนนั้นโดยตรง",
     viewer: "เปิดดู Dashboard และรายงานได้อย่างเดียว ไม่มีสิทธิ์แก้ไขข้อมูล",
   };
 
   let DASH_ACCESS_ME = null;
   let DASH_ACCESS_ROWS = [];
   let DASH_ACCESS_BUSY = false;
+  let LINE_MEMBER_ROWS_V726 = [];
+  let LINE_MEMBER_MODE_V726 = "";
+  let LINE_MEMBER_LOADING_V726 = false;
 
   const accessEsc = (v) =>
     String(v ?? "").replace(/[&<>"']/g, (ch) => ({
@@ -382,6 +385,13 @@
               <option value="viewer">ดูอย่างเดียว</option>
             </select>
           </div>
+          <div class="field dash-access-line-field-v726" id="dashboardAccessLineFieldV726" hidden>
+            <label>LINE ผู้อนุมัติ</label>
+            <select id="dashboardAccessLineUserV726">
+              <option value="">กำลังโหลดสมาชิก LINE…</option>
+            </select>
+            <small id="dashboardAccessLineHintV726">เลือกคนใน Workspace นี้ ระบบจะผูก LINE User ID ให้อัตโนมัติ</small>
+          </div>
           <div class="dash-access-role-help" id="dashboardAccessRoleHelp"></div>
           <button class="btn solid" type="button" id="dashboardAccessCreate">สร้างสิทธิ์และลิงก์</button>
         </div>
@@ -403,10 +413,70 @@
     else grid.appendChild(card);
 
     const roleSelect = document.getElementById("dashboardAccessRole");
-    roleSelect?.addEventListener("change", renderAccessRoleHelp);
+    roleSelect?.addEventListener("change", () => {
+      renderAccessRoleHelp();
+      renderLineApproverFieldV726();
+    });
+    document.getElementById("dashboardAccessLineUserV726")?.addEventListener("change", (event) => {
+      const row = LINE_MEMBER_ROWS_V726.find((x) => String(x.userId) === String(event.target.value || ""));
+      const nameInput = document.getElementById("dashboardAccessName");
+      if (row && nameInput && !nameInput.value.trim()) nameInput.value = row.displayName || "";
+    });
     document.getElementById("dashboardAccessCreate")?.addEventListener("click", createDashboardAccess);
     document.getElementById("dashboardAccessList")?.addEventListener("click", handleAccessListClick);
     renderAccessRoleHelp();
+    renderLineApproverFieldV726();
+  }
+
+  function lineMemberOptionsV726(selected = "") {
+    const rows = LINE_MEMBER_ROWS_V726.filter((row) => row.active !== false);
+    if (!rows.length) {
+      return `<option value="">ยังไม่พบสมาชิก · ให้คนนั้นส่งข้อความในกลุ่ม 1 ครั้ง</option>`;
+    }
+    return `<option value="">เลือกคนที่จะเป็นผู้อนุมัติ</option>` + rows.map((row) => {
+      const label = row.displayName || `LINE ${String(row.userId || "").slice(-6)}`;
+      return `<option value="${accessEsc(row.userId || "")}" ${String(row.userId) === String(selected) ? "selected" : ""}>${accessEsc(label)}</option>`;
+    }).join("");
+  }
+
+  function renderLineApproverFieldV726() {
+    const role = document.getElementById("dashboardAccessRole")?.value || "accountant";
+    const field = document.getElementById("dashboardAccessLineFieldV726");
+    const select = document.getElementById("dashboardAccessLineUserV726");
+    const hint = document.getElementById("dashboardAccessLineHintV726");
+    if (!field || !select) return;
+
+    field.hidden = role !== "approver";
+    if (role !== "approver") return;
+
+    const current = select.value || "";
+    select.innerHTML = LINE_MEMBER_LOADING_V726
+      ? `<option value="">กำลังโหลดสมาชิก LINE…</option>`
+      : lineMemberOptionsV726(current);
+
+    if (hint) {
+      hint.textContent = LINE_MEMBER_MODE_V726 === "line-full-group"
+        ? "ดึงสมาชิกจากกลุ่ม LINE ได้โดยตรง · ผู้อนุมัติควรเพิ่ม LINE OA เป็นเพื่อนเพื่อรับแจ้งเตือนส่วนตัว"
+        : "แสดงคนที่ระบบเคยเห็นในกลุ่ม/เคยกรอกข้อมูลผู้เบิก · ถ้าไม่พบ ให้คนนั้นพิมพ์ในกลุ่ม 1 ครั้ง";
+    }
+  }
+
+  async function loadLineMembersV726() {
+    if (DASH_ACCESS_ME?.role !== "owner" || LINE_MEMBER_LOADING_V726) return;
+    LINE_MEMBER_LOADING_V726 = true;
+    renderLineApproverFieldV726();
+    try {
+      const out = await accessApi("/api/line-members");
+      LINE_MEMBER_ROWS_V726 = Array.isArray(out.members) ? out.members : [];
+      LINE_MEMBER_MODE_V726 = String(out.directoryMode || "");
+    } catch (error) {
+      console.warn("load LINE members", error);
+      LINE_MEMBER_ROWS_V726 = [];
+      LINE_MEMBER_MODE_V726 = "";
+    } finally {
+      LINE_MEMBER_LOADING_V726 = false;
+      renderLineApproverFieldV726();
+    }
   }
 
   function renderAccessRoleHelp() {
@@ -473,7 +543,7 @@
           <div class="dash-access-avatar">${accessEsc(String(row.name || "U").trim().slice(0, 1).toUpperCase())}</div>
           <div>
             <b>${accessEsc(row.name || accessRoleLabel(row.role))}</b>
-            <span>${accessEsc(accessRoleLabel(row.role))} · สร้าง ${accessEsc(accessDate(row.createdAt))}</span>
+            <span>${accessEsc(accessRoleLabel(row.role))} · สร้าง ${accessEsc(accessDate(row.createdAt))}${row.role === "approver" ? (row.lineUserId ? " · LINE แจ้งตรง ✓" : " · ยังไม่ผูก LINE") : ""}</span>
           </div>
         </div>
         <div class="dash-access-token">${accessEsc(shortToken(row.token))}</div>
@@ -507,8 +577,21 @@
 
   async function createDashboardAccess() {
     if (DASH_ACCESS_BUSY) return;
-    const name = document.getElementById("dashboardAccessName")?.value.trim() || "";
     const role = document.getElementById("dashboardAccessRole")?.value || "accountant";
+    const lineUserId = role === "approver"
+      ? (document.getElementById("dashboardAccessLineUserV726")?.value || "")
+      : "";
+    const selectedLine = LINE_MEMBER_ROWS_V726.find((row) => String(row.userId || "") === String(lineUserId));
+    const name = document.getElementById("dashboardAccessName")?.value.trim()
+      || selectedLine?.displayName
+      || "";
+
+    if (role === "approver" && !lineUserId) {
+      accessSetState("เลือก LINE ของผู้อนุมัติก่อน เพื่อให้ระบบส่งงานไปหาเขาโดยตรง", "error");
+      document.getElementById("dashboardAccessLineUserV726")?.focus();
+      return;
+    }
+
     if (!name) {
       accessSetState("กรอกชื่อผู้ใช้งานก่อน", "error");
       document.getElementById("dashboardAccessName")?.focus();
@@ -523,14 +606,15 @@
     try {
       const out = await accessApi("/api/accounting/access", {
         method: "POST",
-        body: JSON.stringify({ name, role }),
+        body: JSON.stringify({ name, role, lineUserId }),
       });
       const record = out.record || {};
       if (record.url) await copyText(record.url);
       document.getElementById("dashboardAccessName").value = "";
+      if (document.getElementById("dashboardAccessLineUserV726")) document.getElementById("dashboardAccessLineUserV726").value = "";
       accessSetState(
         record.url
-          ? `สร้าง ${accessRoleLabel(record.role)} ให้ ${record.name || name} แล้ว · คัดลอกลิงก์ไว้ใน Clipboard แล้ว`
+          ? `สร้าง ${accessRoleLabel(record.role)} ให้ ${record.name || name} แล้ว${record.role === "approver" && record.lineUserId ? " · ผูก LINE แจ้งเตือนตรงแล้ว" : ""} · คัดลอกลิงก์ไว้ใน Clipboard แล้ว`
           : "สร้างสิทธิ์แล้ว",
         "success"
       );
@@ -590,7 +674,9 @@
       DASH_ACCESS_ME = me;
       updateWorkspaceIdentity();
       renderDashboardAccess();
-      if (me.role === "owner") await loadDashboardAccessRows();
+      if (me.role === "owner") {
+        await Promise.all([loadDashboardAccessRows(), loadLineMembersV726()]);
+      }
     } catch (error) {
       const current = document.getElementById("dashboardAccessCurrent");
       if (current) current.textContent = "ตรวจสิทธิ์ไม่สำเร็จ";
@@ -608,6 +694,8 @@
     .dash-access-form{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,.7fr);gap:10px;align-items:end;margin-top:12px}
     .dash-access-form .field{margin:0}
     .dash-access-form select,.dash-access-form input{width:100%;min-height:44px}
+    .dash-access-line-field-v726{grid-column:1/-1;background:#f7f7f9;border-radius:12px;padding:10px 12px}
+    .dash-access-line-field-v726 small{display:block;color:#86868b;font-size:10px;line-height:1.45;margin-top:6px}
     .dash-access-role-help{grid-column:1/-1;background:#f5f5f7;border-radius:12px;padding:10px 12px;color:#6e6e73;font-size:12px;line-height:1.55}
     .dash-access-form #dashboardAccessCreate{grid-column:1/-1;justify-self:start}
     .dash-access-state{min-height:20px;margin:10px 0;font-size:12px;color:#6e6e73}
