@@ -2416,3 +2416,346 @@
 
   console.info("[Dashboard]", VERSION, "active");
 })();
+
+/* Dashboard v7.21 — UNIFIED BUSINESS READINESS
+   Root and child use the same 5-step pattern.
+   Gmail Automation is optional, not a business-readiness requirement.
+*/
+(() => {
+  "use strict";
+
+  const VERSION = "UNIFIED_BUSINESS_READINESS_V7_21_20260811";
+  const ORDER = ["line_workspace","google_workspace","company_profile","company_approver","finance"];
+
+  function currentBusinessV721() {
+    const rows = Array.isArray(BUSINESS_INFO?.businesses) ? BUSINESS_INFO.businesses : [];
+    return rows.find((b) => b?.isCurrent) ||
+      rows.find((b) => String(b?.tenant || "") === String(TENANT)) ||
+      null;
+  }
+
+  function isChildV721() {
+    const current = currentBusinessV721();
+    if (current) return current.isRoot === false;
+    const root = String(BUSINESS_INFO?.rootTenant || "");
+    const now = String(BUSINESS_INFO?.currentTenant || TENANT || "");
+    return Boolean(root && now && root !== now);
+  }
+
+  function readinessV721() {
+    const profileMissing = [];
+    if (!String(SETTINGS.company_name || "").trim()) profileMissing.push("ชื่อบริษัท");
+    if (!String(SETTINGS.tax_id || "").trim()) profileMissing.push("Tax ID");
+    if (!companyLogoUrl()) profileMissing.push("โลโก้");
+
+    const approverMissing = [];
+    if (!String(SETTINGS.approver_name || "").trim()) approverMissing.push("ผู้อนุมัติ");
+    if (!hasApproverSignature()) approverMissing.push("ลายเซ็น");
+
+    const financeCount = financeChannels(true).length;
+    const googleReady = Boolean(
+      (WORKSPACE_LINKS?.sheetUrl && WORKSPACE_LINKS?.driveUrl) ||
+      CONNECTION_HEALTH?.workspace === true
+    );
+
+    const state = {
+      line_workspace: Boolean(TENANT),
+      google_workspace: googleReady,
+      company_profile: profileMissing.length === 0,
+      company_approver: approverMissing.length === 0,
+      finance: financeCount > 0,
+
+      profileMissing,
+      approverMissing,
+      financeCount,
+      inheritedAccountIntegration: isChildV721(),
+
+      // compatibility with older setup code
+      owner_gmail: true,
+      gmailReady: true,
+      company_documents: profileMissing.length === 0 && approverMissing.length === 0,
+      documentMissing: [...profileMissing, ...approverMissing],
+    };
+
+    state.ready = ORDER.every((key) => state[key]);
+    return state;
+  }
+
+  function ensureStepsV721() {
+    const body = el("onboardingSteps");
+    if (!body) return;
+
+    const wanted = [
+      ["line_workspace", "LINE Workspace"],
+      ["google_workspace", "Google / Sheet / Drive"],
+      ["company_profile", "ข้อมูลบริษัท Tax ID และโลโก้"],
+      ["company_approver", "ผู้อนุมัติและลายเซ็น"],
+      ["finance", "ช่องทางการเงิน"],
+    ];
+
+    const existing = [...body.querySelectorAll(".onboard-step")];
+    const same = existing.length === wanted.length &&
+      wanted.every(([key], index) => existing[index]?.dataset.step === key);
+
+    if (!same) {
+      body.innerHTML = wanted.map(([key, label]) => `
+        <button class="onboard-step" data-step="${key}" type="button">
+          <span class="step-dot"></span>
+          <span class="step-main"><span class="step-copy">${label}</span><small class="step-note"></small></span>
+        </button>
+      `).join("");
+    }
+
+    const title = el("onboardingCard")?.querySelector(".onboarding-head strong");
+    if (title) title.textContent = "ความพร้อมธุรกิจ";
+  }
+
+  function setStepV721(button, ready, note = "", inherited = false) {
+    if (!button) return;
+
+    button.classList.toggle("done", Boolean(ready));
+    button.classList.toggle("inherited", Boolean(inherited));
+    button.classList.remove("next");
+
+    const dot = button.querySelector(".step-dot");
+    if (dot) dot.textContent = ready ? "✓" : "";
+
+    let main = button.querySelector(".step-main");
+    if (!main) {
+      const copy = button.querySelector(".step-copy") || button.querySelector("span:last-child");
+      main = document.createElement("span");
+      main.className = "step-main";
+      if (copy) {
+        copy.classList.add("step-copy");
+        copy.replaceWith(main);
+        main.appendChild(copy);
+      } else {
+        button.appendChild(main);
+      }
+    }
+
+    let noteEl = main.querySelector(".step-note");
+    if (!noteEl) {
+      noteEl = document.createElement("small");
+      noteEl.className = "step-note";
+      main.appendChild(noteEl);
+    }
+
+    noteEl.textContent = note;
+    noteEl.hidden = !note;
+  }
+
+  function renderUnifiedReadinessV721() {
+    ensureStepsV721();
+
+    const state = readinessV721();
+    const done = ORDER.filter((key) => state[key]).length;
+
+    if (el("onboardingCount")) el("onboardingCount").textContent = `${done}/5`;
+    if (el("onboardingBar")) el("onboardingBar").style.width = `${done / 5 * 100}%`;
+
+    const card = el("onboardingCard");
+    if (card) {
+      card.classList.toggle("complete", done === 5);
+      const title = card.querySelector(".onboarding-head strong");
+      if (title) title.textContent = "ความพร้อมธุรกิจ";
+    }
+
+    const map = Object.fromEntries(
+      [...document.querySelectorAll("#onboardingSteps .onboard-step")]
+        .map((button) => [button.dataset.step, button])
+    );
+
+    setStepV721(
+      map.line_workspace,
+      state.line_workspace,
+      state.line_workspace ? "เชื่อมกับ LINE แล้ว" : "กำลังตรวจสอบ"
+    );
+
+    setStepV721(
+      map.google_workspace,
+      state.google_workspace,
+      state.google_workspace
+        ? (state.inheritedAccountIntegration ? "ใช้การเชื่อมต่อจากบัญชีหลัก" : "Sheet / Drive พร้อมใช้งาน")
+        : "กำลังตรวจสอบ Sheet / Drive",
+      state.inheritedAccountIntegration && state.google_workspace
+    );
+
+    setStepV721(
+      map.company_profile,
+      state.company_profile,
+      state.company_profile ? "" : `ยังขาด ${state.profileMissing.join(" · ")}`
+    );
+
+    setStepV721(
+      map.company_approver,
+      state.company_approver,
+      state.company_approver ? "" : `ยังขาด ${state.approverMissing.join(" · ")}`
+    );
+
+    setStepV721(
+      map.finance,
+      state.finance,
+      state.finance ? `${state.financeCount} ช่องทาง` : "ยังไม่มีช่องทางการเงิน"
+    );
+
+    let nextFound = false;
+    for (const key of ORDER) {
+      const button = map[key];
+      if (!button) continue;
+      if (!state[key] && !nextFound) {
+        button.classList.add("next");
+        nextFound = true;
+      }
+    }
+
+    if (state.ready) localStorage.setItem(`company-setup-complete:${TENANT}`, "1");
+    else localStorage.removeItem(`company-setup-complete:${TENANT}`);
+  }
+
+  // One source of truth for both root + child.
+  companySetupState = function() {
+    return readinessV721();
+  };
+
+  // No separate 3-step root/child sidebar render anymore.
+  renderOnboarding = function() {
+    renderUnifiedReadinessV721();
+
+    // Don't open the legacy setup gate which has the old Gmail/company combined pattern.
+    const gate = el("companySetupGate");
+    if (gate) gate.hidden = true;
+    document.body.classList.remove("company-setup-required");
+  };
+
+  // Keep the hidden legacy gate from flashing an inconsistent 3-step pattern.
+  renderCompanySetupGate = function() {
+    const gate = el("companySetupGate");
+    if (gate) gate.hidden = true;
+    document.body.classList.remove("company-setup-required");
+  };
+
+  // Use the same click behavior for every business.
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("#onboardingSteps .onboard-step");
+    if (!button) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const step = button.dataset.step;
+    const state = readinessV721();
+
+    if (step === "line_workspace") return;
+
+    if (step === "google_workspace") {
+      if (isChildV721()) {
+        // Child must never be asked to login another Google account.
+        if (!state.google_workspace) go("settings");
+        return;
+      }
+
+      if (!state.google_workspace) {
+        const connect = el("connBtn");
+        if (connect?.href && connect.getAttribute("href") !== "#") {
+          location.href = connect.href;
+        } else {
+          go("settings");
+        }
+      } else {
+        go("settings");
+      }
+      return;
+    }
+
+    if (step === "company_profile") {
+      openBusiness("profile", document.querySelector('[data-biz="profile"]'));
+      return;
+    }
+
+    if (step === "company_approver") {
+      openBusiness("approver", document.querySelector('[data-biz="approver"]'));
+      return;
+    }
+
+    if (step === "finance") {
+      openBusiness("finance", document.querySelector('[data-biz="finance"]'));
+    }
+  }, true);
+
+  // Repaint after all relevant asynchronous state changes.
+  const refreshDataCoreV721 = refreshData;
+  refreshData = async function(...args) {
+    const out = await refreshDataCoreV721.apply(this, args);
+    renderUnifiedReadinessV721();
+    return out;
+  };
+
+  const refreshBusinessesCoreV721 = refreshBusinesses;
+  refreshBusinesses = async function(...args) {
+    const out = await refreshBusinessesCoreV721.apply(this, args);
+    renderUnifiedReadinessV721();
+    return out;
+  };
+
+  const refreshConnectionHealthCoreV721 = refreshConnectionHealth;
+  refreshConnectionHealth = async function(...args) {
+    const out = await refreshConnectionHealthCoreV721.apply(this, args);
+    renderUnifiedReadinessV721();
+    return out;
+  };
+
+  const renderSettingsCoreV721 = renderSettings;
+  renderSettings = function(...args) {
+    const out = renderSettingsCoreV721.apply(this, args);
+
+    // Gmail is an optional automation integration, not "business readiness".
+    const gm = el("setGmailState");
+    if (gm && !EMAIL_INFO?.connected) {
+      gm.className = "integration-state";
+      gm.innerHTML = `<span class="state-dot"></span><span>ไม่บังคับ · เชื่อมเมื่อต้องการรับเอกสารจากอีเมล</span>`;
+    }
+    return out;
+  };
+
+  const style = document.createElement("style");
+  style.textContent = `
+    #onboardingSteps .onboard-step{
+      align-items:flex-start;
+    }
+    #onboardingSteps .step-main{
+      flex:1;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    #onboardingSteps .step-copy{
+      display:block;
+    }
+    #onboardingSteps .step-note{
+      display:block;
+      margin-top:2px;
+      color:#8e8e93;
+      font-size:9px;
+      line-height:1.3;
+      text-align:left;
+      font-weight:500;
+    }
+    #onboardingSteps .onboard-step.inherited .step-note{
+      color:#248a3d;
+    }
+    #onboardingSteps .onboard-step.done .step-copy{
+      text-decoration:none!important;
+      color:#6e6e73;
+    }
+    #onboardingSteps .onboard-step.next .step-copy{
+      color:#1d1d1f;
+      font-weight:750;
+    }
+  `;
+  document.head.appendChild(style);
+
+  setTimeout(renderUnifiedReadinessV721, 0);
+  console.info("[Dashboard]", VERSION, "active");
+})();
