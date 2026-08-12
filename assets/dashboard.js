@@ -860,6 +860,12 @@ function applyWorkspaceBranding(){
   setAvatarNode(el("companyMenuAvatar"),companyName,logoUrl);
   setAvatarNode(el("whoAvatar"),companyName,logoUrl);
 }
+function gmailNeedsReconnect(){
+  return EMAIL_INFO.reconnectRequired===true
+    || EMAIL_INFO.statusReason==="reconnect_required"
+    || (EMAIL_INFO.everConnected===true && EMAIL_INFO.connected!==true);
+}
+
 function companySetupState(){
   const documentChecks=[
     ["ชื่อบริษัท",String(SETTINGS.company_name||"").trim()],
@@ -869,7 +875,7 @@ function companySetupState(){
     ["ลายเซ็นผู้อนุมัติ",approverSignatureUrl()],
   ];
   const documentMissing=documentChecks.filter(([,value])=>!value).map(([label])=>label);
-  const gmailReady=EMAIL_INFO.connected===true&&EMAIL_INFO.reconnectRequired!==true;
+  const gmailReady=EMAIL_INFO.connected===true&&!gmailNeedsReconnect();
   const financeCount=financeChannels(true).length;
   return {
     owner_gmail:gmailReady,
@@ -899,10 +905,11 @@ function renderCompanySetupGate({force=false}={}){
   const done=[st.owner_gmail,st.company_documents,st.finance].filter(Boolean).length;
   if(el("companySetupCount"))el("companySetupCount").textContent=`${done}/3 ขั้นตอน`;
   if(el("companySetupBar"))el("companySetupBar").style.width=`${done/3*100}%`;
-  const gmailDetail=st.owner_gmail?`เชื่อมแล้ว${EMAIL_INFO.email?` · ${EMAIL_INFO.email}`:""}`:(EMAIL_INFO.reconnectRequired?"สิทธิ์ Gmail หมดอายุ กรุณาเชื่อมใหม่":"ยังไม่ได้เชื่อม Gmail เจ้าของธุรกิจ");
+  const gmailReconnect=gmailNeedsReconnect();
+  const gmailDetail=st.owner_gmail?`เชื่อมแล้ว${EMAIL_INFO.email?` · ${EMAIL_INFO.email}`:""}`:(gmailReconnect?"สิทธิ์ Gmail หมดอายุหรือถูกยกเลิก กรุณาเชื่อมใหม่":"ยังไม่ได้เชื่อม Gmail เจ้าของธุรกิจ");
   const documentDetail=st.company_documents?"ข้อมูลบริษัท โลโก้ และลายเซ็นพร้อมสร้างเอกสาร":`ยังขาด ${st.documentMissing.join(" · ")}`;
   const financeDetail=st.finance?`พร้อมใช้งาน ${st.financeCount} ช่องทาง`:"ยังไม่มีบัญชีหรือช่องทางที่ใช้โอนเงิน";
-  setCompanySetupStep("companySetupGmail",st.owner_gmail,gmailDetail,st.owner_gmail?"ตรวจสอบ":"เชื่อม Gmail");
+  setCompanySetupStep("companySetupGmail",st.owner_gmail,gmailDetail,st.owner_gmail?"ตรวจสอบ":(gmailReconnect?"เชื่อม Gmail ใหม่":"เชื่อม Gmail"));
   setCompanySetupStep("companySetupDocuments",st.company_documents,documentDetail,st.company_documents?"ตรวจสอบ":"ตั้งค่าเอกสาร");
   setCompanySetupStep("companySetupFinance",st.finance,financeDetail,st.finance?"ตรวจสอบ":"เพิ่มช่องทาง");
 
@@ -925,7 +932,7 @@ function openCompanySetupStep(step){
   const gate=el("companySetupGate");if(gate)gate.hidden=true;
   document.body.classList.remove("company-setup-required");
   if(step==="owner_gmail"){
-    if(EMAIL_INFO.connected===true&&EMAIL_INFO.reconnectRequired!==true){openPage("email",document.querySelector('[data-p="email"]'));return;}
+    if(EMAIL_INFO.connected===true&&!gmailNeedsReconnect()){openPage("email",document.querySelector('[data-p="email"]'));return;}
     beginOperation("เชื่อม Gmail เจ้าของธุรกิจ");
     location.href=WORKER+`/gmail/connect?tenant=${encodeURIComponent(TENANT)}&k=${encodeURIComponent(K)}`;return;
   }
@@ -1140,22 +1147,24 @@ function renderEmailInbox(){
   const emailStart=(EMAIL_PAGE-1)*EMAIL_PAGE_SIZE,emailEnd=Math.min(rows.length,emailStart+EMAIL_PAGE_SIZE),visibleEmail=rows.slice(emailStart,emailEnd);
   el("emailList").innerHTML=visibleEmail.length?visibleEmail.map(emailItemHTML).join(""):'<div class="email-empty">ยังไม่มีเอกสารจากอีเมล<br><br>กดเชื่อมต่อ Gmail แล้วระบบจะค้นหาใบเสร็จ ใบกำกับภาษี และ Subscription ให้อัตโนมัติ</div>';
   if(rows.length>EMAIL_PAGE_SIZE)el("emailList").insertAdjacentHTML("beforeend",`<div style="grid-column:1/-1;display:flex;justify-content:center;gap:10px;align-items:center;padding:12px"><button class="btn small" type="button" onclick="changeEmailPage(-1)" ${EMAIL_PAGE<=1?"disabled":""}>‹</button><span>หน้า ${EMAIL_PAGE}/${emailPages}</span><button class="btn small" type="button" onclick="changeEmailPage(1)" ${EMAIL_PAGE>=emailPages?"disabled":""}>›</button></div>`);
-  const connected=EMAIL_INFO.connected===true;
+  const reconnect=gmailNeedsReconnect();
+  const connected=EMAIL_INFO.connected===true&&!reconnect;
   if(el("gmailDisconnected"))el("gmailDisconnected").hidden=connected;
   if(el("gmailConnected"))el("gmailConnected").hidden=!connected;
   if(el("gmailAccount"))el("gmailAccount").textContent=EMAIL_INFO.email||"บัญชี Gmail";
   if(el("gmailMeta")){
     const last=EMAIL_INFO.lastSyncAt?fmtDate(cdate(EMAIL_INFO.lastSyncAt),true):"ยังไม่เคยซิงก์";
-    el("gmailMeta").textContent=EMAIL_INFO.reconnectRequired?"สิทธิ์หมดอายุ · กรุณาเชื่อมใหม่":`ซิงก์ล่าสุด ${last} · รอบล่าสุดพบ ${Number(EMAIL_INFO.lastSyncCount||0)} เอกสาร`;
+    el("gmailMeta").textContent=reconnect?"สิทธิ์หมดอายุ · กรุณาเชื่อมใหม่":`ซิงก์ล่าสุด ${last} · รอบล่าสุดพบ ${Number(EMAIL_INFO.lastSyncCount||0)} เอกสาร`;
   }
   if(el("emailInboxState")){
-    el("emailInboxState").textContent=connected?"ระบบตรวจอีเมลอัตโนมัติและเก็บไฟล์ไว้ใน Google Drive ของบริษัท":EMAIL_INFO.reconnectRequired?"สิทธิ์ Gmail หมดอายุ กรุณาเชื่อมต่อใหม่":"เชื่อมเพื่อเริ่มค้นหาเอกสารจากอีเมล";
+    el("emailInboxState").textContent=connected?"ระบบตรวจอีเมลอัตโนมัติและเก็บไฟล์ไว้ใน Google Drive ของบริษัท":reconnect?"สิทธิ์ Gmail หมดอายุ กรุณาเชื่อมต่อใหม่":"เชื่อมเพื่อเริ่มค้นหาเอกสารจากอีเมล";
   }
-  if(el("gmailIntegrationCard"))el("gmailIntegrationCard").classList.toggle("needs-action",EMAIL_INFO.reconnectRequired===true);
+  if(el("gmailIntegrationCard"))el("gmailIntegrationCard").classList.toggle("needs-action",reconnect);
   if(el("gmailDisconnectedState")){
-    el("gmailDisconnectedState").className="integration-state "+(EMAIL_INFO.reconnectRequired?"bad":"");
-    el("gmailDisconnectedState").innerHTML=`<span class="state-dot"></span><span>${EMAIL_INFO.reconnectRequired?"สิทธิ์หมดอายุ · ต้องเชื่อมใหม่":"ยังไม่ได้เชื่อมต่อ"}</span>`;
+    el("gmailDisconnectedState").className="integration-state "+(reconnect?"bad":"");
+    el("gmailDisconnectedState").innerHTML=`<span class="state-dot"></span><span>${reconnect?"สิทธิ์หมดอายุ · ต้องเชื่อมใหม่":"ยังไม่ได้เชื่อมต่อ"}</span>`;
   }
+  if(el("connectGmail"))el("connectGmail").textContent=reconnect?"เชื่อม Gmail ใหม่":"เชื่อมต่อ Gmail";
 }
 function changeEmailPage(delta){EMAIL_PAGE+=Number(delta||0);renderEmailInbox();el("page-email")?.scrollIntoView({block:"start",behavior:"smooth"});}
 function renderSubscriptions(){
@@ -1175,12 +1184,12 @@ async function refreshGmailConnectionStatus({retries=1,delayMs=350}={}){
       if(page==="email")renderEmailInbox();
       if(page==="settings")renderSettings();
       renderOnboarding();
-      if(EMAIL_INFO.connected===true&&EMAIL_INFO.reconnectRequired!==true)return true;
+      if(EMAIL_INFO.connected===true&&!gmailNeedsReconnect())return true;
     }catch(err){lastError=err;console.warn("gmail status refresh failed",err);}
     if(attempt<retries-1)await new Promise(resolve=>setTimeout(resolve,delayMs));
   }
   if(lastError)console.warn("gmail status unavailable after retry",lastError);
-  return EMAIL_INFO.connected===true&&EMAIL_INFO.reconnectRequired!==true;
+  return EMAIL_INFO.connected===true&&!gmailNeedsReconnect();
 }
 
 async function refreshEmailData({manual=false,scope=currentPageKey()}={}){
@@ -1853,10 +1862,11 @@ function renderSettings(){
   if(gs){gs.className="integration-state "+(CONNECTED?"ok":"warn");gs.innerHTML=`<span class="state-dot"></span><span>${CONNECTED?"เชื่อมต่อแล้ว":"ยังไม่ได้เชื่อมต่อ"}</span>`;}
   if(ga){ga.href=WORKER+"/oauth/connect?tenant="+encodeURIComponent(TENANT);ga.textContent=CONNECTED?"เชื่อมต่อใหม่":"เชื่อมต่อ Google";ga.className="btn "+(CONNECTED?"":"solid");}
 
-  const gmailConnected=EMAIL_INFO.connected===true;
+  const gmailReconnect=gmailNeedsReconnect();
+  const gmailConnected=EMAIL_INFO.connected===true&&!gmailReconnect;
   const gm=el("setGmailState");
-  if(gm){const bad=EMAIL_INFO.reconnectRequired===true;gm.className="integration-state "+(gmailConnected?"ok":bad?"bad":"warn");gm.innerHTML=`<span class="state-dot"></span><span>${gmailConnected?"เชื่อมต่อแล้ว":bad?"สิทธิ์หมดอายุ":"ยังไม่ได้เชื่อมต่อ"}</span>`;}
-  if(el("setGmailAction"))el("setGmailAction").textContent=gmailConnected?"เปิดกล่องเอกสาร":"เชื่อมต่อ Gmail";
+  if(gm){gm.className="integration-state "+(gmailConnected?"ok":gmailReconnect?"bad":"warn");gm.innerHTML=`<span class="state-dot"></span><span>${gmailConnected?"เชื่อมต่อแล้ว":gmailReconnect?"ต้องเชื่อมใหม่":"ยังไม่ได้เชื่อมต่อ"}</span>`;}
+  if(el("setGmailAction"))el("setGmailAction").textContent=gmailConnected?"เปิดกล่องเอกสาร":gmailReconnect?"เชื่อม Gmail ใหม่":"เชื่อมต่อ Gmail";
 
   const financeReady=financeChannels(true).length>0,financeState=el("setFinanceState");
   if(financeState){financeState.className="integration-state "+(financeReady?"ok":"warn");financeState.innerHTML=`<span class="state-dot"></span><span>${financeReady?`พร้อมใช้งาน ${financeChannels(true).length} ช่องทาง`:"ยังไม่มีช่องทางการเงิน"}</span>`;}
@@ -2392,7 +2402,7 @@ async function refreshConnectionHealth({manual=false,loadAfter=false}={}){
     business:Boolean(businessOk&&currentBusinessConnected()&&settingsOk),
     workspace:Boolean(workspaceOk),
     gmail:Boolean(gmailOk),
-    gmailReconnect:EMAIL_INFO.reconnectRequired===true,
+    gmailReconnect:gmailNeedsReconnect(),
   };
   renderConnectionHealthBanner();
   const criticalReady=CONNECTION_HEALTH.business&&CONNECTION_HEALTH.workspace;
@@ -2628,7 +2638,7 @@ async function load(){
     business:Boolean(businessOk&&currentBusinessConnected()&&settingsOk),
     workspace:Boolean(workspaceOk),
     gmail:Boolean(gmailOk),
-    gmailReconnect:EMAIL_INFO.reconnectRequired===true,
+    gmailReconnect:gmailNeedsReconnect(),
   };
   CONNECTED=CONNECTION_HEALTH.business&&CONNECTION_HEALTH.workspace;
   renderConnectionHealthBanner();

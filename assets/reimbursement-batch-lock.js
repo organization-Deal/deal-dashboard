@@ -345,6 +345,16 @@
     });
   }
 
+  function accessLineStatusText(row = {}) {
+    if (row.role !== "approver") return "";
+    if (!row.lineUserId) return " · ยังไม่ผูก LINE";
+    const status = String(row.lineNotificationStatus || "").toLowerCase();
+    const group = row.lineGroupName ? ` · ${accessEsc(row.lineGroupName)}` : "";
+    if (status === "sent") return ` · LINE ส่งแล้ว ✓${group}`;
+    if (status === "failed") return ` · LINE ส่งไม่สำเร็จ ⚠️${group}`;
+    return ` · ผูก LINE แล้ว${group}`;
+  }
+
   function accessSetState(message = "", type = "") {
     const node = document.getElementById("dashboardAccessState");
     if (!node) return;
@@ -670,14 +680,15 @@
           <div class="dash-access-avatar">${accessEsc(String(row.name || "U").trim().slice(0, 1).toUpperCase())}</div>
           <div>
             <b>${accessEsc(row.name || accessRoleLabel(row.role))}</b>
-            <span>${accessEsc(accessRoleLabel(row.role))} · สร้าง ${accessEsc(accessDate(row.createdAt))}${row.role === "approver" ? (row.lineUserId ? ` · LINE แจ้งตรง ✓${row.lineGroupName ? ` · ${accessEsc(row.lineGroupName)}` : ""}` : " · ยังไม่ผูก LINE") : ""}</span>
+            <span>${accessEsc(accessRoleLabel(row.role))} · สร้าง ${accessEsc(accessDate(row.createdAt))}${accessLineStatusText(row)}</span>
           </div>
         </div>
         <div class="dash-access-token">${accessEsc(shortToken(row.token))}</div>
         <div class="dash-access-actions">
           <button class="btn small" type="button" data-access-copy="${accessEsc(row.url || "")}">คัดลอกลิงก์</button>
           <a class="btn small" href="${accessEsc(row.url || "#")}" target="_blank" rel="noopener">เปิดทดสอบ</a>
-          <button class="btn small danger" type="button" data-access-revoke="${accessEsc(row.token || "")}" data-access-name="${accessEsc(row.name || "")}">ยกเลิกสิทธิ์</button>
+          ${row.role === "approver" && row.lineUserId ? `<button class="btn small" type="button" data-access-notify="${accessEsc(row.token || "")}" data-access-name="${accessEsc(row.name || "")}">ส่ง LINE ใหม่</button>` : ""}
+          <button class="btn small danger" type="button" data-access-revoke="${accessEsc(row.token || "")}" data-access-name="${accessEsc(row.name || "")}">ลบสิทธิ์</button>
         </div>
       </div>
     `).join("");
@@ -762,14 +773,14 @@
           if (notify.companyName || companyName) successText += ` · บริษัท ${notify.companyName || companyName}`;
           if (notify.lineGroupName || lineGroupName) successText += ` · กลุ่ม ${notify.lineGroupName || lineGroupName}`;
         } else {
-          successText += ` · แต่ส่ง LINE ส่วนตัวยังไม่สำเร็จ ⚠️ ให้ ${record.name || name} เพิ่ม LINE OA เป็นเพื่อน แล้วลองสร้างสิทธิ์ใหม่`;
+          successText += ` · สิทธิ์สร้างสำเร็จแล้ว แต่ LINE ส่วนตัวยังส่งไม่ได้ ⚠️ ให้ ${record.name || name} เพิ่ม LINE OA เป็นเพื่อน แล้วกด “ส่ง LINE ใหม่” ที่รายการนี้${notify.fallbackGroupSent ? " · แจ้งในกลุ่มให้แล้ว" : ""}`;
         }
       }
 
       if (record.url) successText += " · คัดลอกลิงก์ไว้ใน Clipboard แล้ว";
       accessSetState(
         successText,
-        (record.role === "approver" && record.lineUserId && !(notify.sent || notify.accepted)) ? "error" : "success"
+        (record.role === "approver" && record.lineUserId && !(notify.sent || notify.accepted)) ? "warning" : "success"
       );
       await loadDashboardAccessRows();
     } catch (error) {
@@ -788,23 +799,53 @@
       return;
     }
 
+    const notify = event.target.closest("[data-access-notify]");
+    if (notify) {
+      const token = notify.dataset.accessNotify || "";
+      const name = notify.dataset.accessName || "ผู้อนุมัติ";
+      if (!token) return;
+      notify.disabled = true;
+      accessSetState(`กำลังส่ง LINE ใหม่ให้ ${name}…`, "loading");
+      try {
+        const out = await accessApi("/api/accounting/access-notify", {
+          method: "POST",
+          body: JSON.stringify({ token }),
+        });
+        const result = out.lineNotification || {};
+        if (result.sent || result.accepted) {
+          accessSetState(`ส่ง LINE ส่วนตัวให้ ${name} แล้ว ✓`, "success");
+        } else {
+          accessSetState(
+            `ยังส่ง LINE ส่วนตัวให้ ${name} ไม่ได้ · ให้ผู้อนุมัติเพิ่ม LINE OA เป็นเพื่อนก่อน แล้วกด “ส่ง LINE ใหม่” อีกครั้ง${result.fallbackGroupSent ? " · ระบบแจ้งในกลุ่มให้แล้ว" : ""}`,
+            "warning"
+          );
+        }
+        await loadDashboardAccessRows();
+      } catch (error) {
+        accessSetState(error?.message || "ส่ง LINE ใหม่ไม่สำเร็จ", "error");
+      } finally {
+        notify.disabled = false;
+      }
+      return;
+    }
+
     const revoke = event.target.closest("[data-access-revoke]");
     if (!revoke) return;
     const token = revoke.dataset.accessRevoke || "";
     const name = revoke.dataset.accessName || "ผู้ใช้งานนี้";
-    if (!token || !confirm(`ยกเลิกสิทธิ์ของ ${name}?\n\nลิงก์ของคนนี้จะเข้า Dashboard ไม่ได้ทันที แต่ Owner และผู้ใช้งานคนอื่นไม่กระทบ`)) return;
+    if (!token || !confirm(`ลบสิทธิ์ของ ${name}?\n\nลิงก์ของคนนี้จะเข้า Dashboard ไม่ได้ทันที แต่ Owner และผู้ใช้งานคนอื่นไม่กระทบ`)) return;
 
     revoke.disabled = true;
-    accessSetState(`กำลังยกเลิกสิทธิ์ ${name}…`, "loading");
+    accessSetState(`กำลังลบสิทธิ์ ${name}…`, "loading");
     try {
       await accessApi("/api/accounting/access-revoke", {
         method: "POST",
         body: JSON.stringify({ token }),
       });
-      accessSetState(`ยกเลิกสิทธิ์ ${name} แล้ว`, "success");
+      accessSetState(`ลบสิทธิ์ ${name} แล้ว`, "success");
       await loadDashboardAccessRows();
     } catch (error) {
-      accessSetState(error?.message || "ยกเลิกสิทธิ์ไม่สำเร็จ", "error");
+      accessSetState(error?.message || "ลบสิทธิ์ไม่สำเร็จ", "error");
       revoke.disabled = false;
     }
   }
@@ -855,7 +896,7 @@
     .dash-access-role-help{grid-column:1/-1;background:#f5f5f7;border-radius:12px;padding:10px 12px;color:#6e6e73;font-size:12px;line-height:1.55}
     .dash-access-form #dashboardAccessCreate{grid-column:1/-1;justify-self:start}
     .dash-access-state{min-height:20px;margin:10px 0;font-size:12px;color:#6e6e73}
-    .dash-access-state.success{color:#147a36}.dash-access-state.error{color:#b42318}.dash-access-state.loading{color:#6e6e73}
+    .dash-access-state.success{color:#147a36}.dash-access-state.warning{color:#8a5a00}.dash-access-state.error{color:#b42318}.dash-access-state.loading{color:#6e6e73}
     .dash-access-list{border-top:1px solid #eeeeef;margin-top:4px}
     .dash-access-row{display:grid;grid-template-columns:minmax(180px,1fr) 110px auto;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid #eeeeef}
     .dash-access-person{display:flex;align-items:center;gap:10px;min-width:0}
@@ -863,7 +904,8 @@
     .dash-access-person b{display:block;font-size:13px}.dash-access-person span{display:block;color:#86868b;font-size:11px;margin-top:3px}
     .dash-access-token{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;color:#86868b}
     .dash-access-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
-    .dash-access-actions .danger{color:#b42318}
+    .dash-access-actions .danger{background:#b42318!important;border-color:#b42318!important;color:#fff!important}
+    .dash-access-actions .danger:hover{background:#981b13!important;border-color:#981b13!important;color:#fff!important}
     .dash-access-empty,.dash-access-member-box{padding:18px;background:#f8f8fa;border-radius:14px;margin-top:12px}
     .dash-access-empty b,.dash-access-member-box b{display:block;font-size:13px}
     .dash-access-empty span,.dash-access-member-box span{display:block;color:#6e6e73;font-size:12px;line-height:1.6;margin-top:5px}
