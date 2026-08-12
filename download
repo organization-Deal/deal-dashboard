@@ -1,15 +1,25 @@
+# Cloudflare Workers Static Assets
+# wrangler.toml uses [assets] directory = "."
+# Exclude build/development files so only dashboard static files are uploaded.
+
+node_modules/
 .git/
-.gitignore
-.assetsignore
-wrangler.toml
+.github/
+.wrangler/
+
 package.json
 package-lock.json
+bun.lock
+bun.lockb
+wrangler.toml
 
-README*
-DEPLOY_README*
-ACCOUNTING_SUITE*
-AUDIT_*
+*.md
+*.txt
+*.zip
+*.mjs
 
-apply-*.mjs
+_headers
 download
 download (1)
+
+.DS_Store
