@@ -352,7 +352,27 @@
     const group = row.lineGroupName ? ` · ${accessEsc(row.lineGroupName)}` : "";
     if (status === "sent") return ` · LINE ส่งแล้ว ✓${group}`;
     if (status === "failed") return ` · LINE ส่งไม่สำเร็จ ⚠️${group}`;
-    return ` · ผูก LINE แล้ว${group}`;
+    return ` · ผูกสมาชิกจากกลุ่มแล้ว · รอยืนยัน LINE ส่วนตัว${group}`;
+  }
+
+  function accessNotifyFailureText(result = {}, name = "ผู้อนุมัติ") {
+    const reason = String(result.reason || "");
+    const status = Number(result.httpStatus || 0);
+    const detail = String(result.lineError || result.messageValidationError || "").trim();
+    if (reason === "line_profile_unreachable") {
+      return `LINE ของ ${name} ยังรับข้อความส่วนตัวจาก OA นี้ไม่ได้ · ให้เปิดแชท LINE OA แล้วพิมพ์ “เชื่อม” 1 ข้อความ จากนั้นกด “ส่ง LINE ใหม่”`;
+    }
+    if (reason === "line_user_invalid") {
+      return `LINE User ID ของ ${name} ใช้กับ OA นี้ไม่ได้ · ให้เลือกผู้อนุมัติจากกลุ่ม LINE ใหม่อีกครั้ง`;
+    }
+    if (reason === "line_auth_error") {
+      return `LINE Messaging API ของระบบยืนยันตัวตนไม่ผ่าน${status ? ` (HTTP ${status})` : ""} · ต้องตรวจ LINE_ACCESS_TOKEN ของ Worker`;
+    }
+    if (reason === "dashboard_url_missing") {
+      return "Worker ยังไม่มี DASHBOARD_URL จึงสร้างลิงก์หน้าอนุมัติไม่ได้";
+    }
+    const suffix = [status ? `HTTP ${status}` : "", detail ? detail.slice(0, 130) : ""].filter(Boolean).join(" · ");
+    return `ยังส่ง LINE ส่วนตัวให้ ${name} ไม่สำเร็จ${suffix ? ` · ${suffix}` : ""}`;
   }
 
   function accessSetState(message = "", type = "") {
@@ -773,7 +793,7 @@
           if (notify.companyName || companyName) successText += ` · บริษัท ${notify.companyName || companyName}`;
           if (notify.lineGroupName || lineGroupName) successText += ` · กลุ่ม ${notify.lineGroupName || lineGroupName}`;
         } else {
-          successText += ` · สิทธิ์สร้างสำเร็จแล้ว แต่ LINE ส่วนตัวยังส่งไม่ได้ ⚠️ ให้ ${record.name || name} เพิ่ม LINE OA เป็นเพื่อน แล้วกด “ส่ง LINE ใหม่” ที่รายการนี้${notify.fallbackGroupSent ? " · แจ้งในกลุ่มให้แล้ว" : ""}`;
+          successText += ` · ${accessNotifyFailureText(notify, record.name || name)}${notify.fallbackGroupSent ? " · แจ้งในกลุ่มให้แล้ว" : ""}`;
         }
       }
 
@@ -816,7 +836,7 @@
           accessSetState(`ส่ง LINE ส่วนตัวให้ ${name} แล้ว ✓`, "success");
         } else {
           accessSetState(
-            `ยังส่ง LINE ส่วนตัวให้ ${name} ไม่ได้ · ให้ผู้อนุมัติเพิ่ม LINE OA เป็นเพื่อนก่อน แล้วกด “ส่ง LINE ใหม่” อีกครั้ง${result.fallbackGroupSent ? " · ระบบแจ้งในกลุ่มให้แล้ว" : ""}`,
+            `${accessNotifyFailureText(result, name)}${result.fallbackGroupSent ? " · ระบบแจ้งในกลุ่มให้แล้ว" : ""}`,
             "warning"
           );
         }
