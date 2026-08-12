@@ -1,3 +1,15 @@
-node_modules/
-.wrangler/
-.DS_Store
+.git/
+.gitignore
+.assetsignore
+wrangler.toml
+package.json
+package-lock.json
+
+README*
+DEPLOY_README*
+ACCOUNTING_SUITE*
+AUDIT_*
+
+apply-*.mjs
+download
+download (1)

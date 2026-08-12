@@ -1,0 +1,11 @@
+{
+  "name": "deal-dashboard-static",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "deploy": "wrangler deploy --config ./wrangler.toml"
+  },
+  "devDependencies": {
+    "wrangler": "4.115.0"
+  }
+}
