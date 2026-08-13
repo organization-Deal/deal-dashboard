@@ -270,8 +270,8 @@
   };
 
   const ACCESS_ROLE_DESC = {
-    accountant: "ดูและทำงานบัญชี/เบิกจ่ายได้ รวมตรวจเบิก โอน แนบหลักฐาน กระทบยอด และรายงาน แต่จัดการแพ็กเกจ/สิทธิ์ทีมไม่ได้",
-    approver: "อนุมัติหรือตีกลับเอกสารได้ และเมื่อผูกกับสมาชิก LINE ระบบจะส่งงานรออนุมัติเข้า LINE ส่วนตัวของคนนั้นโดยตรง",
+    accountant: "ตรวจเอกสาร ทำงานเบิกจ่าย โอน แนบหลักฐาน กระทบยอด และรายงานได้ และสามารถผูก LINE เพื่อรับงานตรวจเอกสารโดยตรง แต่จัดการแพ็กเกจ/สิทธิ์ทีมไม่ได้",
+    approver: "พิจารณาว่าค่าใช้จ่ายเบิกได้หรือไม่ และเมื่อผูกกับสมาชิก LINE ระบบจะส่งงานรออนุมัติเข้า LINE ส่วนตัวของคนนั้นโดยตรง",
     viewer: "เปิดดู Dashboard และรายงานได้อย่างเดียว ไม่มีสิทธิ์แก้ไขข้อมูล",
   };
 
@@ -346,7 +346,7 @@
   }
 
   function accessLineStatusText(row = {}) {
-    if (row.role !== "approver") return "";
+    if (!["approver", "accountant"].includes(row.role)) return "";
     if (!row.lineUserId) return " · ยังไม่ผูก LINE";
     const status = String(row.lineNotificationStatus || "").toLowerCase();
     const group = row.lineGroupName ? ` · ${accessEsc(row.lineGroupName)}` : "";
@@ -355,7 +355,7 @@
     return ` · ผูกสมาชิกจากกลุ่มแล้ว · รอยืนยัน LINE ส่วนตัว${group}`;
   }
 
-  function accessNotifyFailureText(result = {}, name = "ผู้อนุมัติ") {
+  function accessNotifyFailureText(result = {}, name = "ผู้รับงาน") {
     const reason = String(result.reason || "");
     const status = Number(result.httpStatus || 0);
     const detail = String(result.lineError || result.messageValidationError || "").trim();
@@ -363,7 +363,7 @@
       return `LINE ของ ${name} ยังรับข้อความส่วนตัวจาก OA นี้ไม่ได้ · ให้เปิดแชท LINE OA แล้วพิมพ์ “เชื่อม” 1 ข้อความ จากนั้นกด “ส่ง LINE ใหม่”`;
     }
     if (reason === "line_user_invalid") {
-      return `LINE User ID ของ ${name} ใช้กับ OA นี้ไม่ได้ · ให้เลือกผู้อนุมัติจากกลุ่ม LINE ใหม่อีกครั้ง`;
+      return `LINE User ID ของ ${name} ใช้กับ OA นี้ไม่ได้ · ให้เลือกผู้รับงานจากกลุ่ม LINE ใหม่อีกครั้ง`;
     }
     if (reason === "line_auth_error") {
       return `LINE Messaging API ของระบบยืนยันตัวตนไม่ผ่าน${status ? ` (HTTP ${status})` : ""} · ต้องตรวจ LINE_ACCESS_TOKEN ของ Worker`;
@@ -421,17 +421,17 @@
           </div>
           <div class="field dash-access-line-field-v726" id="dashboardAccessLineFieldV726" hidden>
             <div class="dash-access-group-picker-v7262" id="dashboardAccessGroupPickerV7262">
-              <label>กลุ่ม LINE ที่ใช้ค้นหาผู้อนุมัติ</label>
+              <label id="dashboardAccessLineGroupLabelV733">กลุ่ม LINE ที่ใช้ค้นหาผู้รับงาน</label>
               <select id="dashboardAccessLineGroupV7262">
                 <option value="">กำลังอ่านกลุ่ม LINE…</option>
               </select>
               <small id="dashboardAccessGroupHintV7262">เลือกกลุ่มเพื่ออ่านชื่อสมาชิก โดยสิทธิ์ที่สร้างยังเป็นของธุรกิจที่กำลังเปิดอยู่</small>
             </div>
-            <label id="dashboardAccessLineLabelV7261">LINE ผู้อนุมัติ</label>
+            <label id="dashboardAccessLineLabelV7261">LINE ผู้รับงาน</label>
             <select id="dashboardAccessLineUserV726">
               <option value="">กำลังโหลดสมาชิก LINE…</option>
             </select>
-            <small id="dashboardAccessLineHintV726">เลือกคนที่ต้องการให้รับแจ้งเตือนอนุมัติ</small>
+            <small id="dashboardAccessLineHintV726">เลือกคนที่ต้องการให้รับงาน Workflow ผ่าน LINE</small>
           </div>
           <div class="dash-access-role-help" id="dashboardAccessRoleHelp"></div>
           <button class="btn solid" type="button" id="dashboardAccessCreate">สร้างสิทธิ์และลิงก์</button>
@@ -522,13 +522,12 @@
     );
   }
 
-  function lineMemberOptionsV726(selected = "") {
+  function lineMemberOptionsV726(selected = "", role = "approver") {
     const rows = mergeKnownTeamMembersV7262(LINE_MEMBER_ROWS_V726).filter((row) => row.active !== false);
     const workspace = lineWorkspaceLabelV7261();
-    if (!rows.length) {
-      return `<option value="">ยังไม่พบสมาชิกใน ${accessEsc(workspace)} · ให้คนนั้นส่งข้อความ 1 ครั้ง</option>`;
-    }
-    return `<option value="">เลือกผู้อนุมัติจาก ${accessEsc(workspace)}</option>` + rows.map((row) => {
+    const roleName = role === "accountant" ? "ฝ่ายบัญชี" : "ผู้อนุมัติ";
+    if (!rows.length) return `<option value="">ยังไม่พบสมาชิกใน ${accessEsc(workspace)} · ให้คนนั้นส่งข้อความ 1 ครั้ง</option>`;
+    return `<option value="">เลือก ${accessEsc(roleName)} จาก ${accessEsc(workspace)}</option>` + rows.map((row) => {
       const label = row.displayName || `LINE ${String(row.userId || "").slice(-6)}`;
       return `<option value="${accessEsc(row.userId || "")}" ${String(row.userId) === String(selected) ? "selected" : ""}>${accessEsc(label)}</option>`;
     }).join("");
@@ -538,33 +537,24 @@
     const select = document.getElementById("dashboardAccessLineGroupV7262");
     const hint = document.getElementById("dashboardAccessGroupHintV7262");
     if (!select) return;
-
     const groups = LINE_GROUP_OPTIONS_V7262;
     if (!groups.length) {
-      select.innerHTML = `<option value="">ยังไม่มีกลุ่ม LINE ที่ผูกกับบัญชีนี้</option>`;
-      select.disabled = true;
-      if (hint) hint.textContent = "ถ้ากลุ่มที่ต้องการไม่ขึ้น แปลว่ากลุ่มนั้นยังไม่ได้อยู่ในบัญชี/Workspace ชุดนี้";
-      return;
+      select.innerHTML = `<option value="">ยังไม่มีกลุ่ม LINE ที่ผูกกับบัญชีนี้</option>`;select.disabled = true;
+      if (hint) hint.textContent = "ถ้ากลุ่มที่ต้องการไม่ขึ้น แปลว่ากลุ่มนั้นยังไม่ได้อยู่ในบัญชี/Workspace ชุดนี้";return;
     }
-
     select.disabled = false;
     if (!LINE_GROUP_SELECTED_V7262 || !groups.some((x) => String(x.tenant) === LINE_GROUP_SELECTED_V7262)) {
       const current = groups.find((x) => String(x.tenant) === String(TENANT));
       LINE_GROUP_SELECTED_V7262 = String(current?.tenant || groups[0]?.tenant || "");
     }
-
     select.innerHTML = groups.map((row) => {
       const groupName = String(row.groupName || row.businessName || `LINE Group ···${String(row.tenant || "").slice(-6)}`);
       const business = row.businessName && row.businessName !== groupName ? ` · ${row.businessName}` : "";
       return `<option value="${accessEsc(row.tenant || "")}" ${String(row.tenant) === LINE_GROUP_SELECTED_V7262 ? "selected" : ""}>${accessEsc(groupName + business)}</option>`;
     }).join("");
-
     const selected = groups.find((x) => String(x.tenant) === LINE_GROUP_SELECTED_V7262);
-    if (selected) {
-      LINE_MEMBER_WORKSPACE_NAME_V7261 = String(selected.groupName || selected.businessName || "");
-      LINE_MEMBER_WORKSPACE_TYPE_V7261 = "group";
-    }
-    if (hint) hint.textContent = "เลือกกลุ่มเพื่อค้นหาคนที่จะรับแจ้งเตือนอนุมัติของธุรกิจที่กำลังเปิดอยู่";
+    if (selected) {LINE_MEMBER_WORKSPACE_NAME_V7261 = String(selected.groupName || selected.businessName || "");LINE_MEMBER_WORKSPACE_TYPE_V7261 = "group";}
+    if (hint) hint.textContent = "เลือกกลุ่มเพื่อค้นหาคนที่จะรับงาน Workflow ของธุรกิจที่กำลังเปิดอยู่";
   }
 
   function renderLineApproverFieldV726() {
@@ -573,27 +563,20 @@
     const select = document.getElementById("dashboardAccessLineUserV726");
     const hint = document.getElementById("dashboardAccessLineHintV726");
     const label = document.getElementById("dashboardAccessLineLabelV7261");
+    const groupLabel = document.getElementById("dashboardAccessLineGroupLabelV733");
     if (!field || !select) return;
-
+    const workflowRole = ["approver","accountant"].includes(role);
+    field.hidden = !workflowRole;if (!workflowRole) return;
+    const roleName = role === "accountant" ? "ฝ่ายบัญชี" : "ผู้อนุมัติ";
     const workspace = lineWorkspaceLabelV7261();
-    if (label) label.textContent = LINE_MEMBER_WORKSPACE_NAME_V7261
-      ? `LINE ผู้อนุมัติ · ${workspace}`
-      : "LINE ผู้อนุมัติ";
-
-    field.hidden = role !== "approver";
-    if (role !== "approver") return;
-
+    if (groupLabel) groupLabel.textContent = `กลุ่ม LINE ที่ใช้ค้นหา${roleName}`;
+    if (label) label.textContent = LINE_MEMBER_WORKSPACE_NAME_V7261 ? `LINE ${roleName} · ${workspace}` : `LINE ${roleName}`;
     renderLineGroupPickerV7262();
     const current = select.value || "";
-    select.innerHTML = LINE_MEMBER_LOADING_V726
-      ? `<option value="">กำลังโหลดสมาชิก LINE…</option>`
-      : lineMemberOptionsV726(current);
-
-    if (hint) {
-      hint.textContent = LINE_MEMBER_MODE_V726 === "line-full-group"
-        ? `กำลังใช้สมาชิกจาก ${workspace} · ดึงรายชื่อจาก LINE ได้โดยตรง · ผู้อนุมัติควรเพิ่ม LINE OA เป็นเพื่อน`
-        : `กำลังใช้สมาชิกจาก ${workspace} · แสดงคนที่ระบบเคยเห็น ถ้าไม่พบ ให้คนนั้นพิมพ์ในกลุ่ม 1 ครั้ง`;
-    }
+    select.innerHTML = LINE_MEMBER_LOADING_V726 ? `<option value="">กำลังโหลดสมาชิก LINE…</option>` : lineMemberOptionsV726(current, role);
+    if (hint) hint.textContent = LINE_MEMBER_MODE_V726 === "line-full-group"
+      ? `กำลังใช้สมาชิกจาก ${workspace} · ${roleName}ควรเพิ่ม LINE OA เป็นเพื่อนเพื่อรับงานส่วนตัว`
+      : `กำลังใช้สมาชิกจาก ${workspace} · ถ้าไม่พบ ให้คนนั้นพิมพ์ในกลุ่ม 1 ครั้ง`;
   }
 
   async function loadLineMembersV726(force = false) {
@@ -707,7 +690,7 @@
         <div class="dash-access-actions">
           <button class="btn small" type="button" data-access-copy="${accessEsc(row.url || "")}">คัดลอกลิงก์</button>
           <a class="btn small" href="${accessEsc(row.url || "#")}" target="_blank" rel="noopener">เปิดทดสอบ</a>
-          ${row.role === "approver" && row.lineUserId ? `<button class="btn small" type="button" data-access-notify="${accessEsc(row.token || "")}" data-access-name="${accessEsc(row.name || "")}">ส่ง LINE ใหม่</button>` : ""}
+          ${["approver","accountant"].includes(row.role) && row.lineUserId ? `<button class="btn small" type="button" data-access-notify="${accessEsc(row.token || "")}" data-access-name="${accessEsc(row.name || "")}">ส่ง LINE ใหม่</button>` : ""}
           <button class="btn small danger" type="button" data-access-revoke="${accessEsc(row.token || "")}" data-access-name="${accessEsc(row.name || "")}">ลบสิทธิ์</button>
         </div>
       </div>
@@ -736,13 +719,13 @@
   async function createDashboardAccess() {
     if (DASH_ACCESS_BUSY) return;
     const role = document.getElementById("dashboardAccessRole")?.value || "accountant";
-    const lineUserId = role === "approver"
+    const lineUserId = ["approver","accountant"].includes(role)
       ? (document.getElementById("dashboardAccessLineUserV726")?.value || "")
       : "";
     const selectedLine = mergeKnownTeamMembersV7262(LINE_MEMBER_ROWS_V726).find((row) => String(row.userId || "") === String(lineUserId));
     const selectedGroup = LINE_GROUP_OPTIONS_V7262.find((row) => String(row.tenant || "") === String(LINE_GROUP_SELECTED_V7262 || ""));
-    const lineGroupTenant = role === "approver" ? String(selectedGroup?.tenant || LINE_GROUP_SELECTED_V7262 || "") : "";
-    const lineGroupName = role === "approver"
+    const lineGroupTenant = ["approver","accountant"].includes(role) ? String(selectedGroup?.tenant || LINE_GROUP_SELECTED_V7262 || "") : "";
+    const lineGroupName = ["approver","accountant"].includes(role)
       ? String(selectedGroup?.groupName || LINE_MEMBER_WORKSPACE_NAME_V7261 || "")
       : "";
     const companyName = String(
@@ -757,7 +740,7 @@
       || "";
 
     if (role === "approver" && !lineUserId) {
-      accessSetState("เลือก LINE ของผู้อนุมัติก่อน เพื่อให้ระบบส่งงานไปหาเขาโดยตรง", "error");
+      accessSetState("เลือก LINE ของผู้อนุมัติก่อน เพื่อให้ระบบส่งรายการรออนุมัติไปหาเขาโดยตรง", "error");
       document.getElementById("dashboardAccessLineUserV726")?.focus();
       return;
     }
@@ -787,7 +770,7 @@
         ? `สร้าง ${accessRoleLabel(record.role)} ให้ ${record.name || name} แล้ว`
         : "สร้างสิทธิ์แล้ว";
 
-      if (record.role === "approver" && record.lineUserId) {
+      if (["approver","accountant"].includes(record.role) && record.lineUserId) {
         if (notify.sent || notify.accepted) {
           successText += ` · ส่ง LINE ส่วนตัวแล้ว ✓`;
           if (notify.companyName || companyName) successText += ` · บริษัท ${notify.companyName || companyName}`;
@@ -800,7 +783,7 @@
       if (record.url) successText += " · คัดลอกลิงก์ไว้ใน Clipboard แล้ว";
       accessSetState(
         successText,
-        (record.role === "approver" && record.lineUserId && !(notify.sent || notify.accepted)) ? "warning" : "success"
+        (["approver","accountant"].includes(record.role) && record.lineUserId && !(notify.sent || notify.accepted)) ? "warning" : "success"
       );
       await loadDashboardAccessRows();
     } catch (error) {
@@ -822,7 +805,7 @@
     const notify = event.target.closest("[data-access-notify]");
     if (notify) {
       const token = notify.dataset.accessNotify || "";
-      const name = notify.dataset.accessName || "ผู้อนุมัติ";
+      const name = notify.dataset.accessName || "ผู้รับงาน";
       if (!token) return;
       notify.disabled = true;
       accessSetState(`กำลังส่ง LINE ใหม่ให้ ${name}…`, "loading");
@@ -3726,9 +3709,10 @@
     document.body.classList.toggle("role-approver-v725", role === "approver");
     document.body.classList.toggle("role-viewer-v725", role === "viewer");
 
-    // Package selection is Owner-only. Accountant may still view usage/package status.
+    // Package selection and reimbursement Workflow configuration are Owner-only.
     if (role !== "owner") {
       document.querySelectorAll(".plan-action,[data-select-plan]").forEach((node) => setHiddenV725(node, true));
+      document.querySelectorAll('[data-biz="workflow"],[data-mobile-biz="workflow"]').forEach((node) => setHiddenV725(node, true));
     }
 
     // Approver = reimbursement review only. Backend v7.25 enforces this too.

@@ -1003,7 +1003,7 @@ function openPage(p,source=null,opts={}){
 }
 function openBusiness(tab,source=null,opts={}){
   const previous=currentPageKey();
-  if(!opts.bypassSetup&&!["profile","approver","finance"].includes(tab)&&requireCompanySetup("business"))return;
+  if(!opts.bypassSetup&&!["profile","approver","workflow","finance"].includes(tab)&&requireCompanySetup("business"))return;
   if(!opts.soft&&!ROUTE_BOOTSTRAPPING&&previous!=="business"){hardNavigate("business",{biz:tab});return;}
   COMPANY_SETUP_ACTIVE=tab;
   const gate=el("companySetupGate");if(gate)gate.hidden=true;
@@ -1014,10 +1014,75 @@ function openBusiness(tab,source=null,opts={}){
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("show"));
   el("page-business").classList.add("show");
   if(previous&&previous!=="business"){releasePageDom(previous);releasePageData(previous,"business");}
-  el("pageTitle").textContent={profile:"ข้อมูลธุรกิจ",approver:"ผู้อนุมัติค่าใช้จ่าย",categories:"หมวดหมู่",finance:"ช่องทางการเงิน",team:"ทีมของฉัน"}[tab]||"จัดการธุรกิจ";
+  el("pageTitle").textContent={profile:"ข้อมูลธุรกิจ",approver:"ผู้อนุมัติค่าใช้จ่าย",workflow:"Workflow เบิกจ่าย",categories:"หมวดหมู่",finance:"ช่องทางการเงิน",team:"ทีมของฉัน"}[tab]||"จัดการธุรกิจ";
   el("rangeSel").style.display="none";
   setBusinessTab(tab);
 }
+function workflowBool(value,fallback=false){
+  if(value===undefined||value===null||value==="")return Boolean(fallback);
+  if(value===true||value===1)return true;if(value===false||value===0)return false;
+  const s=String(value).trim().toLowerCase();
+  if(["true","1","yes","on","enabled","เปิด","ใช่"].includes(s))return true;
+  if(["false","0","no","off","disabled","ปิด","ไม่"].includes(s))return false;
+  return Boolean(fallback);
+}
+function workflowStateFromSettings(){
+  const approval=workflowBool(SETTINGS.expense_approval_enabled,false);
+  const accounting=workflowBool(SETTINGS.accounting_review_enabled,true);
+  const line=workflowBool(SETTINGS.line_workflow_notify_enabled,true);
+  let preset=String(SETTINGS.reimbursement_workflow_preset||"").toLowerCase();
+  if(!["simple","standard","custom"].includes(preset))preset=approval&&accounting?"standard":(!approval&&accounting?"simple":"custom");
+  return {approval,accounting,line,preset};
+}
+function workflowPresetLabel(preset){return preset==="standard"?"แบบมาตรฐาน":preset==="simple"?"แบบง่าย":"กำหนดเอง";}
+function workflowDraft(){return {approval:!!el("workflowApprovalEnabled")?.checked,accounting:!!el("workflowAccountingEnabled")?.checked,line:!!el("workflowLineNotifyEnabled")?.checked,preset:String(el("biz-workflow")?.dataset.workflowPreset||"custom")};}
+function setWorkflowPreset(preset,{render=true}={}){
+  const tab=el("biz-workflow");if(!tab)return;
+  if(preset==="simple"){el("workflowApprovalEnabled").checked=false;el("workflowAccountingEnabled").checked=true;}
+  else if(preset==="standard"){el("workflowApprovalEnabled").checked=true;el("workflowAccountingEnabled").checked=true;}
+  tab.dataset.workflowPreset=["simple","standard"].includes(preset)?preset:"custom";
+  if(render)renderWorkflowPreview();
+}
+function renderWorkflowPreview(){
+  const box=el("workflowFlowPreview");if(!box)return;
+  const state=workflowDraft();
+  const stages=[{label:"ตั้งเบิก",sub:"พนักงาน",key:"submit"}];
+  if(state.approval)stages.push({label:"อนุมัติค่าใช้จ่าย",sub:"ผู้อนุมัติ",key:"approval"});
+  if(state.accounting)stages.push({label:"ตรวจเอกสาร",sub:"ฝ่ายบัญชี",key:"review"});
+  stages.push({label:"รอโอนเงิน",sub:"บัญชี / การเงิน",key:"payment"},{label:"จ่ายแล้ว",sub:"แจ้งผู้เบิก",key:"paid"});
+  box.innerHTML=stages.map((x,i)=>`${i?'<span class="workflow-arrow">›</span>':""}<div class="workflow-stage ${x.key}"><b>${esc(x.label)}</b><small>${esc(x.sub)}</small></div>`).join("");
+  const risk=el("workflowRiskNote");
+  if(risk){risk.hidden=state.approval||state.accounting;risk.innerHTML=state.approval||state.accounting?"":`<b>ไม่มีด่านตรวจสอบก่อนจ่าย</b><span>รายการใหม่จะเข้าสู่ “รอโอนเงิน” ทันที เหมาะกับทีมเล็กที่มีคนดูแลการจ่ายเอง</span>`;}
+  const line=el("workflowLineNote");if(line)line.innerHTML=state.line?`<b>LINE เปิดอยู่</b><span>เมื่อมีงานเข้าด่าน ผู้รับผิดชอบด่านนั้นจะได้รับการ์ดส่วนตัวอัตโนมัติ</span>`:`<b>LINE ปิดอยู่</b><span>สถานะยังเดินตาม Workflow ปกติ แต่จะไม่ส่งแจ้งเตือนงานใหม่อัตโนมัติ</span>`;
+  let preset=state.preset;if(preset!=="custom"){const match=preset==="simple"?!state.approval&&state.accounting:preset==="standard"&&state.approval&&state.accounting;if(!match){preset="custom";el("biz-workflow").dataset.workflowPreset="custom";}}
+  document.querySelectorAll("[data-workflow-preset]").forEach(b=>b.classList.toggle("active",b.dataset.workflowPreset===preset));
+  if(el("workflowCurrentBadge"))el("workflowCurrentBadge").textContent=workflowPresetLabel(preset);
+}
+function renderWorkflowSettings(){
+  if(!el("workflowApprovalEnabled"))return;
+  const state=workflowStateFromSettings();
+  el("workflowApprovalEnabled").checked=state.approval;
+  el("workflowAccountingEnabled").checked=state.accounting;
+  el("workflowLineNotifyEnabled").checked=state.line;
+  el("biz-workflow").dataset.workflowPreset=state.preset;
+  renderWorkflowPreview();
+}
+async function saveReimbursementWorkflow(){
+  const role=String(document.body?.dataset?.dashboardRole||"owner");
+  if(role!=="owner")return alert("เฉพาะ Owner เท่านั้นที่เปลี่ยน Workflow เบิกจ่ายได้");
+  const state=workflowDraft();
+  let preset=state.preset;
+  if(preset==="simple"&&!(state.approval===false&&state.accounting===true))preset="custom";
+  if(preset==="standard"&&!(state.approval===true&&state.accounting===true))preset="custom";
+  const ok=await saveSettings({
+    reimbursement_workflow_preset:preset,
+    expense_approval_enabled:state.approval?"TRUE":"FALSE",
+    accounting_review_enabled:state.accounting?"TRUE":"FALSE",
+    line_workflow_notify_enabled:state.line?"TRUE":"FALSE",
+  },"workflowSaveState");
+  if(ok){el("biz-workflow").dataset.workflowPreset=preset;renderWorkflowSettings();await refreshBatchData({quiet:true}).catch(()=>{});}
+}
+
 function renderBusiness(){
   if(!el("bizCompany"))return;
   el("bizCompany").value=SETTINGS.company_name||"";
@@ -1038,6 +1103,8 @@ function renderBusiness(){
   const signatureReady=hasApproverSignature();
   const signaturePreview=compactImageUrl(signatureUrl,420);
   el("signatureStatus").innerHTML=`<div class="status-line ${signatureReady?"ok":""}"><span class="light"></span><span>${signatureReady?"มีลายเซ็นพร้อมใช้ในเอกสารใหม่":"ยังไม่มีลายเซ็นผู้อนุมัติ"}</span></div>${signaturePreview?`<div style="margin-top:14px"><img src="${escAttr(signaturePreview)}" loading="lazy" decoding="async" alt="ลายเซ็น" style="max-width:220px;max-height:90px;object-fit:contain;border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff"></div>`:""}`;
+
+  renderWorkflowSettings();
 
   const custom=parseSettingList("custom_categories");
   el("customCategoryTags").innerHTML=custom.length?custom.map((c,i)=>`<span class="manage-tag">${esc(c)}<button data-remove-category="${i}" aria-label="ลบ">×</button></span>`).join(""):'<span style="font-size:12px;color:var(--muted)">ยังไม่มีหมวดที่เพิ่มเอง</span>';
@@ -1303,12 +1370,13 @@ function openEmailEditor(id){
 
 /* ---------- REIMBURSEMENT BATCHES: ONE ACCOUNTING TABLE V4 ---------- */
 const BATCH_WEEKDAYS=["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
-const DASHBOARD_UI_VERSION="MODULAR_ROUTE_V6_0_20260809";
+const DASHBOARD_UI_VERSION="FLEX_REIMBURSEMENT_WORKFLOW_V7_33_20260813";
 console.info("Dashboard UI",DASHBOARD_UI_VERSION);
-const EXPECTED_BATCH_CONTRACT="REIMBURSEMENT_ACCOUNTING_TABLE_V6";
+const EXPECTED_BATCH_CONTRACT="REIMBURSEMENT_ACCOUNTING_TABLE_V7_33";
 const BATCH_STATUS_META={
-  queue:{label:"รอตรวจเอกสาร",hint:"รายการย่อยที่ยืนยันแล้วและยังรวมเป็นใบเบิกหลักได้",order:2},
-  review:{label:"รอตรวจเอกสาร",hint:"ตรวจหลักฐานและเอกสารก่อนอนุมัติ",order:2},
+  queue:{label:"รอดำเนินการ",hint:"รายการย่อยที่ยืนยันแล้ว",order:2},
+  approval:{label:"รออนุมัติค่าใช้จ่าย",hint:"รอผู้อนุมัติตัดสินว่ารายการนี้เบิกได้หรือไม่",order:1},
+  review:{label:"รอตรวจเอกสาร",hint:"รอฝ่ายบัญชีตรวจหลักฐาน เอกสาร และข้อมูลทางบัญชี",order:2},
   correction:{label:"ต้องแก้ไข",hint:"รอพนักงานแก้ไขหรือแนบเอกสาร",order:1},
   rejected:{label:"ไม่อนุมัติ",hint:"ใบเบิกถูกปฏิเสธหรือยกเลิก",order:9},
   payment:{label:"รอโอนเงิน",hint:"เอกสารผ่านแล้ว พร้อมทำรายการโอน",order:3},
@@ -1332,6 +1400,7 @@ function batchStep(b={}){
   if(status==="จ่ายแล้ว"||b.paymentSlipUrl)return "paid";
   if(["ยกเลิก","ไม่อนุมัติ","rejected","Rejected"].includes(status))return "rejected";
   if(["ต้องแก้ไข","ตีกลับ"].includes(status))return "correction";
+  if(status==="รออนุมัติค่าใช้จ่าย")return "approval";
   if(b.workflowStep)return b.workflowStep==="proof"?"payment":b.workflowStep;
   if(["รอตรวจเอกสาร","รออนุมัติ","รวมรอบแล้ว"].includes(status))return "review";
   return "payment";
@@ -1359,7 +1428,8 @@ function masterPendingRows(){
   const out=[];
   (BATCH_DATA.pending?.groups||[]).forEach((g,gi)=>(g.items||[]).forEach(r=>{
     const urgent=r.batchType==="ด่วน"||r.batchStatus==="ขอเบิกด่วน";
-    out.push({kind:"queue",id:String(r.id||""),groupIndex:gi,statusKey:g.profileComplete===false?"missing":"review",priority:urgent?"urgent":"normal",claimDate:r.createdAt||r.submittedAt||r.recordedAt||r.dateISO||r.dateText||"",receiptDate:r.dateISO||r.dateText||r.date||"",payerName:g.payerName||"—",accountName:g.accountName||"",bank:g.bank||"",accountNo:g.accountNo||g.accountMasked||"",amount:Number(r.amount||0),title:`รายการย่อย ${r.id||""}`,note:`${r.vendor||"ไม่ระบุผู้รับ"} · ${r.note||r.category||"—"}`,raw:r,group:g});
+    const workflowStep=r.workflowStep||batchStep({status:r.batchStatus||"รอตรวจเอกสาร"});
+    out.push({kind:"queue",id:String(r.id||""),groupIndex:gi,statusKey:g.profileComplete===false?"missing":workflowStep,workflowStep,priority:urgent?"urgent":"normal",claimDate:r.createdAt||r.submittedAt||r.recordedAt||r.dateISO||r.dateText||"",receiptDate:r.dateISO||r.dateText||r.date||"",payerName:g.payerName||"—",accountName:g.accountName||"",bank:g.bank||"",accountNo:g.accountNo||g.accountMasked||"",amount:Number(r.amount||0),title:`รายการย่อย ${r.id||""}`,note:`${r.vendor||"ไม่ระบุผู้รับ"} · ${r.note||r.category||"—"}`,raw:r,group:g});
   }));
   return out;
 }
@@ -1388,7 +1458,7 @@ function selectedPaymentRows(){const map=new Map(masterBatchRows().filter(r=>r.w
 function setStatusFilter(value){BATCH_PAGE=1;BATCH_STAGE=value||"all";if(el("batchMasterStatus"))el("batchMasterStatus").value=BATCH_STAGE;document.querySelectorAll("[data-batch-filter]").forEach(b=>b.classList.toggle("active",b.dataset.batchFilter===BATCH_STAGE));renderMasterTable();}
 function updateStatusCounts(){
   const rows=allMasterRows(),count=k=>rows.filter(r=>r.statusKey===k||(r.workflowStep===k&&r.statusKey!=="missing")).length;
-  const map={statusAllCount:rows.length,statusQueueCount:count("queue"),statusReviewCount:count("review"),statusCorrectionCount:count("correction"),statusRejectedCount:count("rejected"),statusPaymentCount:count("payment"),statusPaidCount:count("paid")};
+  const map={statusAllCount:rows.length,statusQueueCount:count("queue"),statusApprovalCount:count("approval"),statusReviewCount:count("review"),statusCorrectionCount:count("correction"),statusRejectedCount:count("rejected"),statusPaymentCount:count("payment"),statusPaidCount:count("paid")};
   Object.entries(map).forEach(([id,n])=>{if(el(id))el(id).textContent=Number(n||0).toLocaleString("th-TH");});
 }
 function reviewMergeSelectable(row){return row?.statusKey==="review"&&(row.kind==="queue"||(row.kind==="batch"&&row.workflowStep==="review"));}
@@ -1476,13 +1546,20 @@ function paymentProofCell(row){
   if(row.workflowStep==="payment")return `<span class="payment-proof-empty">ยังไม่ได้แนบ</span>`;
   return `<span class="payment-proof-empty">—</span>`;
 }
+function currentWorkflowRole(){return String(BATCH_DATA.currentAccessRole||document.body?.dataset?.dashboardRole||"owner");}
+function canHandleWorkflowStep(step){const role=currentWorkflowRole();if(role==="owner")return true;if(step==="approval")return role==="approver";if(["review","payment","correction"].includes(step))return role==="accountant";return false;}
+function statusFilterFromWorkflowStatus(status=""){const step=batchStep({status});return ["approval","review","correction","rejected","payment","paid"].includes(step)?step:"all";}
+function workflowActionLabel(step){if(step==="approval")return "พิจารณาอนุมัติ";if(step==="review")return "ตรวจเอกสาร";if(step==="payment")return "โอนและแนบหลักฐาน";return "ดูรายละเอียด";}
 function nextActionCell(row){
   if(row.statusKey==="missing")return `<button class="btn" data-open-team>เพิ่มข้อมูลบัญชี</button>`;
-  if(row.kind==="queue")return `<button class="btn primary-next" data-open-queue-review="${escAttr(row.id)}">ดูรายละเอียดและตรวจ</button>`;
-  const step=row.workflowStep;
-  if(step==="payment")return `<button class="btn solid primary-next" data-pay-batch="${escAttr(row.id)}">โอนและแนบหลักฐาน</button>`;
-  const label=step==="review"?"ตรวจเอกสาร":step==="correction"?"ดูรายการแก้ไข":step==="rejected"?"ดูรายละเอียด":step==="paid"?"ดูรายละเอียด":"เปิด";
-  return `<button class="btn ${step==="review"?"primary-next":""}" data-open-batch-button="${escAttr(row.id)}">${label}</button>`;
+  const step=row.workflowStep||row.statusKey;
+  if(row.kind==="queue"){
+    const active=canHandleWorkflowStep(step);
+    return `<button class="btn ${active?"primary-next":""}" data-open-queue-review="${escAttr(row.id)}">${active?workflowActionLabel(step):"ดูรายละเอียด"}</button>`;
+  }
+  if(step==="payment"&&canHandleWorkflowStep("payment"))return `<button class="btn solid primary-next" data-pay-batch="${escAttr(row.id)}">โอนและแนบหลักฐาน</button>`;
+  const label=canHandleWorkflowStep(step)?workflowActionLabel(step):(step==="correction"?"ดูรายการแก้ไข":"ดูรายละเอียด");
+  return `<button class="btn ${canHandleWorkflowStep(step)&&["approval","review"].includes(step)?"primary-next":""}" data-open-batch-button="${escAttr(row.id)}">${label}</button>`;
 }
 function renderMasterTable(){
   const body=el("batchMasterBody");if(!body)return;
@@ -1526,7 +1603,8 @@ function renderQueueDrawer(queueId){
   const item=row.raw||{};
   const links=itemLinks(item);
   ACTIVE_BATCH_ID=`queue:${row.id}`;
-  const meta=BATCH_STATUS_META.review;
+  const step=row.workflowStep||row.statusKey||"review";
+  const meta=BATCH_STATUS_META[step]||BATCH_STATUS_META.review;
   el("batchDrawerKicker").textContent=meta.label;
   el("batchDrawerTitle").textContent=item.claimPdfUrl?`รายการเบิก ${item.id||row.id||""}`:(item.vendor||item.note||`รายการเบิก ${item.id||row.id||""}`);
 
@@ -1534,46 +1612,33 @@ function renderQueueDrawer(queueId){
   if(item.claimPdfUrl)mainLinks.push(`<a class="main-claim-link" href="${escAttr(item.claimPdfUrl)}" target="_blank" rel="noopener">เปิดใบเบิกรายการ PDF</a>`);
   if(item.receiptPdfUrl)mainLinks.push(`<a href="${escAttr(item.receiptPdfUrl)}" target="_blank" rel="noopener">เปิดใบแทนใบเสร็จ</a>`);
   links.forEach(x=>mainLinks.push(`<a href="${escAttr(x.url)}" target="_blank" rel="noopener">${esc(x.label||"เปิดหลักฐาน")}</a>`));
-
   const itemLinksHtml=links.length?links.map(x=>`<a href="${escAttr(x.url)}" target="_blank" rel="noopener">${esc(x.label||"หลักฐาน")}</a>`).join(""):"ไม่มีเอกสารแนบ";
   const auditDate=batchDate(row.claimDate);
+  const stageCopy=step==="approval"
+    ? "ด่านนี้พิจารณาว่าค่าใช้จ่ายเกี่ยวกับงาน อยู่ในนโยบาย และบริษัทอนุญาตให้เบิกหรือไม่"
+    : "ด่านนี้ตรวจความครบถ้วนของเอกสาร ยอด วันที่ VAT/WHT และหลักฐานก่อนเข้าสู่ขั้นจ่ายเงิน";
 
   el("batchDrawerBody").innerHTML=`
     <div class="drawer-summary">
       <div class="cell"><span>ผู้เบิก / ผู้รับเงิน</span><strong>${esc(row.payerName||"—")}</strong></div>
       <div class="cell"><span>ยอดรวม</span><strong>${baht(row.amount)}</strong></div>
       <div class="cell"><span>บัญชีรับเงิน</span><strong>${esc(row.bank||"—")} ${esc(row.accountNo||"—")}</strong></div>
-      <div class="cell"><span>บัญชีที่ใช้จ่าย</span><strong>เลือกหลังเอกสารผ่าน</strong><small>ยังไม่เข้าสู่ขั้นตอนโอนเงิน</small></div>
+      <div class="cell"><span>สถานะ</span><strong>${esc(meta.label)}</strong><small>${esc(meta.hint||"")}</small></div>
       <div class="cell"><span>จำนวนรายการ</span><strong>1 รายการ · ${row.priority==="urgent"?"ด่วน":"ปกติ"}</strong></div>
-      <div class="cell"><span>การกระทบยอด</span><strong>ยังไม่กระทบยอด</strong><small>เริ่มหลังจ่ายเงินแล้ว</small></div>
+      <div class="cell"><span>ขั้นตอนถัดไป</span><strong>${step==="approval"?"บัญชีตรวจเอกสาร หรือรอโอน ตาม Workflow":"รอโอนเงิน"}</strong></div>
     </div>
-    <div class="drawer-section main-claim-card">
-      <h4>เอกสารหลัก</h4>
-      <p class="master-secondary">รายการนี้อยู่ในขั้นตอนตรวจเอกสารแล้ว ไม่ต้องรวมใบเบิกก่อน การรวมหลายรายการเป็นเพียงฟีเจอร์เสริมจาก Checkbox บนตาราง</p>
-      <div class="drawer-links">${mainLinks.length?mainLinks.join(""):"ยังไม่มีไฟล์เอกสาร แต่สามารถตรวจหลักฐานจากรายการด้านล่างได้"}</div>
-    </div>
-    <div class="drawer-section">
-      <h4>รายการย่อยในรายการนี้</h4>
-      <div class="drawer-items">
-        <div class="drawer-item">
-          <div class="drawer-item-top"><b>1. ${esc(item.vendor||item.note||item.category||"ไม่ระบุรายการ")}</b><strong>${baht(row.amount)}</strong></div>
-          <div class="drawer-item-meta">${batchReceiptDate(row)} · ${esc(item.category||"ไม่ระบุหมวด")}${item.transferor?` · ผู้โอน ${esc(item.transferor)}`:""}</div>
-          <div class="drawer-links">${itemLinksHtml}</div>
-        </div>
-      </div>
-    </div>
-    <div class="drawer-section">
-      <h4>ประวัติ Workflow</h4>
-      <div class="audit-list">
-        <div class="audit-entry"><i></i><div><b>ผู้เบิกยืนยันรายการ</b><span>${auditDate}</span></div></div>
-        <div class="audit-entry"><i></i><div><b>เข้าสู่รอตรวจเอกสาร</b><span>${auditDate}</span></div></div>
-      </div>
-    </div>`;
+    <div class="drawer-section main-claim-card"><h4>${step==="approval"?"พิจารณาค่าใช้จ่าย":"ตรวจเอกสาร"}</h4><p class="master-secondary">${esc(stageCopy)}</p><div class="drawer-links">${mainLinks.length?mainLinks.join(""):"ยังไม่มีไฟล์ PDF แต่สามารถดูหลักฐานจากรายการด้านล่างได้"}</div></div>
+    <div class="drawer-section"><h4>รายการและหลักฐาน</h4><div class="drawer-items"><div class="drawer-item"><div class="drawer-item-top"><b>1. ${esc(item.vendor||item.note||item.category||"ไม่ระบุรายการ")}</b><strong>${baht(row.amount)}</strong></div><div class="drawer-item-meta">${batchReceiptDate(row)} · ${esc(item.category||"ไม่ระบุหมวด")}${item.transferor?` · ผู้โอน ${esc(item.transferor)}`:""}</div><div class="drawer-links">${itemLinksHtml}</div></div></div></div>
+    <div class="drawer-section"><h4>ประวัติ Workflow</h4><div class="audit-list"><div class="audit-entry"><i></i><div><b>ผู้เบิกยืนยันรายการ</b><span>${auditDate}</span></div></div><div class="audit-entry"><i></i><div><b>เข้าสู่ ${esc(meta.label)}</b><span>${auditDate}</span></div></div></div></div>`;
 
-  el("batchDrawerFooter").innerHTML=`
-    <button class="btn" data-drawer-action="close">ปิด</button>
-    <button class="btn danger" data-drawer-action="queue-reject">ตีกลับ</button>
-    <button class="btn solid" data-drawer-action="queue-approve">เอกสารผ่าน</button>`;
+  const footer=[`<button class="btn" data-drawer-action="close">ปิด</button>`];
+  if(canHandleWorkflowStep(step)){
+    if(step==="approval")footer.push(`<button class="btn danger" data-drawer-action="queue-reject">ไม่อนุมัติ</button><button class="btn solid" data-drawer-action="queue-approve">อนุมัติค่าใช้จ่าย</button>`);
+    if(step==="review")footer.push(`<button class="btn danger" data-drawer-action="queue-reject">ตีกลับเอกสาร</button><button class="btn solid" data-drawer-action="queue-approve">เอกสารถูกต้อง</button>`);
+  }else if(["approval","review"].includes(step)){
+    footer.push(`<span class="drawer-role-note">${step==="approval"?"รอผู้มีสิทธิ์ผู้อนุมัติดำเนินการ":"รอฝ่ายบัญชีตรวจเอกสาร"}</span>`);
+  }
+  el("batchDrawerFooter").innerHTML=footer.join("");
 }
 function openQueueReview(id){openBatchDrawer(`queue:${String(id||"")}`);}
 
@@ -1629,7 +1694,8 @@ ${docs.join(", ")}`:""}
 ${out.itemCount} รายการย่อย · ${baht(out.total)}${people>1?`
 ${people} ผู้เบิก · แยกใบและบัญชีรับเงินตามคน`:""}${out.mergedBatchCount?`
 รวมใบเบิกเดิม ${out.mergedBatchCount} ใบ`:""}`:(out.message||"ไม่มีรายการ"));
-    BATCH_SELECTED.clear();REVIEW_BATCH_SELECTED.clear();await refreshBatchData({quiet:true});setStatusFilter("review");
+    const nextFilter=statusFilterFromWorkflowStatus((out.batches||[])[0]?.status||"รอตรวจเอกสาร");
+    BATCH_SELECTED.clear();REVIEW_BATCH_SELECTED.clear();await refreshBatchData({quiet:true});setStatusFilter(nextFilter);
   }catch(err){alert("รวมใบเบิกไม่สำเร็จ: "+err.message);}finally{if(button){button.disabled=false;button.textContent=old||"รวมเป็นใบเบิก";}if(dockButton){dockButton.disabled=false;dockButton.textContent=oldDock||"รวมเป็นใบเบิก";}updateMasterSelection();}
 }
 function markSelectedTransfers(){
@@ -1685,17 +1751,24 @@ function renderBatchDrawer(batchId){
   const auditHtml=audits.length?audits.slice().reverse().slice(0,12).map(a=>`<div class="audit-entry"><i></i><div><b>${esc(auditLabel(a.action))}</b><span>${batchDate(a.at)}${a.detail?.reason?` · ${esc(a.detail.reason)}`:""}</span></div></div>`).join(""):"<span class='master-secondary'>ยังไม่มีประวัติ</span>";
   el("batchDrawerBody").innerHTML=`
     <div class="drawer-summary"><div class="cell"><span>ผู้เบิก / ผู้รับเงิน</span><strong>${esc(b.payerName||"—")}</strong></div><div class="cell"><span>ยอดรวม</span><strong>${baht(b.total)}</strong></div><div class="cell"><span>บัญชีรับเงิน</span><strong>${esc(b.bank||"—")} ${esc(b.accountNo||"—")}</strong></div><div class="cell"><span>บัญชีที่ใช้จ่าย</span><strong>${esc(financeChannelTitle(batchChannelSnapshot(b)||{})||"ยังไม่เลือก")}</strong><small>${esc(batchChannelSnapshot(b)?financeChannelDetail(batchChannelSnapshot(b)):"เลือกก่อนโอนเงิน")}</small></div><div class="cell"><span>จำนวนรายการ</span><strong>${Number(b.itemCount||items.length||0)} รายการ · ${b.type==="ด่วน"?"ด่วน":"ปกติ"}</strong></div><div class="cell"><span>การกระทบยอด</span><strong>${String(b.reconcileStatus||"")==="กระทบยอดแล้ว"?"กระทบยอดแล้ว":"ยังไม่กระทบยอด"}</strong>${b.reconciledAt?`<small>${batchDate(b.reconciledAt)}</small>`:""}</div></div>
-    ${b.rejectionReason?`<div class="drawer-reason"><b>เหตุผลที่ต้องแก้ไข</b><br>${esc(b.rejectionReason)}</div>`:""}
+    ${b.rejectionReason?`<div class="drawer-reason"><b>${step==="rejected"?"เหตุผลที่ไม่อนุมัติ":"เหตุผลที่ต้องแก้ไข"}</b><br>${esc(b.rejectionReason)}</div>`:""}
     <div class="drawer-section main-claim-card"><h4>ใบเบิกหลัก</h4><p class="master-secondary">PDF ฉบับเดียวรวมตารางสรุป ใบแทน และหลักฐานของรายการย่อยทั้งหมด</p><div class="drawer-links">${b.pdfUrl?`<a class="main-claim-link" href="${escAttr(b.pdfUrl)}" target="_blank" rel="noopener">เปิดใบเบิกหลัก PDF</a>`:"ยังไม่มีใบเบิกหลัก"}${b.paymentSlipUrl?`<a href="${escAttr(b.paymentSlipUrl)}" target="_blank" rel="noopener">เปิดหลักฐานการโอน</a>`:""}</div></div>
     <div class="drawer-section"><h4>รายการย่อยในใบเบิกนี้</h4><div class="drawer-items">${itemHtml}</div></div>
     <div class="drawer-section"><h4>ประวัติ Workflow</h4><div class="audit-list">${auditHtml}</div></div>`;
   const footer=[];
   footer.push(`<button class="btn" data-drawer-action="close">ปิด</button>`);
-  if(b.profileComplete===false)footer.push(`<button class="btn solid" data-open-team>เพิ่มข้อมูลบัญชี</button>`);
-  else if(step==="review"){footer.push(`<button class="btn danger" data-drawer-action="reject">ตีกลับ</button><button class="btn solid" data-drawer-action="approve">เอกสารผ่าน</button>`);}
-  else if(step==="correction"){footer.push(`<button class="btn solid" data-drawer-action="resubmit">รับกลับมาตรวจอีกครั้ง</button>`);}
-  else if(step==="payment"){footer.push(`<button class="btn solid" data-drawer-action="open-payment">โอนและแนบหลักฐาน</button>`);}
-  else if(step==="paid"){
+  if(b.profileComplete===false&&currentWorkflowRole()!=="approver")footer.push(`<button class="btn solid" data-open-team>เพิ่มข้อมูลบัญชี</button>`);
+  else if(step==="approval"){
+    if(canHandleWorkflowStep("approval"))footer.push(`<button class="btn danger" data-drawer-action="reject">ไม่อนุมัติ</button><button class="btn solid" data-drawer-action="approve">อนุมัติค่าใช้จ่าย</button>`);
+    else footer.push(`<span class="drawer-role-note">รอผู้มีสิทธิ์ผู้อนุมัติดำเนินการ</span>`);
+  }
+  else if(step==="review"){
+    if(canHandleWorkflowStep("review"))footer.push(`<button class="btn danger" data-drawer-action="reject">ตีกลับเอกสาร</button><button class="btn solid" data-drawer-action="approve">เอกสารถูกต้อง</button>`);
+    else footer.push(`<span class="drawer-role-note">รอฝ่ายบัญชีตรวจเอกสาร</span>`);
+  }
+  else if(step==="correction"){if(canHandleWorkflowStep("correction"))footer.push(`<button class="btn solid" data-drawer-action="resubmit">รับกลับมาตรวจอีกครั้ง</button>`);else footer.push(`<span class="drawer-role-note">รอผู้เบิกแก้ไขเอกสาร</span>`);}
+  else if(step==="payment"){if(canHandleWorkflowStep("payment"))footer.push(`<button class="btn solid" data-drawer-action="open-payment">โอนและแนบหลักฐาน</button>`);else footer.push(`<span class="drawer-role-note">รอฝ่ายบัญชี/การเงินดำเนินการ</span>`);}
+  else if(step==="paid"&&["owner","accountant"].includes(currentWorkflowRole())){
     if(String(b.lineNotifyStatus||"").includes("ไม่สำเร็จ"))footer.push(`<button class="btn" data-drawer-action="retry-line">ส่ง LINE ซ้ำ</button>`);
     if(String(b.reconcileStatus||"")!=="กระทบยอดแล้ว")footer.push(`<button class="btn solid" data-drawer-action="open-reconciliation">ไปหน้ากระทบยอด</button>`);
   }
@@ -1703,62 +1776,80 @@ function renderBatchDrawer(batchId){
 }
 function openBatchDrawer(id){ACTIVE_BATCH_ID=String(id||"");el("batchDrawerBackdrop").hidden=false;document.body.style.overflow="hidden";renderBatchDrawer(ACTIVE_BATCH_ID);}
 function closeBatchDrawer(){ACTIVE_BATCH_ID="";if(el("batchDrawerBackdrop"))el("batchDrawerBackdrop").hidden=true;if(el("batchRejectBackdrop")?.hidden!==false)document.body.style.overflow="";}
+function rejectStageForTarget(targetId){
+  const requested=String(targetId||"");
+  if(requested.startsWith("queue:")){const row=masterPendingRows().find(x=>String(x.id)===requested.slice(6));return row?.workflowStep||row?.statusKey||"review";}
+  const b=(BATCH_DATA.batches||[]).find(x=>String(x.id||x.docId)===requested);return b?batchStep(b):"review";
+}
+function rejectReasonOptions(stage){
+  const approval=["ไม่เกี่ยวข้องกับงาน","เกินวงเงินหรือนโยบายบริษัท","ไม่ได้รับอนุมัติให้ใช้จ่าย","รายละเอียดการใช้จ่ายไม่ชัดเจน","อื่น ๆ"];
+  const review=["รูปหรือเอกสารไม่ชัด","ยอดเงินไม่ตรง","วันที่เอกสารไม่ตรง","ชื่อผู้รับเงินไม่ถูกต้อง","เอกสารไม่ครบ","พบรายการที่อาจซ้ำ","อื่น ๆ"];
+  return (stage==="approval"?approval:review).map(x=>`<option value="${escAttr(x)}">${esc(x)}</option>`).join("");
+}
 function openRejectDialog(targetId){
   const requested=String(targetId||"");
   let items=[];
   if(requested.startsWith("queue:")){
-    const row=masterPendingRows().find(x=>String(x.id)===requested.slice(6));
-    if(!row)return;
-    const item=row.raw||{};
-    REJECT_BATCH_ID=requested;
-    items=[item];
+    const row=masterPendingRows().find(x=>String(x.id)===requested.slice(6));if(!row)return;REJECT_BATCH_ID=requested;items=[row.raw||{}];
   }else{
-    const b=(BATCH_DATA.batches||[]).find(x=>String(x.id||x.docId)===requested);
-    if(!b)return;
-    REJECT_BATCH_ID=String(b.id||b.docId);
-    items=b.items||[];
+    const b=(BATCH_DATA.batches||[]).find(x=>String(x.id||x.docId)===requested);if(!b)return;REJECT_BATCH_ID=String(b.id||b.docId);items=b.items||[];
   }
+  const stage=rejectStageForTarget(REJECT_BATCH_ID);
+  if(!canHandleWorkflowStep(stage)){alert(stage==="approval"?"สิทธิ์นี้ไม่สามารถอนุมัติหรือปฏิเสธค่าใช้จ่ายได้":"สิทธิ์นี้ไม่สามารถตีกลับเอกสารได้");return;}
+  if(el("batchRejectKicker"))el("batchRejectKicker").textContent=stage==="approval"?"พิจารณาค่าใช้จ่าย":"ส่งกลับให้พนักงานแก้ไข";
+  if(el("batchRejectTitle"))el("batchRejectTitle").textContent=stage==="approval"?"ระบุเหตุผลที่ไม่อนุมัติ":"เลือกปัญหาที่พบ";
+  if(el("batchRejectDetailLabel"))el("batchRejectDetailLabel").textContent=stage==="approval"?"รายละเอียดเพิ่มเติม":"รายละเอียดที่ต้องแก้";
+  el("batchRejectReason").innerHTML=rejectReasonOptions(stage);
   el("batchRejectDetail").value="";
-  el("batchRejectReason").value="เอกสารไม่ครบ";
-  el("batchRejectItems").innerHTML=items.map((item,i)=>`<label><input type="checkbox" data-reject-item="${escAttr(item.id)}" checked><span>${i+1}. ${esc(item.vendor||item.note||"รายการ")}</span><small>${baht(item.amount)}</small></label>`).join("")||"<span class='master-secondary'>ตีกลับรายการนี้</span>";
-  el("batchRejectBackdrop").hidden=false;
-  document.body.style.overflow="hidden";
+  el("batchRejectItems").innerHTML=items.map((item,i)=>`<label><input type="checkbox" data-reject-item="${escAttr(item.id)}" checked ${stage==="approval"?"disabled":""}><span>${i+1}. ${esc(item.vendor||item.note||"รายการ")}</span><small>${baht(item.amount)}</small></label>`).join("")||"<span class='master-secondary'>รายการนี้</span>";
+  if(el("batchRejectSubmit"))el("batchRejectSubmit").textContent=stage==="approval"?"ไม่อนุมัติและแจ้ง LINE":"ตีกลับและแจ้ง LINE";
+  el("batchRejectBackdrop").hidden=false;document.body.style.overflow="hidden";
 }
 function closeRejectDialog(){REJECT_BATCH_ID="";el("batchRejectBackdrop").hidden=true;if(el("batchDrawerBackdrop")?.hidden!==false)document.body.style.overflow="";}
 async function submitBatchReject(){
   if(!REJECT_BATCH_ID)return;
+  const target=REJECT_BATCH_ID,stage=rejectStageForTarget(target);
   const base=el("batchRejectReason").value,detail=el("batchRejectDetail").value.trim(),reason=detail?`${base}: ${detail}`:base,itemIds=[...document.querySelectorAll("[data-reject-item]:checked")].map(x=>x.dataset.rejectItem);
-  const btn=el("batchRejectSubmit"),old=btn.textContent;btn.disabled=true;btn.textContent="กำลังแจ้ง LINE…";
+  const btn=el("batchRejectSubmit"),old=btn.textContent;btn.disabled=true;btn.textContent=stage==="approval"?"กำลังบันทึก…":"กำลังแจ้ง LINE…";
   try{
-    const isQueue=String(REJECT_BATCH_ID).startsWith("queue:");
-    const out=isQueue
-      ?await batchPost("/api/expense-workflow",{expenseId:String(REJECT_BATCH_ID).slice(6),action:"reject",payload:{reason,itemIds}})
-      :await batchPost("/api/batch-workflow",{batchId:REJECT_BATCH_ID,action:"reject",payload:{reason,itemIds}});
+    const isQueue=String(target).startsWith("queue:");
+    const out=isQueue?await batchPost("/api/expense-workflow",{expenseId:String(target).slice(6),action:"reject",payload:{reason,itemIds}}):await batchPost("/api/batch-workflow",{batchId:target,action:"reject",payload:{reason,itemIds}});
     closeRejectDialog();closeBatchDrawer();await refreshBatchData({quiet:true});
-    alert(`ตีกลับแล้ว\nLINE: ${out.notificationStatus||"ตรวจสอบในระบบ"}`);
-  }catch(e){alert("ตีกลับไม่สำเร็จ: "+e.message);}finally{btn.disabled=false;btn.textContent=old;}
+    const msg=stage==="approval"?"บันทึกว่าไม่อนุมัติแล้ว":"ตีกลับเอกสารแล้ว";
+    alert(`${msg}\nLINE: ${out.notificationStatus||"ตรวจสอบในระบบ"}`);
+    setStatusFilter(statusFilterFromWorkflowStatus(out.nextStatus|| (stage==="approval"?"ไม่อนุมัติ":"ต้องแก้ไข")));
+  }catch(e){alert(`${stage==="approval"?"ไม่อนุมัติ":"ตีกลับ"}ไม่สำเร็จ: ${e.message}`);}finally{btn.disabled=false;btn.textContent=old;}
 }
 async function runDrawerAction(action){
   if(action==="close")return closeBatchDrawer();
   if(String(ACTIVE_BATCH_ID).startsWith("queue:")){
     const queueId=String(ACTIVE_BATCH_ID).slice(6);
+    const row=masterPendingRows().find(x=>String(x.id)===queueId);
+    const step=row?.workflowStep||row?.statusKey||"review";
     if(action==="queue-reject")return openRejectDialog(ACTIVE_BATCH_ID);
     if(action==="queue-approve"){
-      if(!confirm("ยืนยันว่าเอกสารรายการนี้ผ่านและพร้อมเข้าสู่ขั้นตอนโอนเงิน?"))return;
-      await batchPost("/api/expense-workflow",{expenseId:queueId,action:"approve",payload:{}});
-      closeBatchDrawer();
-      await refreshBatchData({quiet:true});
-      setStatusFilter("payment");
+      if(!canHandleWorkflowStep(step))return alert(step==="approval"?"ต้องใช้สิทธิ์ผู้อนุมัติ":"ต้องใช้สิทธิ์ฝ่ายบัญชี");
+      const question=step==="approval"?"ยืนยันอนุมัติค่าใช้จ่ายรายการนี้?":"ยืนยันว่าเอกสารรายการนี้ถูกต้องและผ่านการตรวจแล้ว?";
+      if(!confirm(question))return;
+      const out=await batchPost("/api/expense-workflow",{expenseId:queueId,action:"approve",payload:{}});
+      closeBatchDrawer();await refreshBatchData({quiet:true});setStatusFilter(statusFilterFromWorkflowStatus(out.nextStatus||"รอโอนเงิน"));
     }
     return;
   }
   const b=(BATCH_DATA.batches||[]).find(x=>String(x.id||x.docId)===String(ACTIVE_BATCH_ID));if(!b)return;
-  if(action==="open-payment")return openPaymentDialog(ACTIVE_BATCH_ID);
-  if(action==="open-reconciliation"){closeBatchDrawer();RECON_CHANNEL_ID=String(b.paymentChannelId||"");openPage("reconciliation");return;}
+  const step=batchStep(b);
+  if(action==="open-payment"){if(!canHandleWorkflowStep("payment"))return alert("ต้องใช้สิทธิ์ฝ่ายบัญชีเพื่อจ่ายเงิน");return openPaymentDialog(ACTIVE_BATCH_ID);}
+  if(action==="open-reconciliation"){if(!["owner","accountant"].includes(currentWorkflowRole()))return;closeBatchDrawer();RECON_CHANNEL_ID=String(b.paymentChannelId||"");openPage("reconciliation");return;}
   if(action==="reject")return openRejectDialog(ACTIVE_BATCH_ID);
-  if(action==="approve"){if(!confirm("ยืนยันว่าเอกสารทั้งหมดผ่านและพร้อมโอนเงิน?"))return;await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"approve"});}
-  if(action==="resubmit"){if(!confirm("รับรายการกลับเข้าสถานะรอตรวจเอกสารอีกครั้ง?"))return;await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"resubmit"});}
-  if(action==="retry-line"){await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"retry_payment_notification"});}
+  if(action==="approve"){
+    if(!canHandleWorkflowStep(step))return alert(step==="approval"?"ต้องใช้สิทธิ์ผู้อนุมัติ":"ต้องใช้สิทธิ์ฝ่ายบัญชี");
+    const question=step==="approval"?"ยืนยันอนุมัติค่าใช้จ่ายในใบเบิกนี้?":"ยืนยันว่าเอกสารทั้งหมดถูกต้องและผ่านการตรวจแล้ว?";
+    if(!confirm(question))return;
+    const out=await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"approve"});
+    await refreshBatchData({quiet:true});closeBatchDrawer();setStatusFilter(statusFilterFromWorkflowStatus(out.nextStatus||"รอโอนเงิน"));return;
+  }
+  if(action==="resubmit"){if(!canHandleWorkflowStep("correction"))return alert("ต้องใช้สิทธิ์ฝ่ายบัญชี");if(!confirm("รับรายการกลับเข้าสถานะรอตรวจเอกสารอีกครั้ง?"))return;await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"resubmit"});}
+  if(action==="retry-line"){if(!["owner","accountant"].includes(currentWorkflowRole()))return;await batchPost("/api/batch-workflow",{batchId:ACTIVE_BATCH_ID,action:"retry_payment_notification"});}
   await refreshBatchData({quiet:true});
 }
 async function uploadBatchPaymentSlipFile(batchId,file,{paymentChannelId="",confirmBefore=true,refresh=true,quiet=false}={}){
@@ -1928,6 +2019,9 @@ document.querySelectorAll("[data-company-setup]").forEach(b=>b.addEventListener(
 // จัดการข้อมูลธุรกิจ
 el("saveBusiness").onclick=async()=>{const ok=await saveSettings({company_name:el("bizCompany").value.trim(),company_address:el("bizAddress").value.trim().replace(/\n/g,"\\n"),tax_id:el("bizTaxId").value.trim()},"bizSaveState");if(ok){openPage("overview",document.querySelector('.navlink[data-p="overview"]'));window.scrollTo({top:0,behavior:"smooth"});}};
 el("saveApprover").onclick=async()=>{const ok=await saveSettings({approver_name:el("bizApprover").value.trim()},"approverSaveState");if(ok){openPage("overview",document.querySelector('.navlink[data-p="overview"]'));window.scrollTo({top:0,behavior:"smooth"});}};
+document.querySelectorAll("[data-workflow-preset]").forEach(b=>b.addEventListener("click",()=>setWorkflowPreset(b.dataset.workflowPreset)));
+["workflowApprovalEnabled","workflowAccountingEnabled","workflowLineNotifyEnabled"].forEach(id=>el(id)?.addEventListener("change",()=>{if(el("biz-workflow"))el("biz-workflow").dataset.workflowPreset="custom";renderWorkflowPreview();}));
+if(el("workflowSave"))el("workflowSave").onclick=saveReimbursementWorkflow;
 el("addCategory").onclick=async()=>{const name=el("newCategory").value.trim();if(!name)return;const a=parseSettingList("custom_categories");if(!a.includes(name))a.push(name);if(await saveSettings({custom_categories:JSON.stringify(a)})){el("newCategory").value="";}};
 el("customCategoryTags").addEventListener("click",async e=>{const b=e.target.closest("[data-remove-category]");if(!b)return;const a=parseSettingList("custom_categories");a.splice(+b.dataset.removeCategory,1);await saveSettings({custom_categories:JSON.stringify(a)});});
 el("addFinance").onclick=saveFinanceChannel;
