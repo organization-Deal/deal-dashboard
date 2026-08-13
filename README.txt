@@ -1,17 +1,17 @@
-V7.38 — ทำหน้า ทีมและสิทธิ์ให้ง่ายขึ้น
+V7.39 — กู้ Dashboard หน้าดำ/ค้าง
 
-อัป 2 ไฟล์นี้ที่ root ของ deal-dashboard:
-- apply-v738-simple-team-access.mjs
+สาเหตุ: v7.38 ใช้ MutationObserver เฝ้าทั้งหน้า และ refresh() เขียน DOM ของหน้า Team ซ้ำ
+จึงเกิด mutation loop ทำให้ main thread ของ browser ค้างได้ แม้อยู่หน้าอื่น เพราะ Team DOM มีอยู่ในหน้าเดียวกัน
+
+อัปที่ root deal-dashboard:
+- apply-v739-recover-dashboard.mjs
 - package.json
 
-Cloudflare Dashboard:
-Deploy command = npm run deploy
+Deploy command:
+npm run deploy
 
-สิ่งที่เปลี่ยน:
-1. จังหวะเพิ่มคนเหลือ 3 ขั้น: เลือกหน้าที่ → เลือกคนจาก LINE → เพิ่มเข้าทีม
-2. เปลี่ยน Role dropdown เป็นการ์ด 3 ใบ: ผู้อนุมัติ / บัญชี-การเงิน / ดูอย่างเดียว
-3. เลือก LINE ก่อน แล้วระบบเติมชื่อให้
-4. ปุ่มสร้างสิทธิ์เปลี่ยนข้อความตาม Role
-5. Workflow ย้ายลงล่างและพับไว้ เป็นฟีเจอร์รอง ไม่ขวางการเพิ่มคน
-6. รายชื่อคนที่มีสิทธิ์แล้วแยกหัวข้อชัดเจน
-7. ไม่แก้ API / ไม่แก้สิทธิ์เดิม / ไม่แตะข้อมูลบัญชี
+v7.39 จะ:
+- ถอน script v7.38 ออกจาก index ที่ deploy
+- ใช้ UI แบบง่ายตัวใหม่ที่ไม่มี MutationObserver
+- คงฟีเจอร์เลือก Role → LINE → เพิ่มคน
+- ไม่แตะ API / ข้อมูล / สิทธิ์เดิม
