@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "deploy": "node apply-v735-line-group-ui.mjs && node apply-v736-team-workflow-line-group-fix.mjs && node apply-v738-simple-team-access.mjs && node apply-v739-recover-dashboard.mjs && node apply-v740-team-directory-ui.mjs && node apply-v741-company-documents-ui.mjs && wrangler deploy --config ./wrangler.toml"
+    "deploy": "node apply-v735-line-group-ui.mjs && node apply-v736-team-workflow-line-group-fix.mjs && node apply-v738-simple-team-access.mjs && node apply-v739-recover-dashboard.mjs && node apply-v740-team-directory-ui.mjs && node apply-v741-company-documents-ui.mjs && node apply-v742-separate-logo-signature.mjs && wrangler deploy --config ./wrangler.toml"
   },
   "devDependencies": {
     "wrangler": "4.115.0"
