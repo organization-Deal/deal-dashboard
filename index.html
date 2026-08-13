@@ -14,7 +14,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Dashboard · ภาพรวมการเงิน</title>
-<link rel="stylesheet" href="./assets/dashboard.css?v=7.7">
+<link rel="stylesheet" href="./assets/dashboard.css?v=7.33">
 </head>
 <body>
 <div class="app">
@@ -59,6 +59,7 @@
         <div class="subnav" id="businessMenu">
           <button class="subnavlink" data-biz="profile">ข้อมูลบริษัท</button>
           <button class="subnavlink" data-biz="approver">ผู้อนุมัติและลายเซ็น</button>
+          <button class="subnavlink" data-biz="workflow">Workflow เบิกจ่าย</button>
           <button class="subnavlink" data-biz="finance">บัญชีและช่องทางการเงิน</button>
           <button class="subnavlink" data-biz="team">ทีมและผู้ใช้งาน</button>
           <button class="subnavlink" data-biz="categories">หมวดหมู่</button>
@@ -120,6 +121,7 @@
         <div class="mobile-more-list">
           <button type="button" data-mobile-biz="profile"><span>ข้อมูลบริษัท</span><b>›</b></button>
           <button type="button" data-mobile-biz="approver"><span>ผู้อนุมัติและลายเซ็น</span><b>›</b></button>
+          <button type="button" data-mobile-biz="workflow"><span>Workflow เบิกจ่าย</span><b>›</b></button>
           <button type="button" data-mobile-biz="finance"><span>บัญชีและช่องทางการเงิน</span><b>›</b></button>
           <button type="button" data-mobile-biz="team"><span>ทีมและผู้ใช้งาน</span><b>›</b></button>
           <button type="button" data-mobile-biz="categories"><span>หมวดหมู่</span><b>›</b></button>
@@ -396,7 +398,7 @@
         <div>
           <div class="head-kicker">ACCOUNTING WORKSPACE</div>
           <h3>โต๊ะทำงานเบิกจ่าย</h3>
-          <p>รายการที่ผู้เบิกยืนยันจะเข้าคิวตรวจเอกสารทันที และยังเลือกหลายรายการเพื่อรวมเป็นใบเบิกหลักได้</p>
+          <p>รายการที่ผู้เบิกยืนยันจะเดินตาม Workflow ของบริษัทอัตโนมัติ — อนุมัติค่าใช้จ่าย ตรวจเอกสาร หรือเข้าสู่รอโอนตามที่ตั้งไว้</p>
         </div>
         <div class="acct-head-actions">
           <div class="batch-schedule-card"><span>สร้างใบเบิกอัตโนมัติ</span><strong id="batchNext">กำลังตรวจ…</strong></div>
@@ -406,6 +408,7 @@
 
       <div class="acct-status-strip" id="batchStatusStrip" aria-label="กรองตามสถานะ">
         <button class="active" data-batch-filter="all"><span>ทั้งหมด</span><strong id="statusAllCount">0</strong></button>
+        <button data-batch-filter="approval"><span>รออนุมัติ</span><strong id="statusApprovalCount">0</strong></button>
         <button data-batch-filter="review"><span>รอตรวจ</span><strong id="statusReviewCount">0</strong></button>
         <button data-batch-filter="correction"><span>ต้องแก้ไข</span><strong id="statusCorrectionCount">0</strong></button>
         <button data-batch-filter="rejected"><span>ไม่อนุมัติ</span><strong id="statusRejectedCount">0</strong></button>
@@ -423,6 +426,7 @@
             <input id="batchMasterSearch" type="search" placeholder="ค้นหาเลขใบเบิก ผู้เบิก ร้านค้า หรือเลขบัญชี">
             <select id="batchMasterStatus" aria-label="สถานะ">
               <option value="all">ทุกสถานะ</option>
+              <option value="approval">รออนุมัติค่าใช้จ่าย</option>
               <option value="review">รอตรวจเอกสาร</option>
               <option value="correction">ต้องแก้ไข</option>
               <option value="rejected">ไม่อนุมัติ / ยกเลิก</option>
@@ -487,10 +491,10 @@
 
       <div class="acct-dialog-backdrop" id="batchRejectBackdrop" hidden>
         <div class="acct-dialog" role="dialog" aria-modal="true" aria-labelledby="batchRejectTitle">
-          <div class="acct-dialog-head"><div><span>ส่งกลับให้พนักงานแก้ไข</span><h3 id="batchRejectTitle">เลือกปัญหาที่พบ</h3></div><button class="drawer-close" id="batchRejectClose" type="button">×</button></div>
+          <div class="acct-dialog-head"><div><span id="batchRejectKicker">ส่งกลับให้พนักงานแก้ไข</span><h3 id="batchRejectTitle">เลือกปัญหาที่พบ</h3></div><button class="drawer-close" id="batchRejectClose" type="button">×</button></div>
           <div class="acct-dialog-body">
             <label><span>เหตุผลหลัก</span><select id="batchRejectReason"><option value="รูปหรือเอกสารไม่ชัด">รูปหรือเอกสารไม่ชัด</option><option value="ยอดเงินไม่ตรง">ยอดเงินไม่ตรง</option><option value="วันที่เอกสารไม่ตรง">วันที่เอกสารไม่ตรง</option><option value="ชื่อผู้รับเงินไม่ถูกต้อง">ชื่อผู้รับเงินไม่ถูกต้อง</option><option value="เอกสารไม่ครบ">เอกสารไม่ครบ</option><option value="พบรายการที่อาจซ้ำ">พบรายการที่อาจซ้ำ</option><option value="อื่น ๆ">อื่น ๆ</option></select></label>
-            <label><span>รายละเอียดที่ต้องแก้</span><textarea id="batchRejectDetail" rows="3" placeholder="ระบุให้พนักงานรู้ว่าต้องแก้อะไรหรือแนบเอกสารใดเพิ่ม"></textarea></label>
+            <label><span id="batchRejectDetailLabel">รายละเอียดที่ต้องแก้</span><textarea id="batchRejectDetail" rows="3" placeholder="ระบุให้พนักงานรู้ว่าต้องแก้อะไรหรือแนบเอกสารใดเพิ่ม"></textarea></label>
             <div><span class="dialog-label">รายการที่มีปัญหา</span><div id="batchRejectItems" class="reject-item-list"></div></div>
           </div>
           <div class="acct-dialog-footer"><button class="btn" id="batchRejectCancel" type="button">ยกเลิก</button><button class="btn danger" id="batchRejectSubmit" type="button">ตีกลับและแจ้ง LINE</button></div>
@@ -745,6 +749,50 @@
         </div>
       </div>
 
+      <div class="business-tab" id="biz-workflow">
+        <div class="workflow-hero card">
+          <div>
+            <div class="head-kicker">REIMBURSEMENT WORKFLOW</div>
+            <h3>กำหนดขั้นตอนเบิกจ่ายของบริษัท</h3>
+            <p>เปิดเฉพาะด่านที่บริษัทต้องใช้ ระบบจะส่งงานและแจ้ง LINE ไปหาคนที่รับผิดชอบด่านถัดไปอัตโนมัติ</p>
+          </div>
+          <span class="workflow-current-badge" id="workflowCurrentBadge">แบบง่าย</span>
+        </div>
+        <div class="workflow-presets" role="group" aria-label="รูปแบบ Workflow">
+          <button class="workflow-preset" type="button" data-workflow-preset="simple"><b>แบบง่าย</b><small>บัญชีตรวจเอกสารอย่างเดียว</small></button>
+          <button class="workflow-preset" type="button" data-workflow-preset="standard"><b>แบบมาตรฐาน</b><small>ผู้อนุมัติ → บัญชีตรวจ</small></button>
+          <button class="workflow-preset" type="button" data-workflow-preset="custom"><b>กำหนดเอง</b><small>เปิด/ปิดแต่ละด่านเอง</small></button>
+        </div>
+        <div class="workflow-layout">
+          <div class="card">
+            <h3>ด่านที่ต้องผ่านก่อนจ่ายเงิน</h3>
+            <div class="cs">การเปลี่ยนค่านี้ใช้กำหนดเส้นทางของรายการใหม่ และจะไม่ย้ายสถานะรายการเก่าอัตโนมัติ</div>
+            <div class="workflow-toggle-list">
+              <label class="workflow-toggle-card">
+                <span><b>ผู้อนุมัติค่าใช้จ่าย</b><small>ตัดสินว่ารายการนี้เบิกได้หรือไม่ เช่น เกี่ยวกับงาน วงเงิน และนโยบายบริษัท</small></span>
+                <input id="workflowApprovalEnabled" type="checkbox"><i></i>
+              </label>
+              <label class="workflow-toggle-card">
+                <span><b>ฝ่ายบัญชีตรวจเอกสาร</b><small>ตรวจใบเสร็จ/ใบกำกับ ยอด วันที่ VAT/WHT และความครบถ้วนก่อนโอน</small></span>
+                <input id="workflowAccountingEnabled" type="checkbox" checked><i></i>
+              </label>
+              <label class="workflow-toggle-card">
+                <span><b>แจ้งงานผ่าน LINE</b><small>ส่งการ์ดส่วนตัวให้ผู้อนุมัติหรือฝ่ายบัญชี เมื่อมีงานเข้าด่านของคนนั้น</small></span>
+                <input id="workflowLineNotifyEnabled" type="checkbox" checked><i></i>
+              </label>
+            </div>
+            <div class="form-actions workflow-actions"><button class="btn solid" id="workflowSave" type="button">บันทึก Workflow</button><span class="save-state" id="workflowSaveState"></span></div>
+          </div>
+          <div class="card workflow-preview-card">
+            <h3>Flow ที่ใช้งาน</h3>
+            <div class="cs">ตัวอย่างเส้นทางของรายการใหม่หลังพนักงานกดตั้งเบิก</div>
+            <div class="workflow-flow" id="workflowFlowPreview"></div>
+            <div class="workflow-risk-note" id="workflowRiskNote" hidden></div>
+            <div class="workflow-line-note" id="workflowLineNote"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="business-tab" id="biz-categories">
         <div class="card"><h3>หมวดหมู่</h3><div class="cs">เพิ่มหมวดที่ใช้บ่อย หมวดจากรายการเดิมจะแสดงด้านล่างโดยอัตโนมัติ</div>
           <div class="tag-editor"><input id="newCategory" placeholder="ชื่อหมวดใหม่"><button class="btn solid" id="addCategory">เพิ่มหมวด</button></div>
@@ -930,8 +978,8 @@
 
 <div class="modal" id="modal"><div class="box"><button class="x" onclick="closeGlobalModal()">✕</button><div id="modalBody"></div></div></div>
 
-<script src="./assets/dashboard.js?v=7.27"></script>
+<script src="./assets/dashboard.js?v=7.33"></script>
 <script src="./assets/overview-paid-only.js?v=7.8"></script>
-<script src="./assets/reimbursement-batch-lock.js?v=7.27"></script>
+<script src="./assets/reimbursement-batch-lock.js?v=7.33"></script>
 </body>
 </html>
