@@ -1,17 +1,18 @@
-V7.39 — กู้ Dashboard หน้าดำ/ค้าง
+V7.41 — รวมข้อมูลบริษัท + ผู้อนุมัติ/ลายเซ็น
 
-สาเหตุ: v7.38 ใช้ MutationObserver เฝ้าทั้งหน้า และ refresh() เขียน DOM ของหน้า Team ซ้ำ
-จึงเกิด mutation loop ทำให้ main thread ของ browser ค้างได้ แม้อยู่หน้าอื่น เพราะ Team DOM มีอยู่ในหน้าเดียวกัน
-
-อัปที่ root deal-dashboard:
-- apply-v739-recover-dashboard.mjs
+อัปที่ root ของ deal-dashboard:
+- apply-v741-company-documents-ui.mjs
 - package.json
 
-Deploy command:
-npm run deploy
+Cloudflare:
+Build command: None
+Deploy command: npm run deploy
+Root directory: /
 
-v7.39 จะ:
-- ถอน script v7.38 ออกจาก index ที่ deploy
-- ใช้ UI แบบง่ายตัวใหม่ที่ไม่มี MutationObserver
-- คงฟีเจอร์เลือก Role → LINE → เพิ่มคน
-- ไม่แตะ API / ข้อมูล / สิทธิ์เดิม
+ผลลัพธ์:
+- เมนูเดียว: ข้อมูลบริษัทและเอกสาร
+- ซ่อนเมนูผู้อนุมัติและลายเซ็นแยก
+- รวมข้อมูลบริษัท ผู้อนุมัติ ลายเซ็น โลโก้ ความพร้อมเอกสารไว้หน้าเดียว
+- Save แล้วอยู่หน้าเดิม ไม่เด้งกลับภาพรวม
+- URL เก่า biz=approver ถูกพาไปหน้าใหม่
+- ไม่แตะ API/ข้อมูลเดิม
