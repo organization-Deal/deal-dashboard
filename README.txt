@@ -1,7 +1,7 @@
-V7.44 — จัดคอมโพสหน้า Team Access ใหม่
+V7.45 — RESET COMPOSITION หน้า Team Access
 
 อัปที่ root ของ deal-dashboard:
-- apply-v744-team-access-composition.mjs
+- apply-v745-team-composition-reset.mjs
 - package.json
 
 Cloudflare:
@@ -9,10 +9,10 @@ Build command: None
 Deploy command: npm run deploy
 Root directory: /
 
-สิ่งที่เปลี่ยน:
-- Main layout 8/4: ฟอร์มซ้าย + Preview summary ขวา
-- Summary ขวาแสดงชื่อ / กลุ่ม / หน้าที่ / ความสามารถ / readiness
-- ตัดกล่อง preview ว่างในฟอร์มซ้ายออก
-- สมาชิกที่มีสิทธิ์แล้วแยกเป็น section ด้านล่าง
-- Workflow ย้ายล่างสุดและพับไว้
-- ไม่แตะ Backend / API / สิทธิ์เดิม / รายชื่อเดิม
+แก้เฉพาะ layout/composition:
+- dashboard access กินเต็มความกว้างของหน้า ไม่ลอยเป็น card จิ๋วกลางจอ
+- ซ้าย/ขวา 70/30 บน desktop
+- ตัด card ซ้อน card ใน step 1/2 เปลี่ยนเป็น section ต่อเนื่อง
+- Summary ขวาใหญ่ขึ้นและสมดุลกับ form
+- สมาชิกที่มีสิทธิ์แล้ว + Workflow อยู่เป็น section ต่อเนื่องภายในการ์ดเดียว
+- ไม่แตะ Backend / API / permissions / team data
