@@ -1,7 +1,7 @@
-V7.43 — ลดหน้าเพิ่มคนเข้าทีมให้เหลือ 3 ขั้นตอน
+V7.44 — จัดคอมโพสหน้า Team Access ใหม่
 
 อัปที่ root ของ deal-dashboard:
-- apply-v743-team-access-clean.mjs
+- apply-v744-team-access-composition.mjs
 - package.json
 
 Cloudflare:
@@ -9,14 +9,10 @@ Build command: None
 Deploy command: npm run deploy
 Root directory: /
 
-UI ใหม่:
-1. เลือกหน้าที่
-2. เลือกคนจาก LINE
-3. เพิ่มเข้าทีม
-
-- ซ่อนช่องชื่อจากหน้าหลัก ระบบใช้ชื่อ LINE อัตโนมัติ
-- ยังเปิด “แก้ชื่อในระบบ” ได้ถ้าจำเป็น
-- Workflow ย้ายเป็นฟีเจอร์รองด้านล่าง และมีปุ่ม “ตั้งค่า Workflow” เล็กด้านบน
-- ตัดข้อความสถานะซ้ำ
-- จำกัดความกว้าง flow ไม่ให้กระจายเต็มจอ
-- ไม่แตะ Backend / สิทธิ์เดิม / ข้อมูลสมาชิก
+สิ่งที่เปลี่ยน:
+- Main layout 8/4: ฟอร์มซ้าย + Preview summary ขวา
+- Summary ขวาแสดงชื่อ / กลุ่ม / หน้าที่ / ความสามารถ / readiness
+- ตัดกล่อง preview ว่างในฟอร์มซ้ายออก
+- สมาชิกที่มีสิทธิ์แล้วแยกเป็น section ด้านล่าง
+- Workflow ย้ายล่างสุดและพับไว้
+- ไม่แตะ Backend / API / สิทธิ์เดิม / รายชื่อเดิม
