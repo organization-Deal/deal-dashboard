@@ -1,7 +1,7 @@
-V7.46 — วิธีใช้งานฉบับใหม่
+V7.48 — แก้ Dashboard เข้า Offline ทั้งที่อินเทอร์เน็ตใช้งานได้
 
 อัปที่ root ของ deal-dashboard:
-- apply-v746-usage-guide.mjs
+- apply-v748-false-offline-fix.mjs
 - package.json
 
 Cloudflare:
@@ -9,10 +9,9 @@ Build command: None
 Deploy command: npm run deploy
 Root directory: /
 
-สิ่งที่ได้:
-- ปุ่ม “วิธีใช้งานนี้” เปลี่ยนเป็น “วิธีใช้งาน”
-- เปิด Quick Guide แบบ Modal ไม่พาออกจากหน้าปัจจุบัน
-- แบ่งตามบทบาท: เริ่มต้น / พนักงาน / ผู้อนุมัติ / บัญชี-การเงิน / เมนูต่าง ๆ
-- เนื้อหาตรงกับ Flow ปัจจุบันหลังอัปเดต LINE Group, Auto Team, First-time profile, Team Access, Workflow, Payment และ Reconciliation
-- ใช้ event capture เพื่อแทนคู่มือเก่า โดยไม่แก้ Dashboard backend
-- ไม่มี MutationObserver
+แก้:
+- navigator.onLine=false จะไม่หยุดโหลด API อีก
+- Dashboard จะลอง Worker/API จริงก่อนตัดสินว่าเชื่อมไม่ได้
+- browser offline event จะไม่ล้างข้อมูลเดิมและไม่ทำยอดกลายเป็น 0
+- ลด false offline ที่ทำให้สถานะ Google/Gmail ดูผิดตามไปด้วย
+- ไม่แตะข้อมูลบัญชี / Sheet / Drive / Backend / Worker
