@@ -55,11 +55,18 @@ const oldAuth="    if(res.status===401||res.status===403){\n      DASH_AUTH_BLOC
 const newAuth="    const responseData=await res.json().catch(()=>null);\n    if((res.status===401||res.status===403)&&responseData?.error===\"google_reconnect_required\"){\n      DASH_AUTH_BLOCKED=false;clearDashboardRetry();\n      GOOGLE_CORE_INFO={...GOOGLE_CORE_INFO,...(responseData.google||{}),connected:false,reconnectRequired:true};\n      const recovered=recoverDashboardShell(\"google-auth\");\n      if(!recovered)showCoreDataUnavailable(\"Google Sheet / Drive ต้องเชื่อมใหม่\");\n      CONNECTION_HEALTH={...CONNECTION_HEALTH,checked:true,workspace:false};\n      renderConnectionHealthBanner();\n      showNetworkBanner(\"warn\",\"Google Sheet / Drive ต้องเชื่อมใหม่\",\"ข้อมูลเดิมยังอยู่ · ระบบหยุดแสดงตัวเลขแทนค่าเพื่อป้องกันความเข้าใจผิด\");\n      syncStatus(\"error\",\"ต้องเชื่อม Google Sheet / Drive ใหม่\");\n      return false;\n    }\n    if(res.status===401||res.status===403){\n      DASH_AUTH_BLOCKED=true;clearDashboardRetry();\n      recoverDashboardShell(\"auth\");\n      showNetworkBanner(\"auth\",\"ลิงก์ Dashboard หมดอายุ\",\"ข้อมูลเดิมยังแสดงได้ แต่ต้องเปิด Dashboard จาก LINE ใหม่ก่อนอัปเดตข้อมูล\",\"เปิดใหม่\");\n      syncStatus(\"error\",\"ลิงก์หมดอายุ\");\n      return false;\n    }\n    if(!res.ok)throw new Error(responseData?.message||responseData?.error||(\"HTTP \"+res.status));\n\n    const rows=responseData;";
 mustReplace(oldAuth,newAuth,"refreshData auth branch");
 
-mustReplace(
-  "    const next=Array.isArray(rows)?rows:[];",
-  '    if(!Array.isArray(rows))throw new Error("invalid_expense_payload");\n    const next=rows;',
-  "expense payload validation"
-);
+// v7.52.1 — current dashboard already validates payloads as `invalid response`.
+const oldPayloadFallback="    const next=Array.isArray(rows)?rows:[];";
+const currentPayloadValidation='    if(!Array.isArray(rows)) throw new Error("invalid response");';
+const hardenedPayloadValidation='    if(!Array.isArray(rows)) throw new Error("invalid_expense_payload");';
+
+if(src.includes(oldPayloadFallback)){
+  src=src.replace(oldPayloadFallback,hardenedPayloadValidation+"\\n    const next=rows;");
+}else if(src.includes(currentPayloadValidation)){
+  src=src.replace(currentPayloadValidation,hardenedPayloadValidation);
+}else if(!src.includes("invalid_expense_payload")){
+  throw new Error("หา expense payload validation ไม่เจอ — หยุดก่อนเพื่อไม่แก้ผิดเวอร์ชัน");
+}
 
 fs.writeFileSync(file,src);
 execFileSync(process.execPath,["--check",file],{stdio:"inherit"});
@@ -67,3 +74,4 @@ console.log("✅ "+MARK+" ready");
 console.log("✅ Google Sheet/Drive and Gmail shown as separate auth states");
 console.log("✅ google_reconnect_required preserves cache / shows — instead of ฿0");
 console.log("✅ 401 dashboard-link auth no longer confused with Google OAuth expiry");
+console.log("✅ V7_52_1 current/legacy expense payload anchors supported");
