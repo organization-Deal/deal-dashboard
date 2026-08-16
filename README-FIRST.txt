@@ -1,29 +1,37 @@
-PUBLIC PILOT FORM v7.59
+README FIRST — V7.62 MOBILE PRODUCTION UX
 
-อัปไฟล์ pilot.html ไปที่ ROOT ของ repository:
+อัปเฉพาะ repo:
 organization-Deal/deal-dashboard
 
-ให้ทับ pilot.html เดิม แล้ว Deploy deal-dashboard
+ไฟล์ที่ต้องอัปไป ROOT:
+1. apply-v762-mobile-production-ux-fix.mjs
+2. package.json   (ทับของเดิม)
 
-หลัง Deploy ลิงก์ที่ส่งให้ลูกค้า:
-https://deal-dashboard.organization-23c.workers.dev/pilot.html
+ไม่ต้องแก้ deal-line-bot รอบนี้
 
-ฟอร์มส่ง POST ไปที่:
-https://accoutingsuppor02.organization-23c.workers.dev/pilot/request
+จากนั้น New Deployment
 
-Backend เดิมรองรับ field:
-- contactName
-- businessName
-- email
-- contact
-- referrer
-- note
-- website (honeypot)
+Build log ต้องเห็น:
+✅ MOBILE_PRODUCTION_UX_FIX_V7_62_20260816 ready
+✅ mobile permission now uses the real business router
+✅ closing More always releases mobile scroll lock
+✅ employee / permission chevrons preserved
+✅ connected Google no longer sends mobile users to OAuth again
+✅ unavailable Sheet/Drive no longer fail silently
+✅ permission/team controls are iPhone-sized and scrollable
 
-ข้อมูลเพิ่มเติม เช่น จำนวนพนักงาน / จำนวนรายการ / Workflow ปัจจุบัน /
-ฟีเจอร์ที่สนใจ / ปัญหาที่อยากแก้ จะถูกรวมเข้า field note อัตโนมัติ
-จึงไม่ต้องแก้ backend เพิ่มเพื่อใช้ฟอร์มนี้
-
-หลังลูกค้าส่ง:
-Internal Operations > Pilot Requests
-ควรเห็นรายการใหม่ทันทีหลัง Refresh
+Smoke test บน iPhone / LINE browser:
+1. เปิด Dashboard จาก LINE
+2. เพิ่มเติม
+3. สิทธิ์การใช้งาน
+   - ต้องเปิดหน้าได้ครั้งแรก
+   - ต้องเลื่อนหน้าได้ทันที
+4. กลับ เพิ่มเติม > ข้อมูลพนักงาน
+   - ต้องมีลูกศร และเปิดได้
+5. เพิ่มเติม > Google
+   - ถ้าเชื่อมแล้ว ต้องไม่เข้า OAuth ใหม่
+6. เปิด Google Sheet / Drive
+   - ถ้าพร้อม เปิดได้
+   - ถ้ายังไม่พร้อม ต้องมีข้อความ ไม่ใช่กดเงียบ
+7. เปิด/ปิด เพิ่มเติม 5 รอบ
+   - ทุกครั้งหลังปิด หน้าหลักต้อง scroll ได้

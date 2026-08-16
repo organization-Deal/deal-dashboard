@@ -1,0 +1,51 @@
+V7.62 MOBILE PRODUCTION UX AUDIT — 2026-08-16
+
+CONFIRMED ROOT CAUSES
+1. สิทธิ์การใช้งาน (mobile)
+   - v7.47 capture click แล้ว stop router
+   - เรียก showView permissions แต่ไม่ได้เปิด page-business จริงจากหน้า Overview
+   - อาการ: กดครั้งแรกเหมือนไม่ทำงาน / ต้องเข้าทางอื่นก่อน
+
+2. Scroll freeze หลังแตะสิทธิ์การใช้งาน
+   - v7.47 ใช้ sheet.hidden=true
+   - แต่ไม่ได้เรียก closeMobileMore()
+   - body.mobile-more-open จึงค้าง
+   - dashboard.css กำหนด body.mobile-more-open { overflow:hidden }
+   - อาการ: หน้าใหม่เลื่อนไม่ได้
+
+3. ปุ่มข้อมูลพนักงาน / สิทธิ์การใช้งานไม่มีลูกศร
+   - textNode ใช้ span:last-child
+   - mobile button มี <span>ชื่อ</span><b>›</b>
+   - selector ไม่เจอ span แล้ว fallback เป็น button.textContent=...
+   - ทำลาย child markup ทั้งหมด
+
+4. Google บน mobile More
+   - data-mobile-external=google ใช้ href จาก connBtn
+   - connBtn มี OAuth URL แม้ core Google เชื่อมอยู่
+   - อาการ: mobile menu ยังเสนอ “เชื่อมต่อ Google” และสามารถพา reconnect โดยไม่จำเป็น
+
+5. Sheet / Drive กดแล้วเงียบ
+   - ถ้า href ว่าง/# handler return เฉย ๆ
+   - ผู้ใช้ไม่รู้ว่าทำไมปุ่มไม่ทำงาน
+
+6. Permission inputs บน iPhone
+   - v7.43 dynamic CSS force select/input 9–11px !important
+   - override mobile base 16px
+   - เสี่ยง Safari auto zoom + controls เล็กเกินจริง
+
+V7.62 FIXES
+- permission ใช้ openBusiness("permissions") / business router จริง
+- closeMobileMore ทุกครั้งก่อนออกจาก bottom sheet
+- body/html mobile-more-open ถูก cleanup
+- pageshow / orientation / return-to-app cleanup stale lock
+- preserve span + chevron
+- Google connected -> เปิด Settings ไม่ OAuth
+- Google unknown -> เปิด Settings + ตรวจใหม่ ไม่ OAuth
+- Google reconnect/never เท่านั้น -> OAuth
+- Sheet/Drive unavailable -> แจ้งเหตุผล ไม่กดเงียบ
+- mobile menu labels สะท้อน state จริง
+- bottom sheet scroll ใช้ -webkit-overflow-scrolling + touch-action pan-y
+- permission/team inputs และ buttons ขนาดเหมาะ iPhone
+- iOS input font >= 16px
+
+NO BACKEND CHANGE REQUIRED.
