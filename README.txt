@@ -1,22 +1,11 @@
-v7.55 — Gmail OAuth Return to Overview
+Fix: remove broken v7.58 PIN patch from dashboard deploy chain.
 
-สาเหตุ:
-หลังเชื่อม Gmail สำเร็จ URL ยังเหลือ &page=email
-load() จึงเปิดหน้าเอกสารจากอีเมลทุกครั้งที่ Refresh
+Why:
+apply-v758-admin-pin-ui.mjs currently generates invalid JavaScript in assets/admin.js.
+That makes the build stop before wrangler deploy, so pilot.html never reaches production.
 
-แก้:
-- เฉพาะตอน Gmail OAuth callback สำเร็จ
-- ลบ gmail=connected
-- เปลี่ยน page=overview
-- ลบ biz ที่อาจค้าง
-- เปิดหน้า “ภาพรวม” ทันที
-- การ Refresh หน้าอื่นที่ผู้ใช้ตั้งใจเปิดเองยังคงอยู่หน้าเดิมตามปกติ
+Upload package.json to ROOT of deal-dashboard, replacing the existing file.
+Then start a NEW deployment from main.
 
-อัป root ของ deal-dashboard:
-- apply-v755-gmail-return-overview.mjs
-- package.json
-
-Cloudflare:
-Build command: None
-Deploy command: npm run deploy
-Root directory: /
+Expected: v7.55 logs -> wrangler deploy -> Success.
+No v7.58 line should appear.
