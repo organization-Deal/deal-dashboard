@@ -1,43 +1,38 @@
-V7.67.2 — FAST NAVIGATION FINAL COMPAT
+V7.69.1 — CASH POSITION RATE LIMIT FIX
 
-UPLOAD TO deal-dashboard ROOT:
-1. apply-v7672-fast-navigation-final-compatible.mjs
+Upload to organization-Deal/deal-dashboard ROOT:
+1. apply-v7691-cash-position-rate-limit-fix.mjs
 2. package.json (replace current)
 
-IMPORTANT
-- Removes v7.67.1 from deploy chain.
-- Old v7.67 / v7.67.1 files can remain in GitHub; they are not executed.
-- No Backend changes.
+Backend does NOT need another deploy for this fix.
 
-WHY v7.67.1 FAILED
-It assumed assets/dashboard.js ended with:
-  load();
+ROOT CAUSE
+v7.69 frontend forced /api/cash-position repeatedly:
+- after renderCashPositionBoard
+- after renderBatches
+- after refreshBatchData
+- after baseline save at 700ms
+- again at 1600ms
+- startup at 0 / 200 / 700 / 1600ms
 
-But earlier migrations append runtime code after load().
-Therefore endsWith("load();") was false even though the Dashboard source was valid.
+A cash-position request itself reads multiple accounting datasets.
+Right after a payment/slip Sheet write, this burst can trigger Google Sheets rate limiting.
 
-V7.67.2 DOES NOT:
-- inspect the end of dashboard.js
-- replace load()
-- assume where load() is located
+V7.69.1
+- disables loading old aggressive v7.69 runtime
+- one initial delayed request
+- one request after a completed batch refresh
+- one request after manual baseline save
+- single-flight: only one request can exist at a time
+- 12 second successful-data TTL
+- 5 second absolute request gap
+- if Sheets says rate limited, silently cool down for 65 seconds
+- no repeated cash-position popup storm
 
-V7.67.2 DOES:
-- replace only the known hardNavigate() function
-- preserve page DOM/data in RAM
-- switch page by history.pushState + openPage/openBusiness
-- refresh stale data silently
-- append Back/Forward listener at the end of the file
-- warm reimbursement/income after initial page startup
-
-BUILD MUST SHOW:
-✅ FAST_NAVIGATION_FINAL_COMPAT_V7_67_2_20260816 ready
-✅ Dashboard internal navigation no longer uses full-page reload
-✅ dashboard.js tail/load() placement is no longer assumed
-✅ previous page DOM/data remains in memory
-✅ page data uses 30-second stale-while-revalidate
-✅ heavy reimbursement/income pages warm after initial load
-✅ browser Back/Forward uses soft navigation
-
-Then it must continue to:
-wrangler deploy --config ./wrangler.toml
-and finish successfully.
+Build must show:
+✅ CASH_POSITION_RATE_LIMIT_FIX_V7_69_1_20260816 ready
+✅ removed repeated 0/200/700/1600ms cash-position requests
+✅ removed duplicate renderBatches + refreshBatchData forced requests
+✅ cash position now uses single-flight + debounce + 12-second cache
+✅ Google Sheets rate-limit response triggers a silent 65-second cooldown
+✅ payment/baseline changes trigger only one delayed cash refresh
