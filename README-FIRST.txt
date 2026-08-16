@@ -1,22 +1,24 @@
-V7.65 — MOBILE MINIMAL UI
+V7.66 — CASH POSITION COMPACT
 
-แนวคิดรอบนี้: ตัดคำอธิบาย / help / microcopy บนมือถือให้น้อยลง เพราะมีการสอนใช้งานแล้ว
-
-อัปเฉพาะ root repo deal-dashboard:
-1. apply-v765-mobile-minimal-ui.mjs
+อัปเฉพาะ deal-dashboard ROOT:
+1. apply-v766-cash-position-compact.mjs
 2. package.json
 
-ต้องมี v764 อยู่ก่อน และใน package นี้กูใส่ v764 + v765 ใน deploy chain ให้แล้ว
+ไม่ต้องแก้ Backend และไม่ต้องอัป generated CSS/JS เอง
 
-Build log ต้องเห็น:
-✅ MOBILE_MINIMAL_UI_V7_65_20260816 ready
-✅ mobile help / explanatory copy reduced on phone
-✅ settings service descriptions hidden for cleaner cards
-✅ phone filters normalized to simpler single-column actions
-✅ minimal mobile audit available as window.__minimalMobileAuditV765()
+Mobile result:
+- ตัด CASH POSITION kicker + คำอธิบายยาว
+- หัวข้อ + จัดการบัญชีอยู่บรรทัดเดียว
+- 3 summary ใหญ่ -> 1 summary หลัก + 2 mini stats
+- ซ่อนข้อความย่อยใต้ summary
+- account card ย่อเป็น 2 แถว
+- ยอดอยู่ขวา / เวลาอัปเดตอยู่ล่าง
+- อัปเดตยอด -> อัปเดต / ใส่ยอดปัจจุบัน -> ใส่ยอด
+- ตัด “ไม่บอก” และชื่อบัญชีที่ซ้ำในรายละเอียด
 
-สิ่งที่รอบนี้เน้น:
-- ซ่อนปุ่ม/บล็อก "วิธีใช้หน้านี้" บนมือถือ
-- ซ่อนคำอธิบายยาวใน Settings service cards
-- ซ่อน note/คำอธิบายที่เกะกะหลายจุดบน Overview / Settings / Batches
-- ทำ filter/action บนมือถือให้อยู่คอลัมน์เดียว อ่านง่ายกว่า
+Build ต้องเห็น:
+✅ CASH_POSITION_COMPACT_V7_66_20260816 ready
+✅ cash summary changed to 1 hero + 2 mini stats on mobile
+✅ cash account cards compacted into two-row mobile cards
+✅ update-balance action reduced to a small secondary button
+✅ long cash-position descriptions removed on mobile
