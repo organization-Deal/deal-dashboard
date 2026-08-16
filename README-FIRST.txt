@@ -1,35 +1,16 @@
-V7.63 — PERMISSION SIMPLE FLOW
+V7.63.1 — PERMISSION FLOW RESCUE
 
-อัปเฉพาะ repo:
-organization-Deal/deal-dashboard
+อัปเฉพาะ deal-dashboard ROOT:
+1. apply-v7631-permission-flow-rescue.mjs
+2. package.json (ทับเดิม)
 
-อัป 2 ไฟล์ไป ROOT:
-1. apply-v763-permission-simple-flow.mjs
-2. package.json (ทับไฟล์เดิม)
-
-ไม่ต้องอัป permissions-simple-flow-v763.js เอง
-migration จะสร้าง asset ให้ตอน Build
-
+package ใหม่นี้เอา apply-v763-permission-simple-flow.mjs ออกจาก build แล้ว ไฟล์เก่าจะอยู่ใน repo ได้แต่ไม่ถูกเรียก
 ไม่ต้องแก้ Backend
 
-หลัง Deploy หน้า สิทธิ์การใช้งาน จะเหลือ:
-1. เลือกหน้าที่
-2. เลือกกลุ่ม LINE + พนักงาน
-3. สรุปสั้น 1 บรรทัด
-4. ปุ่ม เพิ่มสิทธิ์ให้พนักงาน
-5. สมาชิกที่มีสิทธิ์แล้ว
+Build ต้องเห็น:
+✅ PERMISSION_FLOW_RESCUE_V7_63_1_20260816 ready
+✅ permission opens the real #biz-team tab, not virtual #biz-permissions
+✅ removed recursive MutationObserver from permission simplification
+✅ blank permission page has a finite visibility rescue
 
-สิ่งที่ซ่อนออกจาก flow:
-- Preview ขนาดใหญ่
-- Workflow ของสิทธิ์การใช้งานที่ซ้ำกับหน้า Workflow
-- ปุ่มตั้งค่า Workflow ในการ์ดนี้
-- ชื่อในระบบ/รายละเอียดขั้นสูงที่ไม่จำเป็น
-- คำอธิบายบทบาทยาวบนมือถือ
-
-Build log ต้องเห็น:
-✅ PERMISSION_SIMPLE_FLOW_V7_63_20260816 ready
-✅ permission flow = role → LINE group → employee → add access
-✅ duplicate preview removed from the main flow
-✅ duplicate workflow card removed from the permission page
-✅ existing access members remain below the form
-✅ mobile role choices compacted to one row
+หลัง Deploy เปิด Dashboard ใหม่จาก LINE > เพิ่มเติม > สิทธิ์การใช้งาน ต้องเห็นฟอร์มทันที
