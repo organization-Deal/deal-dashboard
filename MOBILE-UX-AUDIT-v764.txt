@@ -1,0 +1,73 @@
+V7.64 MOBILE UX SYSTEM PASS — PHONE SOURCE AUDIT
+Date: 2026-08-16
+
+ROOT CAUSE
+The phone UI is not one coherent responsive layer. Several generations of CSS override each other.
+V7.64 adds one final mobile-only layer after all existing dashboard styles.
+
+CONFIRMED FROM THE USER SCREENSHOTS + CURRENT SOURCE
+- Settings repeats the page title.
+- Old black hero CSS leaves a white h3 after the hero was later made light/transparent.
+- Connected service state/action placement conflicts across mobile CSS generations.
+- Service status can collapse into a narrow column and wrap vertically.
+- Healthy services can still look like they require a black primary reconnect action.
+- Tenant ID / technical workspace status is exposed to customers on mobile.
+- Automatic-backup information makes Settings excessively long.
+- Desktop active navigation rail leaks into the bottom phone nav as a black vertical line.
+- Fixed bottom navigation needs consistent safe-area spacing.
+
+PAGE-BY-PAGE AUDITED / NORMALIZED
+1. Overview
+2. Expenses
+3. Reimbursement / Accounting
+4. Income
+5. Reports / Tax
+6. Documents
+7. Gmail / Email automation
+8. Subscriptions
+9. Reconciliation
+10. Business profile
+11. Approver / Signature
+12. Finance channels
+13. Workflow
+14. Employee / Team
+15. Permissions (logic still owned by v7.63.1)
+16. Categories
+17. Settings
+18. Billing
+19. Mobile More sheet
+20. Drawers / dialogs / modals
+21. Network / connection banners
+22. Bottom navigation
+
+SETTINGS CHANGES
+- Remove duplicate inner Settings title on phone.
+- Hide giant package CTA from Settings; Billing remains available in More.
+- Service cards become: icon + name/detail + horizontal status + one consistent action.
+- Healthy services use secondary buttons.
+- Only reconnect/not-connected services use a black primary CTA.
+- Hide Tenant/internal workspace diagnostic panel on phone.
+- Auto Backup card is compact by default and can be expanded.
+- Google connected action label becomes “เปลี่ยนบัญชี Google” rather than looking like an error.
+
+GLOBAL MOBILE RULES
+- 16px form controls to prevent iPhone input zoom.
+- Safe-area bottom padding.
+- Remove horizontal body overflow.
+- Scrollable bottom sheets.
+- Touch-friendly buttons.
+- No desktop active rail in bottom nav.
+- Common actions constrained to phone width.
+
+RUNTIME QA
+After deploy, browser console can run:
+window.__mobileUXAuditV764()
+
+It reports:
+- current page
+- viewport
+- suspicious horizontal overflow elements
+- whether Settings technical panel accidentally became visible
+
+IMPORTANT
+This is a source-level mobile UX audit and defensive presentation pass. A final acceptance pass still needs the deployed app on the real iPhone/LINE in-app browser, because live tenant data, OAuth callbacks and API-rendered states only exist at runtime.

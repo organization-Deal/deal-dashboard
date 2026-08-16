@@ -1,16 +1,42 @@
-V7.63.1 — PERMISSION FLOW RESCUE
+V7.64 — MOBILE UX SYSTEM PASS
 
-อัปเฉพาะ deal-dashboard ROOT:
-1. apply-v7631-permission-flow-rescue.mjs
-2. package.json (ทับเดิม)
+UPLOAD ONLY TO:
+organization-Deal/deal-dashboard
 
-package ใหม่นี้เอา apply-v763-permission-simple-flow.mjs ออกจาก build แล้ว ไฟล์เก่าจะอยู่ใน repo ได้แต่ไม่ถูกเรียก
-ไม่ต้องแก้ Backend
+UPLOAD TO REPO ROOT:
+1. apply-v764-mobile-ux-system-pass.mjs
+2. package.json  (replace current)
 
-Build ต้องเห็น:
-✅ PERMISSION_FLOW_RESCUE_V7_63_1_20260816 ready
-✅ permission opens the real #biz-team tab, not virtual #biz-permissions
-✅ removed recursive MutationObserver from permission simplification
-✅ blank permission page has a finite visibility rescue
+DO NOT change deal-line-bot.
+DO NOT manually upload generated CSS/JS.
+The build migration creates:
+- assets/mobile-ux-system-v764.css
+- assets/mobile-ux-system-v764.js
 
-หลัง Deploy เปิด Dashboard ใหม่จาก LINE > เพิ่มเติม > สิทธิ์การใช้งาน ต้องเห็นฟอร์มทันที
+BUILD LOG MUST SHOW:
+✅ MOBILE_UX_SYSTEM_V7_64_20260816 ready
+✅ final mobile CSS layer loaded after legacy dashboard styles
+✅ Settings service cards rebuilt for phone layout
+✅ duplicate Settings title / giant package CTA removed on phones
+✅ Tenant/internal workspace diagnostics hidden on phones
+✅ bottom-nav desktop active rail removed
+✅ overview / expenses / reimbursement / income / reports / documents / email / reconciliation / business / workflow / billing mobile rules audited
+
+Then Wrangler deploy must continue to Success.
+
+REAL PHONE SMOKE TEST AFTER DEPLOY:
+Overview → Expenses → Reimbursement → Income → More
+then Reconciliation, Reports, Documents, Email,
+Company, Approver, Workflow, Finance, Employees,
+Permissions, Categories, Settings, Billing.
+
+Every page must:
+- scroll normally
+- have no whole-page horizontal overflow
+- have no vertical stacked status text
+- not hide content behind bottom nav
+- not trigger iPhone auto zoom on form fields
+- keep black CTA only for an actual primary action
+- allow modal/drawer scrolling and closing
+
+See MOBILE-UX-AUDIT-v764.txt.
