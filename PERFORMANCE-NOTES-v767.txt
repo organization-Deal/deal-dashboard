@@ -1,0 +1,8 @@
+SOURCE FINDINGS
+1. hardNavigate() used location.assign(routeUrl(...)).
+2. openPage() called hardNavigate when changing pages.
+3. openBusiness() hard-navigated when entering business pages.
+4. load() reran Settings/Businesses/Workspace/Gmail and Subscription before primary data.
+5. leaving pages destroyed page DOM/data, forcing refetch on return.
+
+V7.67 removes those repeated full-page cycles while leaving OAuth/receipt/external navigations unchanged.
