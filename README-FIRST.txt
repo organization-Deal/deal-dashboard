@@ -1,34 +1,35 @@
-V7.62.1 — MOBILE PRODUCTION UX BUILD FIX
+V7.63 — PERMISSION SIMPLE FLOW
 
-สาเหตุ Build v7.62 ล้ม:
-- v7.62 ใช้ String.raw ตอนสร้าง runtime CSS
-- ทำให้ generated asset มี style.textContent=\`
-- Node จึง SyntaxError ก่อน wrangler deploy
+อัปเฉพาะ repo:
+organization-Deal/deal-dashboard
 
-แก้แล้ว:
-- เปลี่ยน generation ให้เขียน backtick จริง
-- ตรวจตัว migration ด้วย node --check
-- จำลอง generated employee-permission-split-v747.js แล้ว node --check ผ่าน
-- จำลอง generated dashboard.js แล้ว node --check ผ่าน
+อัป 2 ไฟล์ไป ROOT:
+1. apply-v763-permission-simple-flow.mjs
+2. package.json (ทับไฟล์เดิม)
 
-อัปเฉพาะ repo deal-dashboard ที่ ROOT:
-1. apply-v7621-mobile-production-ux-fix.mjs
-2. package.json (ทับของเดิม)
+ไม่ต้องอัป permissions-simple-flow-v763.js เอง
+migration จะสร้าง asset ให้ตอน Build
 
-ไฟล์ apply-v762-mobile-production-ux-fix.mjs เก่าจะเก็บไว้ใน repo ก็ได้
-เพราะ package.json ใหม่นี้จะไม่เรียกมันแล้ว
+ไม่ต้องแก้ Backend
 
-ไม่ต้องแก้ deal-line-bot
+หลัง Deploy หน้า สิทธิ์การใช้งาน จะเหลือ:
+1. เลือกหน้าที่
+2. เลือกกลุ่ม LINE + พนักงาน
+3. สรุปสั้น 1 บรรทัด
+4. ปุ่ม เพิ่มสิทธิ์ให้พนักงาน
+5. สมาชิกที่มีสิทธิ์แล้ว
 
-Build log ที่ต้องเห็น:
-✅ MOBILE_PRODUCTION_UX_FIX_V7_62_1_20260816 ready
-...
-จากนั้นต้องไปต่อถึง:
-wrangler deploy
-และ Build Success
+สิ่งที่ซ่อนออกจาก flow:
+- Preview ขนาดใหญ่
+- Workflow ของสิทธิ์การใช้งานที่ซ้ำกับหน้า Workflow
+- ปุ่มตั้งค่า Workflow ในการ์ดนี้
+- ชื่อในระบบ/รายละเอียดขั้นสูงที่ไม่จำเป็น
+- คำอธิบายบทบาทยาวบนมือถือ
 
-หลัง Deploy ค่อยทดสอบ:
-เพิ่มเติม > สิทธิ์การใช้งาน
-- กดครั้งแรกเข้าได้
-- เลื่อนหน้าได้
-- ปิด/เปิดเมนูแล้วยัง scroll ได้
+Build log ต้องเห็น:
+✅ PERMISSION_SIMPLE_FLOW_V7_63_20260816 ready
+✅ permission flow = role → LINE group → employee → add access
+✅ duplicate preview removed from the main flow
+✅ duplicate workflow card removed from the permission page
+✅ existing access members remain below the form
+✅ mobile role choices compacted to one row
