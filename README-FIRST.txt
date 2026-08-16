@@ -1,42 +1,22 @@
-V7.64 — MOBILE UX SYSTEM PASS
+V7.65 — MOBILE MINIMAL UI
 
-UPLOAD ONLY TO:
-organization-Deal/deal-dashboard
+แนวคิดรอบนี้: ตัดคำอธิบาย / help / microcopy บนมือถือให้น้อยลง เพราะมีการสอนใช้งานแล้ว
 
-UPLOAD TO REPO ROOT:
-1. apply-v764-mobile-ux-system-pass.mjs
-2. package.json  (replace current)
+อัปเฉพาะ root repo deal-dashboard:
+1. apply-v765-mobile-minimal-ui.mjs
+2. package.json
 
-DO NOT change deal-line-bot.
-DO NOT manually upload generated CSS/JS.
-The build migration creates:
-- assets/mobile-ux-system-v764.css
-- assets/mobile-ux-system-v764.js
+ต้องมี v764 อยู่ก่อน และใน package นี้กูใส่ v764 + v765 ใน deploy chain ให้แล้ว
 
-BUILD LOG MUST SHOW:
-✅ MOBILE_UX_SYSTEM_V7_64_20260816 ready
-✅ final mobile CSS layer loaded after legacy dashboard styles
-✅ Settings service cards rebuilt for phone layout
-✅ duplicate Settings title / giant package CTA removed on phones
-✅ Tenant/internal workspace diagnostics hidden on phones
-✅ bottom-nav desktop active rail removed
-✅ overview / expenses / reimbursement / income / reports / documents / email / reconciliation / business / workflow / billing mobile rules audited
+Build log ต้องเห็น:
+✅ MOBILE_MINIMAL_UI_V7_65_20260816 ready
+✅ mobile help / explanatory copy reduced on phone
+✅ settings service descriptions hidden for cleaner cards
+✅ phone filters normalized to simpler single-column actions
+✅ minimal mobile audit available as window.__minimalMobileAuditV765()
 
-Then Wrangler deploy must continue to Success.
-
-REAL PHONE SMOKE TEST AFTER DEPLOY:
-Overview → Expenses → Reimbursement → Income → More
-then Reconciliation, Reports, Documents, Email,
-Company, Approver, Workflow, Finance, Employees,
-Permissions, Categories, Settings, Billing.
-
-Every page must:
-- scroll normally
-- have no whole-page horizontal overflow
-- have no vertical stacked status text
-- not hide content behind bottom nav
-- not trigger iPhone auto zoom on form fields
-- keep black CTA only for an actual primary action
-- allow modal/drawer scrolling and closing
-
-See MOBILE-UX-AUDIT-v764.txt.
+สิ่งที่รอบนี้เน้น:
+- ซ่อนปุ่ม/บล็อก "วิธีใช้หน้านี้" บนมือถือ
+- ซ่อนคำอธิบายยาวใน Settings service cards
+- ซ่อน note/คำอธิบายที่เกะกะหลายจุดบน Overview / Settings / Batches
+- ทำ filter/action บนมือถือให้อยู่คอลัมน์เดียว อ่านง่ายกว่า

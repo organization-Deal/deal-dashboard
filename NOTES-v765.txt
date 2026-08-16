@@ -1,0 +1,6 @@
+USER FEEDBACK TO ADDRESS
+- หน้า mobile ยังดูรกและอ่านยาก
+- หลายจุดมีคำอธิบายเกะกะเกินจำเป็น
+- มี onboarding / วิธีสอนแล้ว จึงไม่จำเป็นต้องยัด help text ซ้ำใน UI
+
+V765 therefore focuses on visual reduction, not new feature logic.
