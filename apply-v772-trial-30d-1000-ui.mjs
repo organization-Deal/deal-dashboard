@@ -36,6 +36,21 @@ index = rep(index, "60-DAY FREE TRIAL", "30-DAY FREE TRIAL");
 index = rep(index, "60 DAY FREE TRIAL", "30 DAY FREE TRIAL");
 index = rep(index, ">BETA FREE<", ">30-DAY FREE TRIAL<");
 index = rep(index, "ทดลองใช้แพ็กเกจ Business ฟรี 60 วัน", "ทดลองใช้แพ็กเกจ Business ฟรี 30 วัน");
+// Keep the static fallback aligned with the live 30-day Business Trial policy.
+index = rep(index, '>Beta ฟรี</h3>', '>ทดลองใช้ Business ฟรี</h3>');
+index = rep(
+  index,
+  "ช่วงทดสอบระบบ ใช้งานฟีเจอร์ Pro ได้โดยไม่คิดค่าบริการ และไม่มีการตัดบัตรอัตโนมัติ",
+  "ช่วงทดลอง 30 วัน · ใช้ Workflow Business ได้ฟรี · สูงสุด 1,000 เอกสาร/เดือน · ไม่มีการตัดเงินอัตโนมัติ"
+);
+index = rep(
+  index,
+  "ช่วง Beta ไม่จำกัดจำนวนเอกสาร",
+  "Trial Business · สูงสุด 1,000 เอกสาร/เดือน · ยังไม่มีการเรียกเก็บเงิน"
+);
+index = rep(index, "เลือกแพ็กเกจหลังช่วง Beta", "เลือกแพ็กเกจหลังช่วงทดลอง");
+index = rep(index, "ช่วง Beta ยังไม่เรียกเก็บเงินจริง", "ช่วงทดลองยังไม่เรียกเก็บเงินจริง");
+index = rep(index, "100% หลังพ้น Beta", "100% หลังพ้นช่วงทดลอง");
 fs.writeFileSync(files.index, index);
 
 /* Dashboard subscription/trial copy */
@@ -80,7 +95,6 @@ const forbidden = [
   [/ทดลองใช้(?:แพ็กเกจ\s*)?Business ฟรี 60 วัน/, "Business free 60 days"],
   [/Beta ฟรี.*ไม่จำกัดจำนวนเอกสาร/, "unlimited Beta copy"],
   [/ช่วง Beta ไม่จำกัดจำนวนเอกสาร/, "unlimited Beta status"],
-  [/1,500 รายการ\/เดือน/, "Pilot 1,500 trial copy"],
 ];
 
 for (const file of Object.values(files)) {
@@ -91,6 +105,7 @@ for (const file of Object.values(files)) {
 }
 
 const finalPilot = fs.readFileSync(files.pilot, "utf8");
+if (/1,500 รายการ\/เดือน/.test(finalPilot)) throw new Error("v7.72 UI audit failed: Pilot 1,500 trial copy remains in pilot.html");
 if (!finalPilot.includes("Business ฟรี 30 วัน")) throw new Error("v7.72: Pilot 30-day copy missing");
 if (!finalPilot.includes("1,000 รายการ/เดือน")) throw new Error("v7.72: Pilot 1,000 limit copy missing");
 

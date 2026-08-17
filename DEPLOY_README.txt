@@ -1,27 +1,15 @@
-Dashboard v7.4 — Resilient Mobile Load
+V7.72 Dashboard build fix
 
-Problem fixed
-- A single failed /api/expenses request during initial load previously called fatal() and replaced the entire Dashboard body with a large error card.
+Replace only:
+  apply-v772-trial-30d-1000-ui.mjs
 
-New behavior
-- Transient network/API errors never destroy the Dashboard UI.
-- Sidebar, company switcher, navigation and current page remain visible.
-- A compact connection banner appears inside the Dashboard instead of a full-screen error.
-- Automatic retry uses backoff (2.5s → 5s → 10s → 20s → 30s → 60s).
-- Manual “ลองใหม่” is available.
-- When the connection returns, the banner disappears automatically.
-- If the same tab already had successfully loaded data, a session-only snapshot can be used while reconnecting.
-- 401/403 no longer wipes the screen; the Dashboard remains visible with a clear “link expired” banner.
-- Missing tenant/token still uses the explicit invalid-link page because the Dashboard cannot operate without credentials.
+What this fixes:
+1) Converts stale index.html Beta/unlimited fallback copy to the 30-day Business Trial / 1,000 docs policy before the UI audit runs.
+2) Fixes the audit scope so "1,500 รายการ/เดือน" is rejected only in the Pilot Trial surface, not in the paid Business plan (which correctly remains 1,500 docs/month).
 
-Security/data
-- No Google Sheet or Drive data is modified by this patch.
-- No backend/API schema changes.
-- Temporary fallback data uses sessionStorage only; it is not persisted as a long-term browser database.
-
-Files changed
-- index.html (asset version bump only)
-- assets/dashboard.js
-- assets/dashboard.css
-
-Deploy Dashboard only.
+Local verification performed:
+- Ran the complete dashboard apply chain from v7.35 through v7.72 (excluding only the final network wrangler deploy).
+- v7.72 audit passed.
+- assets/dashboard.js syntax passed node --check.
+- apply-v772-trial-30d-1000-ui.mjs syntax passed node --check.
+- Paid Business plan remained 1,500 docs/month.
