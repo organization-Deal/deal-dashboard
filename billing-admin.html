@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Billing Admin · รับจ่ายแบบไม่จำกัด</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{font-family:"Prompt",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111;background:#f5f5f7}
+*{box-sizing:border-box}body{margin:0}.hidden{display:none!important}
+button,input,select{font:inherit}.shell{max-width:1500px;margin:auto;padding:28px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:22px}.eyebrow{font-size:11px;color:#6e6e73;letter-spacing:.08em;text-transform:uppercase}.top h1{font-size:28px;margin:3px 0 0;letter-spacing:-.03em}
+.actions{display:flex;gap:8px}.btn{border:1px solid #d2d2d7;background:#fff;border-radius:11px;padding:9px 13px;cursor:pointer}.btn.dark{background:#111;color:#fff;border-color:#111}
+.metrics{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));gap:10px}.metric{background:#fff;border:1px solid #e5e5e7;border-radius:17px;padding:17px}.metric span{display:block;font-size:11px;color:#777}.metric strong{display:block;font-size:24px;margin-top:6px;letter-spacing:-.03em}.metric small{color:#8e8e93}
+.panel{margin-top:14px;background:#fff;border:1px solid #e5e5e7;border-radius:20px;overflow:hidden}.toolbar{padding:14px;display:flex;gap:9px;align-items:center;border-bottom:1px solid #eee}.toolbar input,.toolbar select{border:1px solid #d9d9dd;border-radius:10px;padding:9px 11px;background:#fff}.toolbar input{min-width:270px}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:12px 14px;border-bottom:1px solid #f0f0f2;text-align:left;vertical-align:middle}th{font-size:10px;color:#777;background:#fafafa;position:sticky;top:0}.company{font-weight:600}.sub{color:#8e8e93;font-size:10px;margin-top:2px}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:600;background:#f2f2f7}.pill.ok{background:#eaf8ee;color:#177a38}.pill.warn{background:#fff3df;color:#a25b00}.pill.bad{background:#ffeded;color:#a32020}.row-actions{display:flex;gap:6px;flex-wrap:wrap}.mini{border:1px solid #ddd;background:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:10px}
+.login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}.login{width:min(420px,100%);background:#fff;border:1px solid #e5e5e7;border-radius:24px;padding:28px;box-shadow:0 24px 70px rgba(0,0,0,.08)}.login h2{margin:4px 0 8px}.login p{font-size:12px;color:#777}.login input{width:100%;font-size:24px;letter-spacing:.3em;text-align:center;border:1px solid #ccc;border-radius:12px;padding:12px;margin:12px 0}.login button{width:100%}.error{color:#c00;font-size:11px;margin-top:10px}
+.recent{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:14px}.pay{border:1px solid #eee;border-radius:13px;padding:12px}.pay b{font-size:12px}.pay small{display:block;color:#777;margin-top:4px}
+@media(max-width:1100px){.metrics{grid-template-columns:repeat(3,1fr)}.table-wrap{overflow:auto}table{min-width:1050px}}@media(max-width:650px){.shell{padding:16px}.metrics{grid-template-columns:repeat(2,1fr)}.recent{grid-template-columns:1fr}.toolbar{flex-wrap:wrap}.toolbar input{min-width:0;flex:1}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div id="loginView" class="login-wrap">
+  <form class="login" id="loginForm">
+    <div class="eyebrow">OWNER ACCESS</div>
+    <h2>Billing Admin</h2>
+    <p>ใช้รหัส ADMIN_PIN 6 หลักเดียวกับ Internal Ops ระบบจะเก็บ session ไว้เฉพาะแท็บนี้</p>
+    <input id="pin" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="••••••">
+    <button class="btn dark" type="submit">เข้าสู่ระบบ</button>
+    <div class="error" id="loginError"></div>
+  </form>
+</div>
+
+<main id="app" class="shell hidden">
+  <header class="top">
+    <div><div class="eyebrow">รับจ่ายแบบไม่จำกัด · OWNER</div><h1>Billing & Subscription</h1></div>
+    <div class="actions"><button class="btn" id="refreshBtn">อัปเดต</button><button class="btn" id="logoutBtn">ออกจากระบบ</button></div>
+  </header>
+
+  <section class="metrics">
+    <div class="metric"><span>MRR</span><strong id="mrr">฿0</strong><small>รายได้ประจำต่อเดือน</small></div>
+    <div class="metric"><span>รายได้เดือนนี้</span><strong id="revenue">฿0</strong><small>จาก invoice.paid</small></div>
+    <div class="metric"><span>ลูกค้าจ่ายจริง</span><strong id="active">0</strong><small>Active subscription</small></div>
+    <div class="metric"><span>กำลัง Trial</span><strong id="trial">0</strong><small>Business 30 วัน</small></div>
+    <div class="metric"><span>จ่ายไม่ผ่าน</span><strong id="pastDue">0</strong><small>ต้องติดตาม</small></div>
+    <div class="metric"><span>ARR</span><strong id="arr">฿0</strong><small>MRR × 12</small></div>
+  </section>
+
+  <section class="panel">
+    <div class="toolbar">
+      <input id="search" placeholder="ค้นหาบริษัท / อีเมล / Tenant">
+      <select id="statusFilter"><option value="">ทุกสถานะ</option><option value="active">จ่ายแล้ว</option><option value="beta">Trial</option><option value="free">Free</option><option value="past_due">จ่ายไม่ผ่าน</option></select>
+      <select id="planFilter"><option value="">ทุกแพ็กเกจ</option><option value="starter">Lite</option><option value="pro">Pro</option><option value="business">Business</option></select>
+      <span id="generated" class="sub"></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>บริษัท</th><th>แพ็กเกจ</th><th>ราคา</th><th>สถานะ</th><th>ต่ออายุ</th><th>AI</th><th>รายการ</th><th>บริษัทที่ใช้</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="toolbar"><b>การชำระเงินล่าสุด</b></div>
+    <div class="recent" id="recent"></div>
+  </section>
+</main>
+
+<script>
+const WORKER="https://accoutingsuppor02.organization-23c.workers.dev";
+const STORAGE="rubjaai_admin_session_v1";
+let DATA={rows:[],metrics:{},recentPayments:[]};
+const $=id=>document.getElementById(id);
+const money=n=>"฿"+new Intl.NumberFormat("th-TH",{maximumFractionDigits:2}).format(Number(n||0));
+const date=v=>{if(!v)return "—";const d=new Date(v);return Number.isFinite(d.getTime())?new Intl.DateTimeFormat("th-TH",{day:"numeric",month:"short",year:"numeric"}).format(d):"—"};
+const session=()=>sessionStorage.getItem(STORAGE)||"";
+async function api(path,opts={}){
+  const headers=new Headers(opts.headers||{});
+  if(session())headers.set("authorization","Bearer "+session());
+  if(opts.body&&!headers.has("content-type"))headers.set("content-type","application/json");
+  const res=await fetch(WORKER+path,{...opts,headers,cache:"no-store"});
+  const data=await res.json().catch(()=>({}));
+  if(res.status===401&&path!=="/admin/ops/login"){sessionStorage.removeItem(STORAGE);showLogin();throw new Error("Session หมดอายุ");}
+  if(!res.ok||data.ok===false)throw new Error(data.message||data.error||("HTTP "+res.status));
+  return data;
+}
+function showLogin(){ $("app").classList.add("hidden");$("loginView").classList.remove("hidden"); }
+function showApp(){ $("loginView").classList.add("hidden");$("app").classList.remove("hidden"); }
+function paymentPill(row){
+  const sub=row.subscription||{},p=String(sub.stripePaymentStatus||"");
+  if(["past_due","unpaid","incomplete"].includes(p))return '<span class="pill bad">จ่ายไม่ผ่าน</span>';
+  if(sub.betaActive)return '<span class="pill warn">Trial</span>';
+  if(sub.status==="active")return '<span class="pill ok">ใช้งานอยู่</span>';
+  return '<span class="pill">Free</span>';
+}
+function planKey(row){const s=row.subscription||{};return s.betaActive?"business":(s.effectivePlan||s.plan||"free")}
+function planName(row){return row.subscription?.betaActive?"Trial Business":(row.subscription?.planName||"Free")}
+function rowMonthly(row){
+  const s=row.subscription||{}; if(s.status!=="active")return 0;
+  return s.cycle==="annual"?Number(s.priceAnnual||0)/12:Number(s.priceMonthly||0);
+}
+function priceText(row){
+  const s=row.subscription||{}; if(s.status!=="active")return "—";
+  return s.cycle==="annual"?money(s.priceAnnual)+"/ปี":money(s.priceMonthly)+"/เดือน";
+}
+function render(){
+  const m=DATA.metrics||{};
+  $("mrr").textContent=money(m.mrr);$("revenue").textContent=money(m.revenueThisMonth);$("active").textContent=m.active||0;$("trial").textContent=m.trial||0;$("pastDue").textContent=m.pastDue||0;$("arr").textContent=money(m.arr);
+  const q=$("search").value.trim().toLowerCase(),sf=$("statusFilter").value,pf=$("planFilter").value;
+  const rows=(DATA.rows||[]).filter(row=>{
+    const s=row.subscription||{},text=[row.companyName,row.rootTenant,row.gmail?.email].join(" ").toLowerCase();
+    const status=["past_due","unpaid","incomplete"].includes(String(s.stripePaymentStatus||""))?"past_due":(s.betaActive?"beta":s.status);
+    return (!q||text.includes(q))&&(!sf||status===sf)&&(!pf||planKey(row)===pf);
+  });
+  $("rows").innerHTML=rows.map(row=>{
+    const s=row.subscription||{},ai=row.aiUsage||{},u=row.usage||{};
+    const stripe=s.stripeCustomerId?`https://dashboard.stripe.com/customers/${encodeURIComponent(s.stripeCustomerId)}`:"";
+    return `<tr>
+      <td><div class="company">${esc(row.companyName||"—")}</div><div class="sub">${esc(row.gmail?.email||row.rootTenant||"")}</div></td>
+      <td><b>${esc(planName(row))}</b><div class="sub">${s.cycle==="annual"?"รายปี":"รายเดือน"}</div></td>
+      <td>${priceText(row)}<div class="sub">${s.status==="active"?money(rowMonthly(row))+" MRR":"—"}</div></td>
+      <td>${paymentPill(row)}</td>
+      <td>${date(s.stripeCurrentPeriodEnd||s.nextRenewalAt)}</td>
+      <td>${Number(ai.documents||0).toLocaleString("th-TH")} / ${Number(ai.limit||0).toLocaleString("th-TH")}</td>
+      <td>${Number(u.documents||0).toLocaleString("th-TH")} / ${Number(s.documentLimit||0).toLocaleString("th-TH")}</td>
+      <td>${row.businessCount||1}</td>
+      <td><div class="row-actions">${stripe?`<a class="mini" target="_blank" rel="noopener" href="${stripe}">Stripe ↗</a>`:""}<button class="mini" data-open="${esc(row.rootTenant||"")}">รายละเอียด</button></div></td>
+    </tr>`;
+  }).join("")||'<tr><td colspan="9" style="text-align:center;color:#888;padding:30px">ไม่พบข้อมูล</td></tr>';
+  document.querySelectorAll("[data-open]").forEach(btn=>btn.addEventListener("click",()=>openCustomer(btn.dataset.open)));
+  $("recent").innerHTML=(DATA.recentPayments||[]).slice(0,12).map(x=>`<div class="pay"><b>${esc(x.kind==="payment_succeeded"?"รับเงินแล้ว":x.kind==="payment_failed"?"จ่ายไม่ผ่าน":"Subscription")}</b><small>${esc(x.plan||"")} · ${money(Number(x.amountMinor||0)/100)} ${String(x.currency||"").toUpperCase()}</small><small>${date(x.paidAt||x.createdAt)}</small></div>`).join("")||'<div class="sub">ยังไม่มีรายการชำระเงินหลังเปิด v7.77</div>';
+}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+async function load(){
+  $("refreshBtn").disabled=true;
+  try{DATA=await api("/admin/ops/billing");$("generated").textContent="อัปเดต "+new Date(DATA.generatedAt).toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"});render();showApp();}
+  catch(e){alert(e.message)}
+  finally{$("refreshBtn").disabled=false}
+}
+async function openCustomer(tenant){
+  try{
+    const data=await api("/admin/ops/customer?tenant="+encodeURIComponent(tenant));
+    const c=data.customer||{};
+    const dashboards=(c.businessesDetail||[]).map(b=>b.dashboardUrl).filter(Boolean);
+    const lines=[c.companyName||tenant,`แพ็ก: ${c.subscription?.planName||"—"}`,`สถานะ: ${c.subscription?.stripePaymentStatus||c.subscription?.status||"—"}`,`ต่ออายุ: ${date(c.subscription?.stripeCurrentPeriodEnd)}`,`AI: ${c.aiUsage?.documents||0}/${c.aiUsage?.limit||0}`,`รายการ: ${c.usage?.documents||0}/${c.subscription?.documentLimit||0}`];
+    if(confirm(lines.join("\n")+(dashboards[0]?"\n\nกด OK เพื่อเปิด Dashboard ลูกค้า":""))&&dashboards[0])window.open(dashboards[0],"_blank","noopener");
+  }catch(e){alert(e.message)}
+}
+$("loginForm").addEventListener("submit",async e=>{
+  e.preventDefault();$("loginError").textContent="";
+  try{const data=await api("/admin/ops/login",{method:"POST",body:JSON.stringify({pin:$("pin").value})});sessionStorage.setItem(STORAGE,data.session);await load();}
+  catch(err){$("loginError").textContent=err.message}
+});
+$("logoutBtn").addEventListener("click",async()=>{try{await api("/admin/ops/logout",{method:"POST"})}catch{}sessionStorage.removeItem(STORAGE);showLogin()});
+$("refreshBtn").addEventListener("click",load);
+["search","statusFilter","planFilter"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",render));
+if(session())load();else showLogin();
+</script>
+</body>
+</html>
