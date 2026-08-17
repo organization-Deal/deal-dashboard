@@ -3,13 +3,14 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 
 const root = process.cwd();
-const MARK = "TRIAL_UI_30D_1000_V7_72_20260817";
+const MARK = "TRIAL_UI_30D_1000_V7_72_2_20260817";
 const files = {
   pilot: path.join(root, "pilot.html"),
   index: path.join(root, "index.html"),
   dashboard: path.join(root, "assets", "dashboard.js"),
   admin: path.join(root, "assets", "admin.js"),
   adminHtml: path.join(root, "admin.html"),
+  reimbursement: path.join(root, "assets", "reimbursement-batch-lock.js"),
 };
 
 for (const [name, file] of Object.entries(files)) {
@@ -79,6 +80,24 @@ dash = rep(dash, "ทดลองใช้ Business ฟรี 60 วัน", "�
 fs.writeFileSync(files.dashboard, dash);
 execFileSync(process.execPath, ["--check", files.dashboard], { stdio: "inherit" });
 
+/* Billing overlay — this file redefines renderSubscription after dashboard.js,
+   so it must use the same Trial truth or it will visually overwrite v7.72. */
+let reimbursement = fs.readFileSync(files.reimbursement, "utf8");
+reimbursement = rep(reimbursement, "Trial = Business 60 วันต่อบัญชี, 1,500 รายการ/เดือน, 10 ธุรกิจ", "Trial = Business 30 วันต่อบัญชี, 1,000 รายการ/เดือน, 10 ธุรกิจ");
+reimbursement = rep(reimbursement, "60-DAY FREE TRIAL", "30-DAY FREE TRIAL");
+reimbursement = rep(reimbursement, "ทดลองใช้ Business ฟรี 60 วัน", "ทดลองใช้ Business ฟรี 30 วัน");
+reimbursement = rep(reimbursement, "ทดลองใช้สิทธิ์ระดับ Business เต็ม 60 วัน ไม่มีการตัดเงินอัตโนมัติ · 1,500 รายการ/เดือน · สูงสุด 10 ธุรกิจ", "ทดลองใช้สิทธิ์ระดับ Business เต็ม 30 วัน ไม่มีการตัดเงินอัตโนมัติ · 1,000 รายการ/เดือน · สูงสุด 10 ธุรกิจ");
+reimbursement = rep(reimbursement, "${used}/${limit || 1500} รายการ", "${used}/${limit || 1000} รายการ");
+reimbursement = rep(reimbursement, "หลังทดลองใช้ฟรี 60 วัน?", "หลังทดลองใช้ฟรี 30 วัน?");
+reimbursement = rep(reimbursement, "ทดลองใช้ฟรี Business ต่อจนครบ 60 วัน", "ทดลองใช้ฟรี Business ต่อจนครบ 30 วัน");
+fs.writeFileSync(files.reimbursement, reimbursement);
+execFileSync(process.execPath, ["--check", files.reimbursement], { stdio: "inherit" });
+
+// Force browsers to request the corrected billing overlay even if an older asset was cached.
+index = fs.readFileSync(files.index, "utf8");
+index = index.replace(/\.\/assets\/reimbursement-batch-lock\.js\?v=[^"]+/, "./assets/reimbursement-batch-lock.js?v=7.72.2.20260817");
+fs.writeFileSync(files.index, index);
+
 /* Internal Ops is dynamic from backend, but remove any stale hard-coded public copy if present. */
 for (const file of [files.admin, files.adminHtml]) {
   let s = fs.readFileSync(file, "utf8");
@@ -95,6 +114,8 @@ const forbidden = [
   [/ทดลองใช้(?:แพ็กเกจ\s*)?Business ฟรี 60 วัน/, "Business free 60 days"],
   [/Beta ฟรี.*ไม่จำกัดจำนวนเอกสาร/, "unlimited Beta copy"],
   [/ช่วง Beta ไม่จำกัดจำนวนเอกสาร/, "unlimited Beta status"],
+  [/ทดลองใช้สิทธิ์ระดับ Business เต็ม 60 วัน/, "billing overlay 60-day description"],
+  [/หลังทดลองใช้ฟรี 60 วัน/, "billing overlay 60-day upgrade copy"],
 ];
 
 for (const file of Object.values(files)) {
@@ -103,6 +124,12 @@ for (const file of Object.values(files)) {
     if (rx.test(s)) throw new Error(`v7.72 UI audit failed: ${label} remains in ${path.relative(root, file)}`);
   }
 }
+
+const finalReimbursement = fs.readFileSync(files.reimbursement, "utf8");
+if (/\$\{used\}\/\$\{limit \|\| 1500\}/.test(finalReimbursement)) throw new Error("v7.72: billing Trial fallback still uses 1500");
+if (!finalReimbursement.includes("30-DAY FREE TRIAL")) throw new Error("v7.72: billing overlay 30-day badge missing");
+if (!finalReimbursement.includes("เต็ม 30 วัน ไม่มีการตัดเงินอัตโนมัติ · 1,000 รายการ/เดือน")) throw new Error("v7.72: billing overlay 30-day/1000 description missing");
+if (!finalReimbursement.includes('features: ["1,500 รายการ/เดือน"')) throw new Error("v7.72: paid Business 1,500 package was changed unexpectedly");
 
 const finalPilot = fs.readFileSync(files.pilot, "utf8");
 if (/1,500 รายการ\/เดือน/.test(finalPilot)) throw new Error("v7.72 UI audit failed: Pilot 1,500 trial copy remains in pilot.html");
@@ -113,5 +140,8 @@ console.log("✅ " + MARK + " ready");
 console.log("✅ Pilot Form shows Business Trial 30 days / 1,000 documents per month");
 console.log("✅ Dashboard Trial copy no longer says Pro or unlimited documents");
 console.log("✅ Dashboard shows 30-day Trial copy and uses backend 1,000 quota");
+console.log("✅ Billing overlay now matches Trial 30 days / 1,000 documents");
+console.log("✅ paid Business package remains 1,500 documents/month");
+console.log("✅ reimbursement-batch-lock cache key bumped to v7.72.2");
 console.log("✅ Internal Ops has no hard-coded 60-day Trial copy");
 console.log("✅ live UI audit found no 60-day / unlimited Trial copy");
