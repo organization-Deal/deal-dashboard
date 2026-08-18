@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 
 const file=path.join(process.cwd(),"assets","dashboard.js");
 const indexFile=path.join(process.cwd(),"index.html");
-const MARK="PRO_MANUAL_EXPENSE_UI_V7_79_20260818";
+const MARK="PRO_MANUAL_EXPENSE_UI_V7_79_1_20260818";
 if(!fs.existsSync(file)) throw new Error("v7.79 missing dashboard.js");
 let js=fs.readFileSync(file,"utf8");
 
@@ -73,7 +73,7 @@ function renderModal(){
       <div class="pro779-field"><label>วันที่รายการ *</label><input id="p779date" type="date" required></div>
       <div class="pro779-field"><label>ประเภทเอกสาร</label><select id="p779doctype"><option>บันทึกเอง</option><option>ใบเสร็จรับเงิน</option><option>ใบกำกับภาษี</option><option>ใบแจ้งหนี้</option><option>สลิปโอนเงิน</option><option>เอกสารอื่น</option></select></div>
       <div class="pro779-field"><label>ร้านค้า / ผู้รับเงิน *</label><input id="p779vendor" maxlength="180" placeholder="เช่น บริษัท ABC จำกัด" required></div>
-      <div class="pro779-field"><label>หมวดรายจ่าย</label><select id="p779cat">${cats()}</select></div>
+      <div class="pro779-field"><label>หมวดรายจ่าย</label><select id="p779cat">\${cats()}</select></div>
       <div class="pro779-field"><label>ผู้เบิก / ผู้จ่าย</label><input id="p779payer" maxlength="180" placeholder="ชื่อผู้เบิกหรือผู้จ่าย"></div>
      </div>
     </section>
@@ -175,6 +175,6 @@ fs.writeFileSync(file,js);
 execFileSync(process.execPath,["--check",file],{stdio:"inherit"});
 
 let html=fs.readFileSync(indexFile,"utf8");
-html=html.replace(/\.\/assets\/dashboard\.js\?v=[^"]+/, "./assets/dashboard.js?v=7.79.20260818");
+html=html.replace(/\.\/assets\/dashboard\.js\?v=[^"]+/, "./assets/dashboard.js?v=7.79.1.20260818");
 fs.writeFileSync(indexFile,html);
 console.log(`✅ ${MARK}`);
