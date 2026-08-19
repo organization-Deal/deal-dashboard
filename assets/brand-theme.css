@@ -1,4 +1,4 @@
-/* RUBJAI_DIRECT_SOURCE_V7_99_20260820
+/* RUBJAI_DIRECT_SOURCE_V8_00_20260820
    FINAL DIRECT-SOURCE CI
    -------------------------------------------------------------
    This file is intentionally committed as assets/brand-theme.css
@@ -595,9 +595,6 @@ html body .expense-status-tab.active{
 /* Marker for deployment verification in DevTools:
    getComputedStyle(document.documentElement).getPropertyValue('--rubjai-ci-build')
 */
-:root{--rubjai-ci-build:"v7.99-direct-source-20260820";}
-
-
 /* ============================================================
    V7.98 — MUTED SUCCESS + OPERATION OVERLAY CI
    Direct-source overrides verified against:
@@ -729,9 +726,6 @@ html body [data-operation-lock="1"]{
     font-size:21px!important;
   }
 }
-
-:root{--rubjai-ci-build:"v7.99-direct-source-20260820";}
-
 
 /* ============================================================
    V7.99 — FULL ACTIVE-UI CI AUDIT
@@ -993,6 +987,94 @@ html body input[type="radio"]{
 }
 
 /* CI build marker */
-:root{--rubjai-ci-build:"v7.99-direct-source-20260820";}
 
-:root{--rubjai-ci-build:"v7.99-direct-source-20260820";}
+
+/* ============================================================
+   V8.00 — EXACT READINESS + LIVE SYNC CI FIX
+   Verified against actual source selectors in dashboard.css:
+   .onboarding.complete .count
+   .onboarding.complete .onboarding-progress span
+   .onboard-step.done .step-dot
+   .syncstate.ok .dot
+   ============================================================ */
+
+/* Business readiness is product progress, not a green success area. */
+html body .onboarding .onboarding-progress{
+  background:#E4E7EC!important;
+}
+
+html body .onboarding .onboarding-progress span,
+html body .onboarding.complete .onboarding-progress span{
+  background:#4F46E5!important;
+}
+
+html body .onboarding .onboarding-head .count,
+html body .onboarding.complete .onboarding-head .count,
+html body .onboarding.complete .count{
+  color:#4F46E5!important;
+  font-weight:700!important;
+}
+
+/* Completed setup steps use Indigo-soft checks, not bright green circles. */
+html body .onboard-step.done .step-dot{
+  background:#EEF2FF!important;
+  border-color:#C7D2FE!important;
+  color:#4F46E5!important;
+  box-shadow:none!important;
+}
+
+/* Keep completed copy neutral; no green text. */
+html body .onboard-step.done{
+  color:#667085!important;
+  text-decoration:none!important;
+}
+
+html body .onboard-step.done .step-copy,
+html body .onboard-step.done .step-main,
+html body .onboard-step.done .step-note{
+  color:#667085!important;
+}
+
+/* Current/next setup step uses brand focus. */
+html body .onboard-step.next{
+  color:#101828!important;
+}
+
+html body .onboard-step.next .step-dot{
+  background:#FFFFFF!important;
+  border-color:#4F46E5!important;
+  color:#4F46E5!important;
+  box-shadow:0 0 0 3px rgba(79,70,229,.10)!important;
+}
+
+/* Live sync / latest-data chip is informational, not a success badge. */
+html body .syncstate.ok{
+  background:rgba(255,255,255,.88)!important;
+  color:#667085!important;
+  border-color:#E4E7EC!important;
+  box-shadow:none!important;
+}
+
+html body .syncstate.ok .dot{
+  background:#4F46E5!important;
+  box-shadow:0 0 0 3px rgba(79,70,229,.10)!important;
+}
+
+/* Synchronizing remains neutral; error remains semantic red. */
+html body .syncstate.syncing .dot{
+  background:#98A2B3!important;
+  box-shadow:none!important;
+}
+
+html body .syncstate.error .dot{
+  background:#B42318!important;
+  box-shadow:0 0 0 3px rgba(180,35,24,.09)!important;
+}
+
+/* Sidebar business-readiness header must never inherit success green. */
+html body .onboarding.complete .onboarding-head strong{
+  color:#101828!important;
+}
+
+/* Deployment marker */
+:root{--rubjai-ci-build:"v8.00-direct-source-20260820";}
