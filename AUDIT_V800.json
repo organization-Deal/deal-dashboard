@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "checks": {
+    "brace_balance": true,
+    "exact_onboarding_progress": true,
+    "exact_done_dot": true,
+    "exact_sync_dot": true,
+    "indigo_progress": true,
+    "build_marker": true
+  }
+}
