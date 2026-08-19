@@ -1,0 +1,41 @@
+{
+  "version": "v7.97-direct-source-20260819",
+  "overall": "PASS 4/4",
+  "automated_checks": {
+    "marker": true,
+    "manual_expense_primary": true,
+    "vendor_secondary": true,
+    "table_action_neutral": true,
+    "usage_guide_override": true,
+    "reconciliation_override": true,
+    "settings_dark_panel_override": true,
+    "brace_balance": true,
+    "no_black_background_literals": true
+  },
+  "passes": [
+    {
+      "pass": 1,
+      "name": "Source/deployment path",
+      "result": "PASS",
+      "detail": "แก้ assets/brand-theme.css โดยตรง ซึ่ง index.html อ้าง path นี้อยู่แล้ว ไม่พึ่ง apply-vxxx ให้รันก่อน"
+    },
+    {
+      "pass": 2,
+      "name": "CSS conflict/specificity",
+      "result": "PASS",
+      "detail": "ใช้ selector ระดับ page ID/element ID + !important เพื่อชนะ dashboard.css และ v7.88 dark rules"
+    },
+    {
+      "pass": 3,
+      "name": "Dynamic/repeated actions",
+      "result": "PASS",
+      "detail": "ตรวจเอกสาร/เพิ่มข้อมูลบัญชี/ดูรายละเอียดใน .acct-next ถูกบังคับเป็น neutral outline แม้ runtime เก่าจะใส่ primary-next"
+    },
+    {
+      "pass": 4,
+      "name": "CI color budget",
+      "result": "PASS",
+      "detail": "ไม่มี permanent black background literal ในไฟล์ final; Indigo ใช้ primary/active/focus และ semantic colors จำกัดที่สถานะ"
+    }
+  ]
+}
