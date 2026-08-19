@@ -1,0 +1,4 @@
+เปลี่ยนใน deal-dashboard/index.html:
+<link rel="stylesheet" href="./assets/brand-theme.css?v=7.86.20260819">
+เป็น
+<link rel="stylesheet" href="./assets/brand-theme.css?v=7.99.20260820">
