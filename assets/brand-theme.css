@@ -1,4 +1,4 @@
-/* RUBJAI_DIRECT_SOURCE_V7_98_20260820
+/* RUBJAI_DIRECT_SOURCE_V7_99_20260820
    FINAL DIRECT-SOURCE CI
    -------------------------------------------------------------
    This file is intentionally committed as assets/brand-theme.css
@@ -27,8 +27,8 @@
   --rj-primary:#4f46e5;
   --rj-primary-hover:#4338ca;
   --rj-primary-soft:#eef2ff;
-  --rj-success:#15803d;
-  --rj-success-soft:#ecfdf3;
+  --rj-success:#39705a;
+  --rj-success-soft:#f1f6f3;
   --rj-warning:#b45309;
   --rj-warning-soft:#fff7ed;
   --rj-danger:#b42318;
@@ -595,7 +595,7 @@ html body .expense-status-tab.active{
 /* Marker for deployment verification in DevTools:
    getComputedStyle(document.documentElement).getPropertyValue('--rubjai-ci-build')
 */
-:root{--rubjai-ci-build:"v7.98-direct-source-20260820";}
+:root{--rubjai-ci-build:"v7.99-direct-source-20260820";}
 
 
 /* ============================================================
@@ -730,4 +730,269 @@ html body [data-operation-lock="1"]{
   }
 }
 
-:root{--rubjai-ci-build:"v7.98-direct-source-20260820";}
+:root{--rubjai-ci-build:"v7.99-direct-source-20260820";}
+
+
+/* ============================================================
+   V7.99 — FULL ACTIVE-UI CI AUDIT
+   One visual language across Dashboard + runtime injected panels
+   ============================================================ */
+
+/* ----- Documentation center: no dark attention KPI ----- */
+html body .doc-kpi.attention{
+  background:#fff!important;
+  color:var(--rj-ink)!important;
+  border-color:#c7d2fe!important;
+  box-shadow:0 0 0 1px #e0e7ff inset!important;
+}
+html body .doc-kpi.attention span,
+html body .doc-kpi.attention small{
+  color:var(--rj-muted)!important;
+}
+html body .doc-kpi.attention strong{
+  color:var(--rj-primary)!important;
+}
+
+/* ----- Batch hero / flow: calm white + Indigo selection ----- */
+html body #page-batches .batch-hero{
+  background:#fff!important;
+  background-image:none!important;
+  color:var(--rj-ink)!important;
+  border:1px solid var(--rj-line)!important;
+  box-shadow:none!important;
+}
+html body #page-batches .batch-hero .eyebrow{
+  color:var(--rj-primary)!important;
+}
+html body #page-batches .batch-hero h3{
+  color:var(--rj-ink)!important;
+}
+html body #page-batches .batch-hero p,
+html body #page-batches .batch-next span{
+  color:var(--rj-muted)!important;
+}
+html body #page-batches .batch-next strong{
+  color:var(--rj-ink)!important;
+}
+html body #page-batches .batch-flow-step.active{
+  background:var(--rj-primary-soft)!important;
+  border-color:#a5b4fc!important;
+  box-shadow:0 0 0 1px #c7d2fe inset!important;
+}
+html body #page-batches .batch-flow-step.active>span{
+  background:var(--rj-primary)!important;
+  color:#fff!important;
+}
+html body #page-batches .batch-status,
+html body #page-batches .batch-round-state,
+html body #page-batches .acct-step{
+  position:relative!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  background:#f2f4f7!important;
+  color:#475467!important;
+  border-color:transparent!important;
+}
+html body #page-batches .batch-status::before,
+html body #page-batches .batch-round-state::before,
+html body #page-batches .acct-step::before{
+  content:""!important;
+  width:6px!important;height:6px!important;border-radius:50%!important;
+  background:#98a2b3!important;flex:0 0 6px!important;
+}
+html body #page-batches .batch-status.done::before,
+html body #page-batches .batch-status.paid::before,
+html body #page-batches .batch-round-state.approved::before,
+html body #page-batches .batch-round-state.paid::before,
+html body #page-batches .acct-step.done::before{
+  background:var(--rj-success)!important;
+}
+html body #page-batches .batch-status.urgent::before,
+html body #page-batches .batch-round-state.urgent::before,
+html body #page-batches .acct-step.wait::before{
+  background:var(--rj-warning)!important;
+}
+html body #page-batches .batch-check.done i{
+  background:var(--rj-success-soft)!important;
+  color:var(--rj-success)!important;
+}
+
+/* ----- Flexible workflow: selection is Indigo, stages are neutral ----- */
+html body .workflow-current-badge{
+  background:var(--rj-primary-soft)!important;
+  color:var(--rj-primary)!important;
+}
+html body .workflow-preset.active{
+  background:var(--rj-primary-soft)!important;
+  border-color:#a5b4fc!important;
+  box-shadow:0 0 0 1px #c7d2fe inset!important;
+}
+html body .workflow-toggle-card input:checked+i{
+  background:var(--rj-primary)!important;
+}
+html body .workflow-stage,
+html body .workflow-stage.approval,
+html body .workflow-stage.review,
+html body .workflow-stage.payment,
+html body .workflow-stage.paid{
+  background:#f8fafc!important;
+  border-color:var(--rj-line)!important;
+}
+html body .workflow-stage.approval{border-top:2px solid #c7d2fe!important}
+html body .workflow-stage.review{border-top:2px solid #cbd5e1!important}
+html body .workflow-stage.payment{border-top:2px solid #fed7aa!important}
+html body .workflow-stage.paid{border-top:2px solid #cfe2d7!important}
+
+/* ----- Reconciliation: no colored full rows / colored pill blocks ----- */
+html body #page-reconciliation .recon-table tbody tr td,
+html body #page-reconciliation .recon-table tbody tr.reconciled td,
+html body #page-reconciliation .recon-table tbody tr.unmatched td,
+html body #page-reconciliation .recon-table tbody tr.review td,
+html body #page-reconciliation .recon-table tbody tr:hover td,
+html body #page-reconciliation .recon-table tbody tr.reconciled:hover td,
+html body #page-reconciliation .recon-table tbody tr.unmatched:hover td,
+html body #page-reconciliation .recon-table tbody tr.review:hover td{
+  background:#fff!important;
+}
+html body #page-reconciliation .recon-table tbody tr:hover td{
+  background:#fafbff!important;
+}
+html body #page-reconciliation .recon-status{
+  position:relative!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  background:#f2f4f7!important;
+  color:#475467!important;
+  border:0!important;
+}
+html body #page-reconciliation .recon-status::before{
+  content:""!important;
+  width:6px!important;height:6px!important;border-radius:50%!important;
+  background:#98a2b3!important;
+}
+html body #page-reconciliation .recon-status.reconciled::before{background:var(--rj-success)!important}
+html body #page-reconciliation .recon-status.suggested::before{background:var(--rj-primary)!important}
+html body #page-reconciliation .recon-status.review::before{background:var(--rj-warning)!important}
+html body #page-reconciliation .recon-status.unmatched::before{background:var(--rj-danger)!important}
+
+/* ----- Finance channels: badges neutral; main account only uses Indigo ----- */
+html body .finance-account-icon,
+html body .recon-account-logo{
+  background:var(--rj-primary-soft)!important;
+  color:var(--rj-primary)!important;
+  box-shadow:none!important;
+}
+html body .finance-badge{
+  background:#f2f4f7!important;
+  color:#475467!important;
+  border:0!important;
+}
+html body .finance-badge.default{
+  background:var(--rj-primary-soft)!important;
+  color:var(--rj-primary)!important;
+}
+html body .finance-flow span{
+  background:#f8fafc!important;
+  color:#475467!important;
+}
+
+/* ----- System / integration page ----- */
+html body #page-settings .system-control-hero{
+  background:#fff!important;
+  color:var(--rj-ink)!important;
+  border:1px solid var(--rj-line)!important;
+  box-shadow:none!important;
+}
+html body #page-settings .system-control-eyebrow{
+  color:var(--rj-primary)!important;
+}
+html body #page-settings .system-control-copy h3{
+  color:var(--rj-ink)!important;
+}
+html body #page-settings .system-control-copy p{
+  color:var(--rj-muted)!important;
+}
+html body #page-settings .system-live{
+  color:var(--rj-muted)!important;
+  border-color:var(--rj-line)!important;
+  background:#f8fafc!important;
+}
+html body #page-settings .system-live i,
+html body #page-settings .integration-state.ok .state-dot{
+  background:var(--rj-success)!important;
+  box-shadow:0 0 0 3px rgba(57,112,90,.09)!important;
+}
+html body #page-settings .integration-state.warn .state-dot{background:var(--rj-warning)!important}
+html body #page-settings .integration-state.bad .state-dot{background:var(--rj-danger)!important}
+html body #page-settings .integration-icon,
+html body #page-settings .integration-icon.line,
+html body #page-settings .integration-icon.gmail{
+  background:var(--rj-primary-soft)!important;
+  color:var(--rj-primary)!important;
+}
+html body #page-settings .integration-icon.google{
+  background:#fff!important;
+  color:var(--rj-ink)!important;
+  border-color:var(--rj-line)!important;
+}
+
+/* ----- Billing small badge ----- */
+html body .beta-plan-badge{
+  background:var(--rj-primary-soft)!important;
+  color:var(--rj-primary)!important;
+  border:1px solid #dfe3ff!important;
+}
+
+/* ----- Runtime manual expense modal injected from JS ----- */
+html body .manual-expense-modal{
+  background:rgba(247,248,252,.78)!important;
+  backdrop-filter:blur(14px)!important;
+}
+html body .manual-expense-card.simple7792{
+  background:#f7f8fc!important;
+  box-shadow:0 24px 60px rgba(16,24,40,.12)!important;
+}
+html body .simple7792-field input:focus,
+html body .simple7792-field select:focus,
+html body .simple7792-field textarea:focus{
+  border-color:var(--rj-primary)!important;
+  box-shadow:0 0 0 3px rgba(79,70,229,.10)!important;
+}
+html body .simple7792-choice.active{
+  border-color:#a5b4fc!important;
+  background:var(--rj-primary-soft)!important;
+}
+html body .simple7792-check input{
+  accent-color:var(--rj-primary)!important;
+}
+html body .manual-expense-toast{
+  background:#fff!important;
+  color:var(--rj-ink)!important;
+  border:1px solid var(--rj-line)!important;
+  box-shadow:0 16px 40px rgba(16,24,40,.12)!important;
+}
+
+/* ----- Canonical controls ----- */
+html body input[type="checkbox"],
+html body input[type="radio"]{
+  accent-color:var(--rj-primary)!important;
+}
+
+/* ----- Mobile: active nav remains soft Indigo, never dark ----- */
+@media(max-width:600px){
+  html body .sidebar .navlink.active{
+    background:var(--rj-primary-soft)!important;
+    color:var(--rj-primary)!important;
+    border-color:transparent!important;
+  }
+  html body .sidebar .navlink.active .ic{
+    color:var(--rj-primary)!important;
+  }
+}
+
+/* CI build marker */
+:root{--rubjai-ci-build:"v7.99-direct-source-20260820";}
+
+:root{--rubjai-ci-build:"v7.99-direct-source-20260820";}
