@@ -1,0 +1,12 @@
+{
+  "version": "v7.98-direct-source-20260820",
+  "checks": {
+    "operation_overlay": true,
+    "operation_spinner": true,
+    "operation_bar": true,
+    "muted_success": true,
+    "build_marker": true,
+    "brace_balance": true
+  },
+  "result": "PASS"
+}
