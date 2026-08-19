@@ -1,0 +1,151 @@
+/* RUBJAI_UNIFIED_BRAND_V786
+   Shared CI: IBM Plex Sans Thai + Deep Navy + Indigo
+   Website / Dashboard / LINE forms use the same visual language.
+*/
+:root{
+  --brand-navy:#111827;
+  --brand-navy-2:#0b1220;
+  --brand-indigo:#4f46e5;
+  --brand-indigo-hover:#4338ca;
+  --brand-indigo-soft:#eef2ff;
+  --brand-bg:#f7f8fc;
+  --brand-surface:#ffffff;
+  --brand-text:#111827;
+  --brand-muted:#667085;
+  --brand-border:#e4e7ec;
+  --brand-success:#16a34a;
+  --brand-success-soft:#ecfdf3;
+  --brand-warning:#d97706;
+  --brand-warning-soft:#fff7ed;
+  --brand-danger:#dc2626;
+  --brand-danger-soft:#fef2f2;
+
+  /* Remap existing dashboard tokens */
+  --bg:var(--brand-bg);
+  --surface:var(--brand-surface);
+  --surface-2:#f3f5f9;
+  --ink:var(--brand-text);
+  --muted:var(--brand-muted);
+  --muted-2:#8a94a6;
+  --line:var(--brand-border);
+  --line-strong:#d0d5dd;
+  --blue:var(--brand-indigo);
+  --blue-soft:var(--brand-indigo-soft);
+  --green:var(--brand-success);
+  --green-soft:var(--brand-success-soft);
+  --orange:var(--brand-warning);
+  --orange-soft:var(--brand-warning-soft);
+  --amber:#f59e0b;
+  --amber-soft:#fffbeb;
+  --red:var(--brand-danger);
+  --red-soft:var(--brand-danger-soft);
+  --sidebar:#fbfcff;
+}
+
+html,body,button,input,select,textarea,a,label,table,th,td,
+h1,h2,h3,h4,h5,h6,p,span,strong,small,summary{
+  font-family:"IBM Plex Sans Thai","Noto Sans Thai","Leelawadee UI",sans-serif!important;
+}
+body{
+  background:var(--brand-bg)!important;
+  color:var(--brand-text)!important;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+button,input,select,textarea{font:inherit!important}
+h1,h2,h3,h4,h5,h6{color:var(--brand-text);font-weight:600!important;letter-spacing:-.025em!important}
+::selection{background:#c7d2fe;color:var(--brand-navy)}
+:focus-visible{outline:2px solid var(--brand-indigo)!important;outline-offset:2px!important}
+
+/* Navigation */
+.sidebar{background:rgba(251,252,255,.94)!important;border-right-color:var(--brand-border)!important}
+.navlink.active{
+  background:var(--brand-indigo-soft)!important;
+  color:var(--brand-indigo-hover)!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+}
+.navlink.active:before{background:var(--brand-indigo)!important}
+.navlink.active .ic{color:var(--brand-indigo)!important}
+.navlink:hover{background:#f1f3f8!important;color:var(--brand-text)!important}
+.subnavlink.active,.subnavlink:hover{background:var(--brand-indigo-soft)!important;color:var(--brand-indigo-hover)!important}
+.business-switcher-primary .business-switcher-btn{border-color:var(--brand-border)!important}
+.business-switcher-avatar,.workspace-avatar{
+  background:linear-gradient(145deg,var(--brand-navy),#1e293b)!important;
+  color:#fff!important;
+}
+
+/* Primary actions */
+.btn.solid,
+.control-action.primary,
+.income-action.primary,
+.acct7-btn.primary,
+.pricing-card.recommended .plan-action,
+.pricing-card .plan-action.primary,
+.simple-create-v739,
+button[type="submit"].primary,
+.plan-action.primary{
+  background:var(--brand-indigo)!important;
+  border-color:var(--brand-indigo)!important;
+  color:#fff!important;
+}
+.btn.solid:hover,
+.control-action.primary:hover,
+.income-action.primary:hover,
+.acct7-btn.primary:hover,
+.plan-action.primary:hover{
+  background:var(--brand-indigo-hover)!important;
+  border-color:var(--brand-indigo-hover)!important;
+}
+.workspace-link.drive{
+  background:var(--brand-navy)!important;
+  border-color:var(--brand-navy)!important;
+  color:#fff!important;
+}
+
+/* Hero / focus surfaces */
+.kpi.hero,.batch-hero,.doc-kpi.attention,.workspace-status-panel{
+  background:linear-gradient(135deg,var(--brand-navy) 0%,#1e1b4b 100%)!important;
+  border-color:transparent!important;
+  color:#fff!important;
+}
+.track .fill,.operation-bar i,.billing-progress>i{
+  background:var(--brand-indigo)!important;
+}
+
+/* Cards / fields */
+.card,.kpi,.company-menu,.syncstate,.acct7-card,.acct7-kpi,
+.billing-current,.pricing-card,.usage784-card{
+  border-color:rgba(17,24,39,.075)!important;
+}
+input:focus,select:focus,textarea:focus,
+.acct7-input:focus,.acct7-select:focus,.acct7-textarea:focus{
+  border-color:#818cf8!important;
+  box-shadow:0 0 0 3px rgba(79,70,229,.10)!important;
+}
+
+/* Status colors stay semantic and consistent */
+.badge.paid,.batch-status.done,.status-paid,.row-paid .badge,
+.usage-good,.good{
+  color:var(--brand-success)!important;
+}
+.badge.pending,.batch-status.waiting,.status-waiting,.warn{
+  color:var(--brand-warning)!important;
+}
+.badge.rejected,.status-rejected,.danger,.bad{
+  color:var(--brand-danger)!important;
+}
+
+/* Billing / package accents */
+.pricing-card.recommended{
+  border-color:var(--brand-indigo)!important;
+  box-shadow:0 0 0 1px var(--brand-indigo) inset,0 16px 42px rgba(79,70,229,.08)!important;
+}
+.billing-current-access,.usage784-head h3{color:var(--brand-navy)!important}
+.billing-progress>i{background:var(--brand-indigo)!important}
+
+/* Keep numbers crisp */
+.big,.money,.amount,.acct7-kpi strong,.billing-usage-number,.usage784-kpi strong{
+  font-variant-numeric:tabular-nums;
+}
