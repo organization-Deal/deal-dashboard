@@ -1,4 +1,4 @@
-/* RUBJAI_DIRECT_SOURCE_V7_97_20260819
+/* RUBJAI_DIRECT_SOURCE_V7_98_20260820
    FINAL DIRECT-SOURCE CI
    -------------------------------------------------------------
    This file is intentionally committed as assets/brand-theme.css
@@ -595,4 +595,139 @@ html body .expense-status-tab.active{
 /* Marker for deployment verification in DevTools:
    getComputedStyle(document.documentElement).getPropertyValue('--rubjai-ci-build')
 */
-:root{--rubjai-ci-build:"v7.97-direct-source-20260819";}
+:root{--rubjai-ci-build:"v7.98-direct-source-20260820";}
+
+
+/* ============================================================
+   V7.98 — MUTED SUCCESS + OPERATION OVERLAY CI
+   Direct-source overrides verified against:
+   .operation-overlay / .operation-card / .operation-spinner /
+   .operation-bar from assets/dashboard.css
+   ============================================================ */
+
+:root{
+  /* Success must support Indigo, not compete with it. */
+  --rj-success:#39705a;
+  --rj-success-soft:#f1f6f3;
+  --green:#39705a;
+  --green-soft:#f1f6f3;
+}
+
+/* ---- Success / connection language ---- */
+html body .syncstate.ok .dot{
+  background:#39705a!important;
+  box-shadow:0 0 0 3px rgba(57,112,90,.09)!important;
+}
+html body .connbtn.ok{
+  background:#f1f6f3!important;
+  color:#39705a!important;
+  border-color:#dce9e2!important;
+}
+html body .setup-status-v51 .setup-status-dot,
+html body .setup-status-v51 .onboarding-progress span{
+  background:#39705a!important;
+}
+html body .setup-status-v51 .count{
+  color:#39705a!important;
+}
+html body .onboard-step,
+html body .onboard-step.done,
+html body .onboard-step.complete{
+  color:#667085!important;
+}
+html body .onboard-step.done .step-dot,
+html body .onboard-step.complete .step-dot{
+  background:#39705a!important;
+}
+html body .master-status.paid::before,
+html body .expense-state.paid::before,
+html body .badge.paid::before{
+  background:#39705a!important;
+}
+
+/* Keep success chip surface neutral. Green is the signal, not the surface. */
+html body .master-status.paid,
+html body .expense-state.paid,
+html body .badge.paid{
+  background:#f2f4f7!important;
+  color:#475467!important;
+  border-color:transparent!important;
+}
+
+/* ---- Global operation feedback ---- */
+html body .operation-overlay{
+  background:rgba(247,248,252,.88)!important;
+  backdrop-filter:blur(14px)!important;
+  -webkit-backdrop-filter:blur(14px)!important;
+}
+html body .operation-card{
+  width:min(92vw,420px)!important;
+  padding:30px 28px 28px!important;
+  border:1px solid #e4e7ec!important;
+  border-radius:22px!important;
+  background:#fff!important;
+  color:#101828!important;
+  box-shadow:
+    0 24px 60px rgba(16,24,40,.10),
+    0 2px 8px rgba(16,24,40,.04)!important;
+}
+html body .operation-spinner{
+  width:44px!important;
+  height:44px!important;
+  margin:0 auto 18px!important;
+  border:4px solid #e9eaf0!important;
+  border-top-color:#4f46e5!important;
+  border-right-color:#c7d2fe!important;
+  box-shadow:none!important;
+}
+html body .operation-card h3{
+  margin:0 0 7px!important;
+  color:#101828!important;
+  font-size:23px!important;
+  font-weight:600!important;
+  letter-spacing:-.025em!important;
+}
+html body .operation-card p{
+  margin:0!important;
+  color:#667085!important;
+  font-size:13px!important;
+  line-height:1.6!important;
+}
+html body .operation-bar{
+  height:4px!important;
+  margin-top:20px!important;
+  border-radius:999px!important;
+  background:#eef0f4!important;
+  overflow:hidden!important;
+}
+html body .operation-bar i{
+  width:42%!important;
+  height:100%!important;
+  border-radius:999px!important;
+  background:#4f46e5!important;
+  box-shadow:none!important;
+}
+
+/* Locked controls should look disabled, not black. */
+html body [data-operation-lock="1"]{
+  opacity:.52!important;
+  cursor:wait!important;
+  filter:saturate(.72)!important;
+}
+
+/* Smaller mobile loading card */
+@media(max-width:640px){
+  html body .operation-overlay{
+    padding:18px!important;
+  }
+  html body .operation-card{
+    width:min(100%,390px)!important;
+    padding:26px 22px 24px!important;
+    border-radius:20px!important;
+  }
+  html body .operation-card h3{
+    font-size:21px!important;
+  }
+}
+
+:root{--rubjai-ci-build:"v7.98-direct-source-20260820";}
