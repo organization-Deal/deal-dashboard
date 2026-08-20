@@ -1,14 +1,18 @@
 {
   "result": "PASS",
   "checks": {
-    "runs_twice": true,
+    "patch_runs_twice": true,
     "line_menu_once": true,
     "line_mount_once": true,
     "cash_mount_once": true,
-    "runtime_once": true,
-    "mutation_observer": true,
-    "hard_hide": true,
-    "title_map": true,
+    "version_badge_once": true,
+    "version_text": true,
+    "direct_line_mount": true,
+    "direct_cash_mount": true,
+    "runtime_guard_once": true,
+    "table_guard_css": true,
+    "global_version": true,
+    "package_version": true,
     "deploy_hook_once": true
   }
 }

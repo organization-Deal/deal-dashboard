@@ -1,26 +1,40 @@
-V9.04.2 FORCE TABLE-FIRST
+RUBJAI Dashboard v9.06.0
+BATCHES TABLE-FIRST + VERSION BADGE
+20 ส.ค. 2569
 
-รูปที่ส่งมาล่าสุดแปลว่า v904 เดิมไม่ได้ถูกเรียกใน build ที่ deploy จริง
-เพราะเอาไฟล์ .mjs ไปวางเฉย ๆ จะยังไม่เปลี่ยน source ถ้า package.json ไม่ได้เรียกมัน
+ไฟล์นี้แก้ 2 เรื่องพร้อมกัน:
 
-รอบนี้ทำ 2 อย่าง:
-1) บังคับย้าย DOM ทุกครั้ง แม้โค้ดเก่าจะ render กลับมาหลัง async refresh
-2) เมื่อรันไฟล์นี้ครั้งแรก มันเพิ่มตัวเองเข้า package.json > scripts.deploy อัตโนมัติ
+1) หน้า "เบิกจ่าย"
+- เอา "กลุ่ม LINE ที่ส่งรายการเข้าเบิก" ออกจากหน้าเบิกจ่าย
+- เอา "ยอดเงินแต่ละบัญชี" ออกจากหน้าเบิกจ่าย
+- เปิดหน้าเบิกจ่ายแล้วเจอ Status + ตารางใบเบิกทันที
+- กลุ่ม LINE ย้ายไป: จัดการธุรกิจ > กลุ่ม LINE
+- ยอดเงินบัญชีย้ายไป: จัดการธุรกิจ > บัญชีและช่องทางการเงิน
 
-วิธีใช้:
-1. วาง apply-v9042-batches-table-first-force.mjs ที่ root ของ deal-dashboard
+2) Version ของ Dashboard
+- เพิ่มข้อความเล็กมุมล่างซ้าย:
+  Dashboard v9.06.0
+  Build 20 ส.ค. 2569
+
+วิธีติดตั้ง:
+1. วาง apply-v906-batches-table-first-version-badge.mjs ที่ root ของ deal-dashboard
 2. รัน:
-   node apply-v9042-batches-table-first-force.mjs
+   node apply-v906-batches-table-first-version-badge.mjs
 3. Deploy:
    npm run deploy
 
-หลัง deploy:
-- หน้า เบิกจ่าย = status + ตารางทันที
-- กลุ่ม LINE -> จัดการธุรกิจ > กลุ่ม LINE
-- ยอดเงินแต่ละบัญชี -> จัดการธุรกิจ > บัญชีและช่องทางการเงิน
+ไฟล์จะเพิ่มตัวเองเป็น patch ตัวสุดท้ายก่อน wrangler deploy อัตโนมัติ
 
-ตรวจว่า build ใหม่เข้าจริง:
-เปิด Console แล้วพิมพ์
-window.__RUBJAI_V9042_TABLE_FIRST__
+หลัง Deploy เช็ก 2 จุด:
+A) มุมล่างซ้ายต้องเห็น "Dashboard v9.06.0"
+B) Console:
+   window.__RUBJAI_DASHBOARD_VERSION__
+ต้องได้:
+   "9.06.0"
 
-ต้องได้ true
+และ:
+   window.__RUBJAI_V906_TABLE_FIRST__
+ต้องได้:
+   true
+
+ถ้ามุมล่างซ้ายยังไม่มี v9.06.0 = Cloudflare ยังไม่ได้ใช้ build นี้
