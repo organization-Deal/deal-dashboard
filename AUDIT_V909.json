@@ -1,0 +1,15 @@
+{
+  "version": "9.09.0",
+  "build_date": "2026-08-20",
+  "scope": "employee permissions composition + navigation flicker only",
+  "checks": {
+    "permissions_full_workspace_width": true,
+    "ancestor_width_limiters_overridden": true,
+    "prepaint_dom_observer": true,
+    "navigation_transition_cover": true,
+    "failsafe_unblock": true,
+    "v908_navy_ci_preserved": true,
+    "v908_line_workspace_fix_preserved": true,
+    "v907_mobile_compact_preserved": true
+  }
+}
