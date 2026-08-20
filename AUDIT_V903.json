@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "checks": {
+    "full_chain_pass": true,
+    "floating_dock": true,
+    "soft_active": true,
+    "top_indicator": true,
+    "cache_bust": true,
+    "deploy_chain": true
+  }
+}
