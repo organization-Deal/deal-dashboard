@@ -1,40 +1,25 @@
-RUBJAI Dashboard v9.06.0
-BATCHES TABLE-FIRST + VERSION BADGE
-20 ส.ค. 2569
+DEAL Dashboard — v9.06 DEPLOY READY
 
-ไฟล์นี้แก้ 2 เรื่องพร้อมกัน:
+ให้เอา 2 ไฟล์นี้วางทับ/เพิ่มที่ root ของ repo:
 
-1) หน้า "เบิกจ่าย"
-- เอา "กลุ่ม LINE ที่ส่งรายการเข้าเบิก" ออกจากหน้าเบิกจ่าย
-- เอา "ยอดเงินแต่ละบัญชี" ออกจากหน้าเบิกจ่าย
-- เปิดหน้าเบิกจ่ายแล้วเจอ Status + ตารางใบเบิกทันที
-- กลุ่ม LINE ย้ายไป: จัดการธุรกิจ > กลุ่ม LINE
-- ยอดเงินบัญชีย้ายไป: จัดการธุรกิจ > บัญชีและช่องทางการเงิน
+1. package.json
+   - วางทับ package.json เดิม
+   - deploy chain เดิมจาก Build Log ถูกเก็บครบ
+   - เพิ่ม apply-v906-batches-table-first-version-badge.mjs ก่อน wrangler deploy
 
-2) Version ของ Dashboard
-- เพิ่มข้อความเล็กมุมล่างซ้าย:
-  Dashboard v9.06.0
-  Build 20 ส.ค. 2569
+2. apply-v906-batches-table-first-version-badge.mjs
+   - วางที่ root ของ repo เช่นเดียวกับ patch ตัวอื่น
 
-วิธีติดตั้ง:
-1. วาง apply-v906-batches-table-first-version-badge.mjs ที่ root ของ deal-dashboard
-2. รัน:
-   node apply-v906-batches-table-first-version-badge.mjs
-3. Deploy:
-   npm run deploy
+จากนั้น Commit + Push ได้เลย
+Cloudflare จะรัน npm run deploy อัตโนมัติ
 
-ไฟล์จะเพิ่มตัวเองเป็น patch ตัวสุดท้ายก่อน wrangler deploy อัตโนมัติ
+Build Log ใหม่ต้องมี:
+node apply-v903-bottom-nav-polish.mjs &&
+node apply-v906-batches-table-first-version-badge.mjs &&
+wrangler deploy --config ./wrangler.toml
 
-หลัง Deploy เช็ก 2 จุด:
-A) มุมล่างซ้ายต้องเห็น "Dashboard v9.06.0"
-B) Console:
-   window.__RUBJAI_DASHBOARD_VERSION__
-ต้องได้:
-   "9.06.0"
-
-และ:
-   window.__RUBJAI_V906_TABLE_FIRST__
-ต้องได้:
-   true
-
-ถ้ามุมล่างซ้ายยังไม่มี v9.06.0 = Cloudflare ยังไม่ได้ใช้ build นี้
+หน้าเว็บหลัง deploy:
+- เบิกจ่าย = ตารางเบิกจ่ายเป็นงานหลัก
+- กลุ่ม LINE ย้ายออกไปแท็บจัดการธุรกิจ
+- ยอดเงินแต่ละบัญชีย้ายออกไปแท็บบัญชี/ช่องทางการเงิน
+- มุมล่างซ้ายเห็น Dashboard v9.06.0

@@ -1,18 +1,11 @@
 {
   "result": "PASS",
   "checks": {
-    "patch_runs_twice": true,
-    "line_menu_once": true,
-    "line_mount_once": true,
-    "cash_mount_once": true,
-    "version_badge_once": true,
-    "version_text": true,
-    "direct_line_mount": true,
-    "direct_cash_mount": true,
-    "runtime_guard_once": true,
-    "table_guard_css": true,
-    "global_version": true,
-    "package_version": true,
-    "deploy_hook_once": true
+    "json_valid": true,
+    "v903_before_v906": true,
+    "v906_before_wrangler": true,
+    "v906_once": true,
+    "wrangler_once": true,
+    "patch_exists": true
   }
 }
