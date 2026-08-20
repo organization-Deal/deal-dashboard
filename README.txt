@@ -1,11 +1,14 @@
-Fix: remove broken v7.58 PIN patch from dashboard deploy chain.
+V9.04 — BATCHES TABLE FIRST
 
-Why:
-apply-v758-admin-pin-ui.mjs currently generates invalid JavaScript in assets/admin.js.
-That makes the build stop before wrangler deploy, so pilot.html never reaches production.
+วาง apply-v904-batches-table-first.mjs ที่ root ของ deal-dashboard
 
-Upload package.json to ROOT of deal-dashboard, replacing the existing file.
-Then start a NEW deployment from main.
+รัน:
+node apply-v904-batches-table-first.mjs
 
-Expected: v7.55 logs -> wrangler deploy -> Success.
-No v7.58 line should appear.
+ถ้าใช้ build chain ให้รันไฟล์นี้หลัง patch design ตัวล่าสุด และก่อน wrangler deploy.
+
+ผล:
+- หน้า เบิกจ่าย เปิดมาเจอ Status + ตารางใบเบิกทันที
+- กลุ่ม LINE ย้ายไป จัดการธุรกิจ > กลุ่ม LINE
+- ยอดเงินแต่ละบัญชี ย้ายไป จัดการธุรกิจ > บัญชีและช่องทางการเงิน
+- ไม่ลบหรือย้ายข้อมูลจริง แค่ย้าย UI
