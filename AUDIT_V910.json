@@ -1,0 +1,12 @@
+{
+  "version": "9.10.0",
+  "date": "2026-08-20",
+  "scope": "reconciliation composition only",
+  "brand": "#11162E navy",
+  "workflow": ["select-account", "statement", "review", "confirm"],
+  "zero_kpis_hidden": true,
+  "duplicate_statement_account_hidden": true,
+  "confirmation_button_reparented_not_cloned": true,
+  "api_logic_changed": false,
+  "matching_logic_changed": false
+}
