@@ -1,0 +1,14 @@
+{
+  "result": "PASS",
+  "checks": {
+    "runs_twice": true,
+    "line_menu_once": true,
+    "line_mount_once": true,
+    "cash_mount_once": true,
+    "runtime_once": true,
+    "mutation_observer": true,
+    "hard_hide": true,
+    "title_map": true,
+    "deploy_hook_once": true
+  }
+}
