@@ -1,0 +1,18 @@
+{
+  "version": "9.08.0",
+  "build": "20260820",
+  "brand_primary": "#11162E",
+  "brand_hover": "#20294F",
+  "brand_deep": "#080B1A",
+  "brand_soft": "#F0F2F8",
+  "brand_line": "#D9DEEA",
+  "checks": {
+    "known_indigo_violet_purple_palette_removed": true,
+    "v907_mobile_primary_inherits_navy": true,
+    "line_workspace_details_routes_to_business_line_tab": true,
+    "legacy_line_modal_suppressed": true,
+    "line_monitor_locked_to_business_mount": true,
+    "team_permission_card_composition_normalized": true,
+    "static_predeploy_color_regression_guard": true
+  }
+}
