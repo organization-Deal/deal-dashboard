@@ -1,0 +1,211 @@
+/* NAKNA_ACCOUNTING_BRAND_1.0.0
+   Source of visual truth: supplied Nakna HR public/ui/p10.css + public/styles.css.
+   Presentation only: no routing, display overrides for app pages, or data mutations.
+   Load LAST after the existing accounting CSS and legacy build patches. */
+html[data-nk-brand="accounting"] {
+  color-scheme: light;
+  --nk-accounting-release: "NAKNA-ACCOUNTING-BRAND-1.0.0";
+  --nk-primary: #04878a;
+  --nk-hover: #076e72;
+  --nk-heading: #153c45;
+  --nk-text: #20373e;
+  --nk-muted: #5c7178;
+  --nk-subtle: #667c82;
+  --nk-bg: #f5f7f8;
+  --nk-surface: #fff;
+  --nk-soft: #e8f5f5;
+  --nk-line: #e1e9ec;
+  --nk-line-strong: #ccdadd;
+  --nk-font: "IBM Plex Sans Thai", "IBM Plex Sans", "Noto Sans Thai", "Leelawadee UI", system-ui, sans-serif;
+  --font-th: var(--nk-font) !important;
+  --font-en: "IBM Plex Sans", "IBM Plex Sans Thai", sans-serif !important;
+  --bg: var(--nk-bg) !important;
+  --surface: var(--nk-surface) !important;
+  --surface-2: #f6f9f9 !important;
+  --surface-soft: #f6f9f9 !important;
+  --surface-mint: #eaf7f6 !important;
+  --primary: var(--nk-primary) !important;
+  --primary-dark: var(--nk-heading) !important;
+  --primary-soft: var(--nk-soft) !important;
+  --ink: var(--nk-text) !important;
+  --text: var(--nk-text) !important;
+  --text-secondary: var(--nk-muted) !important;
+  --text-tertiary: var(--nk-subtle) !important;
+  --muted: var(--nk-muted) !important;
+  --muted-2: var(--nk-subtle) !important;
+  --line: var(--nk-line) !important;
+  --line-strong: var(--nk-line-strong) !important;
+  --border: var(--nk-line) !important;
+  --border-strong: var(--nk-line-strong) !important;
+  --blue: var(--nk-primary) !important;
+  --blue-soft: var(--nk-soft) !important;
+  --sidebar: #fff !important;
+  --green: #22734f !important; --green-soft: #edf7f0 !important;
+  --orange: #91600b !important; --orange-soft: #fff6e7 !important;
+  --amber: #91600b !important; --amber-soft: #fff6e7 !important;
+  --red: #b43e40 !important; --red-soft: #fff0f0 !important;
+  --success: #22734f !important; --success-bg: #edf7f0 !important;
+  --warning: #91600b !important; --warning-bg: #fff6e7 !important;
+  --danger: #b43e40 !important; --danger-bg: #fff0f0 !important;
+  --rj-bg: var(--nk-bg) !important; --rj-surface: #fff !important;
+  --rj-surface-soft: #f6f9f9 !important; --rj-soft: #f1f5f6 !important;
+  --rj-primary: var(--nk-primary) !important; --rj-primary-hover: var(--nk-hover) !important;
+  --rj-primary-soft: var(--nk-soft) !important; --rj-ink: var(--nk-heading) !important;
+  --rj-text: var(--nk-text) !important; --rj-muted: var(--nk-muted) !important;
+  --rj-muted-2: var(--nk-subtle) !important;
+  --rj-line: var(--nk-line) !important; --rj-line-strong: var(--nk-line-strong) !important;
+  --rj-success: #22734f !important; --rj-success-soft: #edf7f0 !important;
+  --rj-warning: #91600b !important; --rj-warning-soft: #fff6e7 !important;
+  --rj-danger: #b43e40 !important; --rj-danger-soft: #fff0f0 !important;
+  --rubjai-primary: var(--nk-primary) !important; --rubjai-primary-hover: var(--nk-hover) !important;
+  --rubjai-primary-deep: var(--nk-heading) !important; --rubjai-primary-soft: var(--nk-soft) !important;
+  --rubjai-primary-line: var(--nk-line-strong) !important;
+  --help-navy: var(--nk-heading) !important; --help-navy-2: var(--nk-hover) !important;
+  --help-bg: var(--nk-bg) !important; --help-card: #fff !important;
+  --help-line: var(--nk-line) !important; --help-muted: var(--nk-muted) !important;
+  --help-soft: var(--nk-soft) !important;
+  --radius-card: 16px; --radius-button: 10px; --radius-input: 10px; --radius-modal: 20px;
+  --shadow: 0 2px 6px rgba(24,58,66,.025) !important;
+  --shadow-hover: 0 6px 20px rgba(24,58,66,.06) !important;
+  --shadow-soft: var(--shadow);
+  --shadow-float: 0 18px 60px rgba(24,58,66,.15);
+}
+html[data-nk-brand="accounting"], html[data-nk-brand="accounting"] body {
+  background: var(--nk-bg) !important; color: var(--nk-text) !important;
+}
+html[data-nk-brand="accounting"] body {
+  font-family: var(--nk-font) !important; font-size: 14px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%;
+}
+html[data-nk-brand="accounting"] body :is(button,input,select,textarea,label,table,th,td,h1,h2,h3,h4,h5,h6,p,small,strong,b,summary,.btn,.navlink,.subnavlink,.chip,.badge,.pill,.muted) {
+  font-family: var(--nk-font) !important;
+}
+html[data-nk-brand="accounting"] body :is(h1,h2,h3,h4,h5,h6) {
+  color: var(--nk-heading) !important; font-weight: 600 !important;
+  line-height: 1.4 !important; letter-spacing: -.02em !important;
+}
+html[data-nk-brand="accounting"] body :is(.page-title,.head h2,.page-intro h1) {font-size:26px !important}
+html[data-nk-brand="accounting"] body :is(.head-kicker,.eyebrow,.kicker,.section-kicker) {
+  color: var(--nk-primary) !important; font-size: 11px; font-weight:600; letter-spacing:.08em;
+}
+html[data-nk-brand="accounting"] body :is(.muted,.muted-2,.cs,.sub,.helper,.hint,.description,.card-subtitle,.section-subtitle,.foot,.lb) {
+  color: var(--nk-muted) !important;
+}
+html[data-nk-brand="accounting"] body :is(.sub,.helper,.hint,.card-subtitle,.section-subtitle,.kpi .foot) {font-size:12px;line-height:1.65}
+html[data-nk-brand="accounting"] body :is(.amount,.num,.money,.kpi .big,.total) {font-variant-numeric:tabular-nums}
+html[data-nk-brand="accounting"] body :is(.kpi .big,.metric-value) {font-weight:600 !important;letter-spacing:-.025em}
+/* Product identity never replaces a tenant/workspace logo. */
+html[data-nk-brand="accounting"] .nk-accounting-brand {
+  box-sizing:border-box; display:flex; align-items:center; gap:10px;
+  padding:18px 16px 14px; min-width:0; flex-shrink:0; color:var(--nk-heading);
+}
+html[data-nk-brand="accounting"] .nk-accounting-brand img {
+  width:38px;height:38px;flex:0 0 38px;object-fit:contain;
+  background:#fff;border:1px solid var(--nk-line);border-radius:11px;
+}
+html[data-nk-brand="accounting"] .nk-accounting-brand .nk-accounting-brand-copy {min-width:0;line-height:1.35}
+html[data-nk-brand="accounting"] .nk-accounting-brand strong {
+  display:block;font-size:18px;font-weight:600;color:var(--nk-heading);white-space:nowrap;
+}
+html[data-nk-brand="accounting"] .nk-accounting-brand small {
+  display:block;font-size:11px;color:var(--nk-muted);margin-top:3px;
+}
+html[data-nk-brand="accounting"] .nk-accounting-mobile-brand {display:none}
+html[data-nk-brand="accounting"] body .sidebar {background:#fff !important;border-color:var(--nk-line) !important;box-shadow:none !important}
+html[data-nk-brand="accounting"] body :is(.navlink,.subnavlink,.nav-item) {
+  color:#51666e !important; border-radius:10px !important; font-size:13px; font-weight:500;
+}
+html[data-nk-brand="accounting"] body :is(.navlink,.subnavlink,.nav-item):hover {background:#f4f8f9 !important}
+html[data-nk-brand="accounting"] body :is(.navlink.active,.subnavlink.active,.nav-item.active) {
+  color:#087c80 !important; background:#e9f6f5 !important; border-color:transparent !important;
+  font-weight:600 !important; box-shadow:inset 3px 0 #04878a !important;
+}
+html[data-nk-brand="accounting"] body :is(.navlink.active,.subnavlink.active,.nav-item.active) :is(.ic,svg) {color:#087c80 !important}
+html[data-nk-brand="accounting"] body :is(.card,.panel,.kpi,.pricing-card,.workspace-status-panel,.recon-account-summary,.recon-account-card,.recon-kpi,.batch-kpi,.integration-card) {
+  background:#fff !important;border-color:var(--nk-line) !important;border-radius:16px !important;
+  box-shadow:var(--shadow) !important;
+}
+html[data-nk-brand="accounting"] body .kpi.hero {background:#e8f5f5 !important;background-image:none !important;border-color:#c5e4e3 !important}
+html[data-nk-brand="accounting"] body .kpi.hero :is(.big,.lb,.foot) {color:var(--nk-heading) !important}
+html[data-nk-brand="accounting"] body .kpi.hero::after {background:none !important}
+html[data-nk-brand="accounting"] body .kpi.hero .bar {background:var(--nk-primary) !important}
+html[data-nk-brand="accounting"] body :is(.btn,.btn-secondary,.secondary-btn,.button-secondary,.connbtn,.sidelink) {
+  color:var(--nk-heading) !important;background:#fff !important;border:1px solid var(--nk-line-strong) !important;
+  border-radius:10px !important;box-shadow:none !important;font-weight:500;line-height:1.5;
+}
+html[data-nk-brand="accounting"] body :is(.btn,.btn-secondary,.secondary-btn):hover {background:#f6f9f9 !important;transform:none !important}
+html[data-nk-brand="accounting"] body :is(.btn.primary,.btn.solid,.btn.dark,.btn.black,.btn-primary,button.primary,.primary-btn,.button-primary,[data-variant="primary"],[class*="cta-primary"],.primary-next,.plan-action.primary,.pricing-card.recommended .plan-action,.v908-package-card-selected button) {
+  background:var(--nk-primary) !important;background-image:none !important;color:#fff !important;
+  border-color:var(--nk-primary) !important;border-radius:10px !important;box-shadow:none !important;font-weight:600;
+}
+html[data-nk-brand="accounting"] body :is(.btn.primary,.btn.solid,.btn.dark,.btn.black,.btn-primary,button.primary,.primary-btn,.button-primary,[data-variant="primary"],.primary-next,.plan-action.primary,.pricing-card.recommended .plan-action):hover {
+  background:var(--nk-hover) !important;border-color:var(--nk-hover) !important;color:#fff !important;
+}
+html[data-nk-brand="accounting"] body :is(.btn.primary,.btn.solid,.btn-primary,.primary-btn) :is(span,strong,b) {color:inherit !important}
+html[data-nk-brand="accounting"] body :is(button:disabled,.btn[aria-disabled="true"]) {opacity:.55 !important;cursor:not-allowed}
+html[data-nk-brand="accounting"] body :is(input:where(:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"])),select,textarea) {
+  color:var(--nk-text) !important;background:#fff !important;border-color:var(--nk-line-strong) !important;
+  border-radius:10px !important;max-width:100%;min-width:0;
+}
+html[data-nk-brand="accounting"] body :is(input,textarea)::placeholder {color:var(--nk-subtle) !important;opacity:1}
+html[data-nk-brand="accounting"] body :is(input,select,textarea):focus {border-color:var(--nk-primary) !important;box-shadow:0 0 0 3px rgba(4,135,138,.12) !important}
+html[data-nk-brand="accounting"] body :focus-visible {outline:2px solid #0b777a !important;outline-offset:3px !important}
+html[data-nk-brand="accounting"] body :is(input[type="checkbox"],input[type="radio"]) {accent-color:var(--nk-primary) !important}
+html[data-nk-brand="accounting"] body :is(.segmented .active,.segment.active,.tab.active,.filter-tab.active,[role="tab"][aria-selected="true"],.acct-status-strip button.active,.acct-status-strip button[aria-pressed="true"],.expense-status-tab.active,.batch-stage.active,.rangesel button.on,.simple7792-choice.active,.recon-account-card.active,.recon-kpi.active) {
+  background:var(--nk-soft) !important;color:var(--nk-heading) !important;border-color:#9acbcd !important;box-shadow:none !important;
+}
+html[data-nk-brand="accounting"] body :is(.recommended,.selected-card,[data-selected="true"]) {border-color:#70bfc1 !important;box-shadow:none !important}
+html[data-nk-brand="accounting"] body :is(.track .fill,.progress i,.progress .fill,.usage-progress i,.usage-progress .fill,.onboarding-progress span,.operation-bar i) {background:var(--nk-primary) !important}
+html[data-nk-brand="accounting"] body :is(.pricing-ribbon,.beta-plan-badge,.integration-icon,.onboard-step.done .step-dot) {color:var(--nk-primary) !important;background:var(--nk-soft) !important;border-color:var(--nk-line) !important}
+html[data-nk-brand="accounting"] body :is(table,.doc-table,.acct-table) {color:var(--nk-text)}
+html[data-nk-brand="accounting"] body thead th {color:var(--nk-muted) !important;background:#f6f9f9 !important;font-size:12px;font-weight:600 !important;border-color:var(--nk-line) !important}
+html[data-nk-brand="accounting"] body tbody td {border-color:var(--nk-line) !important}
+html[data-nk-brand="accounting"] body tbody tr:hover td {background:#f6fbfa}
+html[data-nk-brand="accounting"] body :is(.modal .box,.modal-card,.drawer,.manual-expense-card,.rubjai-help-panel-v916) {
+  background:#fff !important;color:var(--nk-text) !important;border-color:var(--nk-line) !important;
+}
+html[data-nk-brand="accounting"] body :is(.rubjai-help-topic-v916 b,.rubjai-help-step-v916 strong,.rubjai-help-status-v916 b) {color:var(--nk-heading) !important}
+/* Semantic status colors remain distinct: never turn errors/success into a brand accent. */
+html[data-nk-brand="accounting"] body :is(.status-success,.chip.ok,.badge.ok,.badge.paid,.status-pill.paid,.batch-round-state.paid) {color:#22734f !important;background:#edf7f0 !important}
+html[data-nk-brand="accounting"] body :is(.status-warning,.chip.warn,.badge.warn,.status-pill.pending,.batch-round-state.urgent) {color:#91600b !important;background:#fff6e7 !important}
+html[data-nk-brand="accounting"] body :is(.status-danger,.chip.danger,.badge.danger,.status-pill.rejected,.btn.danger,.btn.delete,.btn[ data-variant="danger"]) {color:#b43e40 !important;background:#fff0f0 !important;border-color:#ecc4c4 !important}
+html[data-nk-brand="accounting"] #page-batches {
+  --v907-primary:var(--nk-primary) !important;--v907-ink:var(--nk-heading) !important;
+  --v907-text:var(--nk-text) !important;--v907-soft:var(--nk-soft) !important;--v907-line:var(--nk-line) !important;
+}
+html[data-nk-brand="accounting"] body :is(.v914-role-btn,.v914-access-option,.v915-role-option,.permission-role-option).active {background:var(--nk-soft) !important;color:var(--nk-heading) !important;border-color:var(--nk-primary) !important}
+@media(min-width:601px) and (max-width:860px){
+  html[data-nk-brand="accounting"] .sidebar .nk-accounting-brand{padding:14px 12px;justify-content:center}
+  html[data-nk-brand="accounting"] .sidebar .nk-accounting-brand-copy{display:none}
+}
+@media(max-width:600px){
+  html[data-nk-brand="accounting"] .sidebar .nk-accounting-brand{display:none}
+  html[data-nk-brand="accounting"] .nk-accounting-mobile-brand{display:flex;padding:0 0 14px;gap:8px}
+  html[data-nk-brand="accounting"] .nk-accounting-mobile-brand img{width:32px;height:32px;flex-basis:32px}
+  html[data-nk-brand="accounting"] .nk-accounting-mobile-brand strong{font-size:16px}
+  html[data-nk-brand="accounting"] .nk-accounting-mobile-brand small{font-size:11px}
+  html[data-nk-brand="accounting"] body :is(.head h2,.page-title,.page-intro h1){font-size:23px !important}
+  html[data-nk-brand="accounting"] body :is(input,select,textarea){font-size:16px !important}
+  html[data-nk-brand="accounting"] body .sidebar .navlink.active{box-shadow:none !important}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-nk-brand="accounting"] .nk-accounting-brand{animation:none;transition:none}
+}
+@media print{
+  html[data-nk-brand="accounting"] .nk-accounting-mobile-brand{display:none !important}
+}
+
+/* Existing accounting charts, not tenant logos or receipt images. */
+html[data-nk-brand="accounting"] body #trend polyline {stroke:var(--nk-primary) !important}
+html[data-nk-brand="accounting"] body #trend polygon {fill:rgba(4,135,138,.09) !important}
+html[data-nk-brand="accounting"] body #trend text {fill:var(--nk-muted);font-family:var(--nk-font)}
+
+/* Existing employee permission and combined team components (v9.13-v9.15). */
+html[data-nk-brand="accounting"] body .v914-employee-dialog .v914-modal-subcopy,
+html[data-nk-brand="accounting"] body :is(.v914-access-head small,.v914-role-option span,.v914-access-note,.v914-access-state) {color:var(--nk-muted) !important;font-size:12px;line-height:1.6}
+html[data-nk-brand="accounting"] body :is(.v914-access-head strong,.v914-access-note b,.v914-role-option) {color:var(--nk-heading) !important}
+html[data-nk-brand="accounting"] body .v914-role-option.is-selected {color:var(--nk-heading) !important;background:var(--nk-soft) !important;border-color:var(--nk-primary) !important;box-shadow:0 0 0 1px var(--nk-primary) inset !important}
+html[data-nk-brand="accounting"] body :is(.v914-access-current,.v914-row-access,.v914-row-access.is-approver) {color:var(--nk-heading) !important;background:var(--nk-soft) !important}
+html[data-nk-brand="accounting"] body :is(.v913-team-jump a.is-active,.v913-section-label .badge) {background:var(--nk-primary) !important;color:white !important;border-color:var(--nk-primary) !important}
+html[data-nk-brand="accounting"] body #v914Toast {background:var(--nk-heading) !important;color:white !important}
+html[data-nk-brand="accounting"] body #v914Toast.bad {background:#8e2e30 !important}
