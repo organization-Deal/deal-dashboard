@@ -3,6 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import vm from 'node:vm';
 import {fileURLToPath} from 'node:url';
+import {patchFastLoad} from '../performance/nakna-fast-load.mjs';
 import {applyBrand,assertAccounting} from '../apply-nakna-accounting-brand.mjs';
 export const MARK='NAKNA_ACCOUNTING_PRIMARY_FIRST_1_1';
 const sha=x=>crypto.createHash('sha256').update(x).digest('hex').slice(0,16);
@@ -42,7 +43,7 @@ export function prepare(root){
   const originalHtml=fs.readFileSync(index,'utf8');
   assertAccounting(originalHtml);
   if(!/<script\b[^>]*src=["'](?:\.\/)?assets\/dashboard\.js(?:\?[^"']*)?["'][^>]*>/.test(originalHtml))throw new Error('Missing accounting core script; no changes written');
-  const before=fs.readFileSync(js,'utf8');const after=patchRuntime(before);
+  const before=fs.readFileSync(js,'utf8');const after=before.includes('NAKNA_ACCOUNTING_DECOUPLED_BOOT_1_2')?before:patchFastLoad(patchRuntime(before));
   const guard=fs.readFileSync(path.join(root,'branding/nakna-accounting-network.js'),'utf8');
   new vm.Script(guard);
   // Validate every runtime change before writing.
@@ -56,9 +57,9 @@ export function prepare(root){
   if(!script.test(html))throw new Error('Cannot find accounting core script; no blind injection');
   html=html.replace(script,m=>'\n'+tag+m.trimStart());
   const runtimeHash=sha(fs.readFileSync(js));
-  html=html.replace(/(assets\/dashboard\.js)(?:\?[^"'<>]*)?/g,`$1?v=nk11-${runtimeHash}`);
+  html=html.replace(/(assets\/dashboard\.js)(?:\?[^"'<>]*)?/g,`$1?v=nk12-${runtimeHash}`);
   fs.writeFileSync(index,html);
-  const report={release:'NAKNA-ACCOUNTING-RECOVERY-1.1.0',product:'นากนะ บัญชี',primaryFirst:true,readDeadlineMs:20000,statusDeadlineMs:10000,backgroundPrefetch:false,apiAuthUnchanged:true,runtimeSHA256:crypto.createHash('sha256').update(fs.readFileSync(js)).digest('hex'),checks:{htmlBrand:html.includes('data-nk-brand="accounting"'),networkBeforeCore:html.indexOf('id="nkAccountingNetwork"')<html.indexOf('assets/dashboard.js'),brandLast:html.indexOf('id="nkAccountingTheme"')>html.indexOf('assets/brand-theme.css')}};
+  const report={release:'NAKNA-ACCOUNTING-PERFORMANCE-1.2.0',product:'นากนะ บัญชี',primaryFirst:true,nonBlockingBoot:true,summaryOnlyOnOverview:true,readDeadlineMs:20000,statusDeadlineMs:10000,backgroundPrefetch:false,apiAuthUnchanged:true,runtimeSHA256:crypto.createHash('sha256').update(fs.readFileSync(js)).digest('hex'),checks:{htmlBrand:html.includes('data-nk-brand="accounting"'),networkBeforeCore:html.indexOf('id="nkAccountingNetwork"')<html.indexOf('assets/dashboard.js'),brandLast:html.indexOf('id="nkAccountingTheme"')>html.indexOf('assets/brand-theme.css')}};
   if(Object.values(report.checks).some(v=>!v))throw new Error('Release verification failed');
   fs.writeFileSync(path.join(root,'assets/nakna-accounting-release.json'),JSON.stringify(report,null,2)+'\n');
   return report;
