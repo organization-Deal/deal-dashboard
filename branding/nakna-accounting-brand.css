@@ -1,10 +1,10 @@
-/* NAKNA_ACCOUNTING_BRAND_1.0.0
+/* NAKNA_ACCOUNTING_BRAND_1.1.0
    Source of visual truth: supplied Nakna HR public/ui/p10.css + public/styles.css.
    Presentation only: no routing, display overrides for app pages, or data mutations.
    Load LAST after the existing accounting CSS and legacy build patches. */
 html[data-nk-brand="accounting"] {
   color-scheme: light;
-  --nk-accounting-release: "NAKNA-ACCOUNTING-BRAND-1.0.0";
+  --nk-accounting-release: "NAKNA-ACCOUNTING-BRAND-1.1.0";
   --nk-primary: #04878a;
   --nk-hover: #076e72;
   --nk-heading: #153c45;
@@ -209,3 +209,21 @@ html[data-nk-brand="accounting"] body :is(.v914-access-current,.v914-row-access,
 html[data-nk-brand="accounting"] body :is(.v913-team-jump a.is-active,.v913-section-label .badge) {background:var(--nk-primary) !important;color:white !important;border-color:var(--nk-primary) !important}
 html[data-nk-brand="accounting"] body #v914Toast {background:var(--nk-heading) !important;color:white !important}
 html[data-nk-brand="accounting"] body #v914Toast.bad {background:#8e2e30 !important}
+
+/* Release 1.1: use the same palette on high-specificity mobile/overview controls. */
+html[data-nk-brand="accounting"] body #page-overview .kpi.hero,
+html[data-nk-brand="accounting"] body #page-overview .kpi.hero:hover {
+  background:#e8f5f5 !important;background-image:none !important;color:#153c45 !important;
+}
+html[data-nk-brand="accounting"] body #page-overview .kpi.hero :is(strong,span,b,.big,.lb,.foot) { color:#153c45 !important; }
+html[data-nk-brand="accounting"] body .trial-banner .btn,
+html[data-nk-brand="accounting"] body :is(#trialUpgradeBtn,#billingUpgradeBtn) {
+  background:#04878a !important;border-color:#04878a !important;color:#fff !important;
+}
+#nkAccountingLoadNotice { box-sizing:border-box;margin:12px 0;padding:12px 16px;border:1px solid #ccdadd;background:#fff;border-radius:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;color:#20373e; }
+#nkAccountingLoadNotice[hidden] { display:none !important; }
+#nkAccountingLoadNotice strong { display:block;color:#153c45;font-size:14px; }
+#nkAccountingLoadNotice p { margin:3px 0 0;font-size:13px;color:#5c7178; }
+#nkAccountingLoadNotice button { background:#04878a;color:white;border:0;border-radius:10px;padding:10px 14px;min-height:44px;font:inherit;cursor:pointer; }
+#nkAccountingLoadNotice[data-state="error"] { border-color:#e4b4a4; }
+#nkAccountingLoadNotice .nk-load-copy { flex:1;min-width:200px; }

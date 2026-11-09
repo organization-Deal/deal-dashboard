@@ -1,0 +1,130 @@
+TAP version 13
+# Subtest: load primary starts before all health probes
+ok 1 - load primary starts before all health probes
+  ---
+  duration_ms: 3.520186
+  type: 'test'
+  ...
+# Subtest: no credentials => no primary read
+ok 2 - no credentials => no primary read
+  ---
+  duration_ms: 0.702269
+  type: 'test'
+  ...
+# Subtest: patch is idempotent
+ok 3 - patch is idempotent
+  ---
+  duration_ms: 0.187457
+  type: 'test'
+  ...
+# Subtest: no background fetch of unopened pages
+ok 4 - no background fetch of unopened pages
+  ---
+  duration_ms: 0.163481
+  type: 'test'
+  ...
+# Subtest: unknown core fails instead of altering source
+ok 5 - unknown core fails instead of altering source
+  ---
+  duration_ms: 0.340974
+  type: 'test'
+  ...
+# Subtest: raw legacy disconnected gate does not turn failed data to zero
+ok 6 - raw legacy disconnected gate does not turn failed data to zero
+  ---
+  duration_ms: 0.133658
+  type: 'test'
+  ...
+# Subtest: brand changes product not company and deduplicates fonts
+ok 7 - brand changes product not company and deduplicates fonts
+  ---
+  duration_ms: 2.428261
+  type: 'test'
+  ...
+# Subtest: complete build hooks theme last and network before core
+ok 8 - complete build hooks theme last and network before core
+  ---
+  duration_ms: 12.958704
+  type: 'test'
+  ...
+# Subtest: GET duplicate in-flight data request shared; responses independently readable
+ok 9 - GET duplicate in-flight data request shared; responses independently readable
+  ---
+  duration_ms: 28.935641
+  type: 'test'
+  ...
+# Subtest: a completed request is NOT cached
+ok 10 - a completed request is NOT cached
+  ---
+  duration_ms: 3.398456
+  type: 'test'
+  ...
+# Subtest: different tenant/auth cannot share response
+ok 11 - different tenant/auth cannot share response
+  ---
+  duration_ms: 2.938446
+  type: 'test'
+  ...
+# Subtest: POST is not retried, deduplicated or given a read deadline
+ok 12 - POST is not retried, deduplicated or given a read deadline
+  ---
+  duration_ms: 0.868866
+  type: 'test'
+  ...
+# Subtest: external fetch is unchanged
+ok 13 - external fetch is unchanged
+  ---
+  duration_ms: 0.700986
+  type: 'test'
+  ...
+# Subtest: 401 and 403 are not converted to success
+ok 14 - 401 and 403 are not converted to success
+  ---
+  duration_ms: 2.054298
+  type: 'test'
+  ...
+# Subtest: 429 returned unchanged, no immediate retry
+ok 15 - 429 returned unchanged, no immediate retry
+  ---
+  duration_ms: 2.131552
+  type: 'test'
+  ...
+# Subtest: read timeout is finite even if transport ignores AbortSignal
+ok 16 - read timeout is finite even if transport ignores AbortSignal
+  ---
+  duration_ms: 36.706403
+  type: 'test'
+  ...
+# Subtest: deadline includes a stalled JSON body
+ok 17 - deadline includes a stalled JSON body
+  ---
+  duration_ms: 36.728308
+  type: 'test'
+  ...
+# Subtest: reports never contain tenant key or signed URL
+ok 18 - reports never contain tenant key or signed URL
+  ---
+  duration_ms: 3.886597
+  type: 'test'
+  ...
+# Subtest: AbortSignal remains respected
+ok 19 - AbortSignal remains respected
+  ---
+  duration_ms: 4.094976
+  type: 'test'
+  ...
+# Subtest: guard contains no observer, persistent cache or repeating timer
+ok 20 - guard contains no observer, persistent cache or repeating timer
+  ---
+  duration_ms: 0.091225
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 215.546025

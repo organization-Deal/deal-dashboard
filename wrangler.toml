@@ -4,3 +4,8 @@ workers_dev = true
 
 [assets]
 directory = "."
+
+# Runs for BOTH npm run deploy and direct npx wrangler deploy.
+# Do not invoke wrangler from inside this script (would recurse).
+[build]
+command = "node scripts/prepare-nakna-accounting-release.mjs"

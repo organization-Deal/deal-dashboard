@@ -3,7 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
-export const RELEASE = 'NAKNA-ACCOUNTING-BRAND-1.0.0';
+export const RELEASE = 'NAKNA-ACCOUNTING-BRAND-1.1.0';
 export const NAME = 'นากนะ บัญชี';
 export const TAGLINE = 'รับจ่ายและเบิกจ่าย เป็นระบบ';
 const LEGACY_NAMES = ['รับจ่ายแบบไม่จำกัด', 'รับจ่ายแบบไม่ จำกัด', 'รับจ่ายไม่จำกัด', 'รับจ่ายได้หมด', 'DEALPAY', 'DEAL PAY', 'RUBJAI'];
@@ -93,6 +93,8 @@ export function brandHtml(html, assetHash) {
 <link id="nkAccountingFont" rel="stylesheet" href="${FONT_URL.replace(/&/g, '&amp;')}">
 <link id="nkAccountingTheme" rel="stylesheet" href="./assets/nakna-accounting-brand.css?v=${assetHash}">
 <!-- NAKNA_ACCOUNTING_BRAND:END -->`;
+  // Avoid a second blocking Google Fonts stylesheet; display=swap remains enabled.
+  out = out.replace(/<link\b[^>]*href=["']https:\/\/fonts\.googleapis\.com\/[^"']*["'][^>]*>\s*/gi, '');
   // Always last: previous build scripts may append their legacy CSS again on every deploy.
   out = out.replace(/\s*<\/head>/i, '\n' + block + '\n</head>');
   return out;
